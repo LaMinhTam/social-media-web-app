@@ -32,18 +32,21 @@ public class AuthenticationFilter implements GatewayFilter {
         ServerHttpRequest request = exchange.getRequest();
 
         if (routerValidator.isSecured.test(request)) {
-            if (this.isAuthMissing(request))
+            if (this.isAuthMissing(request)) {
                 return this.onError(exchange, "Authorization header is missing in request", HttpStatus.UNAUTHORIZED);
+            }
 
             final String token = this.getAuthHeader(request);
 
             if (jwtUtil.isInValid(token))
                 return this.onError(exchange, "Authorization header is invalid or expired", HttpStatus.UNAUTHORIZED);
 
-            if (routerValidator.isRefreshToken.test(request) && !jwtUtil.isRefreshToken(token)) {
+            this.populateRequestWithHeaders(exchange, token);
+        } else if (routerValidator.isRefreshToken.test(request)) {
+            final String token = this.getAuthHeader(request);
+            if (!jwtUtil.isRefreshToken(token)) {
                 return this.onError(exchange, "Invalid token type", HttpStatus.UNAUTHORIZED);
             }
-
             this.populateRequestWithHeaders(exchange, token);
         }
         return chain.filter(exchange);
@@ -86,9 +89,7 @@ public class AuthenticationFilter implements GatewayFilter {
     private void populateRequestWithHeaders(ServerWebExchange exchange, String token) {
         Claims claims = jwtUtil.getAllClaimsFromToken(token);
         exchange.getRequest().mutate()
-                .header("id", String.valueOf(claims.get("id")))
-                .header("major_id", String.valueOf(claims.get("major_id")))
-                .header("academic_year", String.valueOf(claims.get("academic_year")))
+                .header("email", String.valueOf(claims.get("email")))
                 .header("role", String.valueOf(claims.get("role")))
                 .build();
     }

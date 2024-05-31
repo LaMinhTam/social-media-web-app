@@ -13,7 +13,8 @@ public class RouterValidator {
             "/auth/signup",
             "/auth/login",
             "/oauth2/authorize/facebook",
-            "/oauth2/authorize/google"
+            "/oauth2/authorize/google",
+            "/auth/refresh"
     );
 
     public Predicate<ServerHttpRequest> isSecured =
@@ -22,5 +23,5 @@ public class RouterValidator {
                     .noneMatch(uri -> request.getURI().getPath().contains(uri));
 
     public Predicate<ServerHttpRequest> isRefreshToken =
-            request -> request.getURI().getPath().contains("/auth/refresh-token");
+            request -> request.getURI().getPath().contains("/auth/refresh");
 }

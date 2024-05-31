@@ -1,5 +1,5 @@
 
 …
-java:S6813"BRemove this field injection and use constructor injection instead.(êæÄŞ8•İáÑü1J$db98af1a-234c-46f1-8e69-52bda6d7a899
+java:S6813"BRemove this field injection and use constructor injection instead.(êæÄŞ8•İáÑü1J$a70639d9-5850-4abc-8230-6a17d6c1b9d7
 
-java:S3305"MInject this field value directly into "routes", the only method that uses it.(á•Ìê8—İáÑü1J$89411adc-eca3-42d0-898a-a066d510ab9c
+java:S3305"MInject this field value directly into "routes", the only method that uses it.(á•Ìê8—İáÑü1J$fd9c66b4-36c6-4782-a92e-59b7a112b226

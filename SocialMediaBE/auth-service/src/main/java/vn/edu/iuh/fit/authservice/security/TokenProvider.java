@@ -27,17 +27,18 @@ public class TokenProvider {
         this.key = Keys.hmacShaKeyFor(appProperties.getAuth().getTokenSecret().getBytes());
     }
 
-    public String createToken(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+    public String generateToken(UserPrincipal userPrincipal, String tokenType, long expirationTime) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", userPrincipal.getEmail());
+        claims.put("type", tokenType);
+
+        if (tokenType.equals("ACCESS")) {
+            claims.put("id", userPrincipal.getId());
+            claims.put("roles", userPrincipal.getAuthorities());
+        }
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + appProperties.getAuth().getTokenExpirationMsec());
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("id", userPrincipal.getId());
-        claims.put("email", userPrincipal.getEmail());
-        claims.put("roles", userPrincipal.getAuthorities());
-        claims.put("type", "ACCESS");
+        Date expiryDate = new Date(now.getTime() + expirationTime);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -46,6 +47,19 @@ public class TokenProvider {
                 .setExpiration(expiryDate)
                 .signWith(key)
                 .compact();
+    }
+
+    public String refreshToken(UserPrincipal userPrincipal) {
+        return generateToken(userPrincipal, "REFRESH", appProperties.getAuth().getTokenExpirationMsec());
+    }
+
+    public String accessToken(UserPrincipal userPrincipal) {
+        return generateToken(userPrincipal, "ACCESS", appProperties.getAuth().getTokenExpirationMsec());
+    }
+
+    public String createToken(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateToken(userPrincipal, "ACCESS", appProperties.getAuth().getTokenExpirationMsec());
     }
 
     public Long getUserIdFromToken(String token) {

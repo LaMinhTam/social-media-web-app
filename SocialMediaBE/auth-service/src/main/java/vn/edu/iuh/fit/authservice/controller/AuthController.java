@@ -7,21 +7,19 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import vn.edu.iuh.fit.authservice.exception.BadRequestException;
 import vn.edu.iuh.fit.authservice.model.AuthProvider;
 import vn.edu.iuh.fit.authservice.model.User;
-import vn.edu.iuh.fit.authservice.payload.ApiResponse;
-import vn.edu.iuh.fit.authservice.payload.AuthResponse;
-import vn.edu.iuh.fit.authservice.payload.LoginRequest;
-import vn.edu.iuh.fit.authservice.payload.SignUpRequest;
+import vn.edu.iuh.fit.authservice.dto.*;
 import vn.edu.iuh.fit.authservice.repository.UserRepository;
+import vn.edu.iuh.fit.authservice.security.CustomUserDetailsService;
 import vn.edu.iuh.fit.authservice.security.TokenProvider;
+import vn.edu.iuh.fit.authservice.security.UserPrincipal;
 
 import java.net.URI;
 
@@ -40,6 +38,8 @@ public class AuthController {
 
     @Autowired
     private TokenProvider tokenProvider;
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -53,13 +53,14 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = tokenProvider.createToken(authentication);
-        return ResponseEntity.ok(new AuthResponse(token));
+        String accessToken = tokenProvider.createToken(authentication);
+        String refreshToken = tokenProvider.refreshToken((UserPrincipal) authentication.getPrincipal());
+        return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if(userRepository.existsByEmail(signUpRequest.getEmail())) {
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             throw new BadRequestException("Email address already in use.");
         }
 
@@ -83,4 +84,11 @@ public class AuthController {
                 .body(new ApiResponse(true, "User registered successfully"));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("email") String email , @Valid @RequestBody TokenRefreshRequest tokenRefreshRequest) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        String accessToken = tokenProvider.accessToken((UserPrincipal) userDetails);
+        String refreshToken = tokenProvider.refreshToken((UserPrincipal) userDetails);
+        return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
+    }
 }

@@ -1,15 +1,21 @@
 
 k
-java:S5411>"(Use a primitive boolean expression here.(Œ‰ÓŒ8Ú³„õü1J$11cd3966-5b8a-4016-957d-7ab9fa32dc69
-~
-java:S6813 "BRemove this field injection and use constructor injection instead.(êæÄŞJ$344b13f1-33f3-4289-8238-ff89d43b5186
-~
-java:S6813#"BRemove this field injection and use constructor injection instead.(êæÄŞJ$f63b3838-2262-4c4f-a369-0b42794ba125
-~
-java:S6813&"BRemove this field injection and use constructor injection instead.(êæÄŞJ$cac90f45-bce1-4e46-99c8-12be604da212
-~
-java:S6813)"BRemove this field injection and use constructor injection instead.(êæÄŞJ$eb0944fc-ff27-46cf-b82b-6d25bd609273
-b
-java:S1452-"&Remove usage of generic wildcard type.(—­è€J$977e8625-38aa-4651-9423-9ee484f6d434
-b
-java:S1452="&Remove usage of generic wildcard type.(²çŠÙJ$bc2318e1-4346-4055-82f3-d3cc9469e2fd
+java:S5411?"(Use a primitive boolean expression here.(Œ‰ÓŒ8àÇÌúü1J$d322d1e1-8b79-4d19-8c57-f5f520298ad6
+…
+java:S6813"BRemove this field injection and use constructor injection instead.(êæÄŞ8îÇÌúü1J$e0accbac-0848-43af-afe2-f7bb6704fb0d
+…
+java:S6813!"BRemove this field injection and use constructor injection instead.(êæÄŞ8îÇÌúü1J$0185cfc6-3210-4ee6-aa8d-e2f225c61801
+…
+java:S6813$"BRemove this field injection and use constructor injection instead.(êæÄŞ8îÇÌúü1J$ca7aff9c-a828-4245-92e1-189938cd086b
+…
+java:S6813'"BRemove this field injection and use constructor injection instead.(êæÄŞ8ïÇÌúü1J$d67ecfed-e2a2-4087-afb3-ffac69ec4b5f
+…
+java:S6813)"BRemove this field injection and use constructor injection instead.(êæÄŞ8ïÇÌúü1J$9e7006f4-2e1d-4e89-8441-9888637b96c3
+i
+java:S1452-"&Remove usage of generic wildcard type.(—­è€8òÇÌúü1J$5d615600-ecd1-44ee-b8a1-c413edf525de
+i
+java:S1452>"&Remove usage of generic wildcard type.(²çŠÙ8ôÇÌúü1J$a4e6d289-6640-408f-b36f-67b1c388c56c
+h
+java:S1452X"&Remove usage of generic wildcard type.(ãşó8÷ÇÌúü1J$95a8dda6-1622-4216-b731-eaac397d7cbf
+³
+java:S1128"pRemove this unused import 'org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken'.(×˜¦÷8úÇÌúü1J$fefd89fa-3d7a-43af-802a-fb3ca4d2efb4

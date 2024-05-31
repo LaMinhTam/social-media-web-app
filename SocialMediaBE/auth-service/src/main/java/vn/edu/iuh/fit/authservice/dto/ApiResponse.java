@@ -1,4 +1,4 @@
-package vn.edu.iuh.fit.authservice.payload;
+package vn.edu.iuh.fit.authservice.dto;
 
 public class ApiResponse {
     private boolean success;
