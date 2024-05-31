@@ -1,0 +1,9 @@
+
+s
+java:S2387"7"logger" is the name of a field in "GenericFilterBean".(ˆË¢‚J$548d2681-4fb0-4ea4-85a5-219371952703
+~
+java:S6813"BRemove this field injection and use constructor injection instead.(êæÄÞJ$f219876b-d3d8-4c5f-882f-ce7a8594f199
+~
+java:S6813"BRemove this field injection and use constructor injection instead.(êæÄÞJ$6d184e2a-edcd-4c1f-aef4-7d8c829ccc3c
+ 
+java:S1130"XRemove the redundant 'jakarta.servlet.ServletException' thrown exception declaration(s).(€‘€Öúÿÿÿÿ8¥ïƒžü1J$ddb183ad-aa46-4bba-97bb-1b6bed8c222a

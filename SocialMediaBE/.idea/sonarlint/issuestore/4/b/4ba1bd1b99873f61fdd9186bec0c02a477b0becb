@@ -1,0 +1,13 @@
+
+_
+java:S2094"BRemove this empty class, write its code or make it an "interface".(„Å›ñ8‰¬¿Ðü1
+ƒ	java:S125"<This block of commented-out lines of code should be removed.(ÆãÁ€ýÿÿÿÿ8¹Ì¾Ðü1J$b123f8c7-9dd7-426d-9797-6f9e42746411
+~	java:S125"<This block of commented-out lines of code should be removed.(‘»«²8½™¿Ðü1J$58e07175-2d7b-440e-bb1a-86fe95abcb27
+’
+java:S1128"ORemove this unused import 'org.springframework.beans.factory.annotation.Value'.(ìø›8¾™¿Ðü1J$3e8dfec1-3f20-4ecb-b142-a7b07efc3b5e
+‹
+java:S1128"HRemove this unused import 'org.springframework.context.annotation.Bean'.(‚î‰Þ8¾™¿Ðü1J$a78494de-b686-456c-859d-f1df4c52a3c2
+s
+java:S1128"QRemove this unused import 'org.springframework.context.annotation.Configuration'.(¬²Úäþÿÿÿÿ8Ž¬¿Ðü1
+Ž
+java:S1128"KRemove this unused import 'org.springframework.context.annotation.Primary'.(“ð›ß8¾™¿Ðü1J$c4c56df2-958a-474b-824b-eeade3fb373e
