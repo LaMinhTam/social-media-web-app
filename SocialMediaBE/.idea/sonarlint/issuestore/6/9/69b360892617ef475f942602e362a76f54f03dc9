@@ -1,21 +1,0 @@
-
-k
-java:S5411?"(Use a primitive boolean expression here.(Œ‰ÓŒ8àÇÌúü1J$d322d1e1-8b79-4d19-8c57-f5f520298ad6
-…
-java:S6813"BRemove this field injection and use constructor injection instead.(êæÄŞ8îÇÌúü1J$e0accbac-0848-43af-afe2-f7bb6704fb0d
-…
-java:S6813!"BRemove this field injection and use constructor injection instead.(êæÄŞ8îÇÌúü1J$0185cfc6-3210-4ee6-aa8d-e2f225c61801
-…
-java:S6813$"BRemove this field injection and use constructor injection instead.(êæÄŞ8îÇÌúü1J$ca7aff9c-a828-4245-92e1-189938cd086b
-…
-java:S6813'"BRemove this field injection and use constructor injection instead.(êæÄŞ8ïÇÌúü1J$d67ecfed-e2a2-4087-afb3-ffac69ec4b5f
-…
-java:S6813)"BRemove this field injection and use constructor injection instead.(êæÄŞ8ïÇÌúü1J$9e7006f4-2e1d-4e89-8441-9888637b96c3
-i
-java:S1452-"&Remove usage of generic wildcard type.(—­è€8òÇÌúü1J$5d615600-ecd1-44ee-b8a1-c413edf525de
-i
-java:S1452>"&Remove usage of generic wildcard type.(²çŠÙ8ôÇÌúü1J$a4e6d289-6640-408f-b36f-67b1c388c56c
-h
-java:S1452X"&Remove usage of generic wildcard type.(ãşó8÷ÇÌúü1J$95a8dda6-1622-4216-b731-eaac397d7cbf
-³
-java:S1128"pRemove this unused import 'org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken'.(×˜¦÷8úÇÌúü1J$fefd89fa-3d7a-43af-802a-fb3ca4d2efb4
