@@ -2,12 +2,7 @@ import { Button, Grid } from "@mui/material";
 import React from "react";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import GoogleIcon from "@mui/icons-material/Google";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import {
-    FACEBOOK_AUTH_URL,
-    GITHUB_AUTH_URL,
-    GOOGLE_AUTH_URL,
-} from "@/constants/global";
+import { FACEBOOK_AUTH_URL, GOOGLE_AUTH_URL } from "@/constants/global";
 
 const SocialButtonGroup = () => {
     return (
@@ -26,7 +21,7 @@ const SocialButtonGroup = () => {
                     href={GOOGLE_AUTH_URL}
                     title="Google"
                     sx={{
-                        px: 2,
+                        px: 4,
                         textTransform: "none",
                         backgroundColor: "#fff",
                         display: "flex",
@@ -49,7 +44,7 @@ const SocialButtonGroup = () => {
                     href={FACEBOOK_AUTH_URL}
                     title="Facebook"
                     sx={{
-                        px: 2,
+                        px: 4,
                         textTransform: "none",
                         backgroundColor: "#fff",
                         display: "flex",
@@ -64,29 +59,6 @@ const SocialButtonGroup = () => {
                 >
                     <FacebookIcon />
                     <span>Facebook</span>
-                </Button>
-            </Grid>
-            <Grid item>
-                <Button
-                    variant="outlined"
-                    href={GITHUB_AUTH_URL}
-                    title="Github"
-                    sx={{
-                        px: 2,
-                        textTransform: "none",
-                        backgroundColor: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 1,
-                        ":hover": {
-                            backgroundColor: "secondary.main",
-                            color: "white",
-                        },
-                    }}
-                >
-                    <GitHubIcon />
-                    <span>GitHub</span>
                 </Button>
             </Grid>
         </Grid>

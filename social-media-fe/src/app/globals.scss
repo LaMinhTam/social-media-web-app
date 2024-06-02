@@ -33,3 +33,11 @@ body {
     font-size: 16px;
     line-height: 1;
 }
+
+.error-input {
+    // text-sm font-medium pointer-events-none text-error
+    font-size: 14px;
+    font-weight: 500;
+    pointer-events: none;
+    color: #f44336;
+}

@@ -225,7 +225,7 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8888
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth_db
+            - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true
             - SPRING_DATASOURCE_USERNAME=root
             - SPRING_DATASOURCE_PASSWORD=123456
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
