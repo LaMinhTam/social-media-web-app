@@ -1,0 +1,31 @@
+import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
+import "./globals.scss";
+import ReactQueryProvider from "@/utils/providers/ReactQueryProvider";
+import CustomThemeProvider from "@/utils/theme/CustomThemeProvider";
+
+const manrope = Manrope({
+    weight: ["400", "500", "600", "700"],
+    subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+    title: "Social Media App",
+    description: "Social Media App built with Next.js and TypeScript",
+};
+
+export default function RootLayout({
+    children,
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <html lang="en">
+            <body className={manrope.className}>
+                <CustomThemeProvider>
+                    <ReactQueryProvider>{children}</ReactQueryProvider>
+                </CustomThemeProvider>
+            </body>
+        </html>
+    );
+}
