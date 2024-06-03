@@ -1,43 +1,18 @@
-*,
-*:before,
-*:after {
-    box-sizing: border-box;
-}
-* {
-    margin: 0;
-    padding: 0;
-    font: inherit;
-}
-img,
-picture,
-svg,
-video {
-    display: block;
-    max-width: 100%;
-}
-input,
-select,
-textarea {
-    background-color: transparent;
-    outline: none;
-}
-button {
-    cursor: pointer;
-    background-color: transparent;
-    outline: none;
-    border: 0;
-}
-body {
-    min-height: 100vh;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply text-base font-normal mx-auto text-text1;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+    input {
+        outline: none;
+    }
 }
 
 .error-input {
-    // text-sm font-medium pointer-events-none text-error
-    font-size: 14px;
-    font-weight: 500;
-    pointer-events: none;
-    color: #f44336;
+    @apply text-sm font-medium pointer-events-none text-error;
 }
