@@ -9,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import vn.edu.iuh.fit.authservice.exception.BadRequestException;
@@ -66,10 +65,8 @@ public class AuthController {
 
         // Creating user's account
         User user = new User();
-        user.setName(signUpRequest.getName());
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(signUpRequest.getPassword());
-        user.setImageUrl("https://source.unsplash.com/random");
         user.setProvider(AuthProvider.local);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

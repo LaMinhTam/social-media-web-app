@@ -20,6 +20,11 @@ spring:
           predicates:
             - Path=/auth/**
             - Path=/oauth2/**
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+              - Path=/friends/**
+              - Path=/user/**
       globalcors:
         corsConfigurations:
           '[/**]':
