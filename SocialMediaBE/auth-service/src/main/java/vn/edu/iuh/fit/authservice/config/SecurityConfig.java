@@ -87,9 +87,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new RestAuthenticationEntryPoint())
                 )
                 .authenticationProvider(authenticationProvider())
-                .authenticationManager(authenticationManager(http))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup", "auth/login", "/oauth2/**")
+                        .requestMatchers("/auth/signup", "/auth/login", "/oauth2/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

@@ -59,7 +59,7 @@ public class TokenProvider {
 
     public String createToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        return generateToken(userPrincipal, "ACCESS", appProperties.getAuth().getTokenExpirationMsec());
+        return generateToken(userPrincipal, "REFRESH", appProperties.getAuth().getTokenExpirationMsec());
     }
 
     public Long getUserIdFromToken(String token) {
