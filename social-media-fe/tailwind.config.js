@@ -8,7 +8,6 @@ module.exports = {
                 secondary: "#0068ff",
                 thirdly: "#3498DB",
                 tertiary: "#B7DFFF",
-
                 text1: "#171725",
                 text2: "#4B5264",
                 text3: "#808191",
@@ -16,6 +15,7 @@ module.exports = {
                 text5: "#171725",
                 text6: "#eaedf0",
                 text7: "#7589a3",
+                text8: "#65676B",
                 iconColor: "#A2A2A8",
                 white: "#FFFFFF",
                 whiteSoft: "#FCFBFF",

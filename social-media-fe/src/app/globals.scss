@@ -4,7 +4,7 @@
 
 @layer base {
     body {
-        @apply text-base font-normal mx-auto text-text1;
+        @apply text-base font-normal mx-auto text-text1 h-full;
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
     }

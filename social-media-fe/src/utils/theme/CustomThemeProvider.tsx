@@ -18,6 +18,10 @@ const CustomThemeProvider = ({ children }: { children: React.ReactNode }) => {
             background: {
                 default: "#fff",
             },
+            common: {
+                white: "#ccc",
+                black: "#24242C",
+            },
         },
     });
     return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
