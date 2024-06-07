@@ -3,7 +3,6 @@ package vn.edu.iuh.fit.userservice.repository.custom;
 import org.neo4j.cypherdsl.core.Cypher;
 import org.neo4j.cypherdsl.core.Statement;
 import org.springframework.data.neo4j.core.Neo4jTemplate;
-import vn.edu.iuh.fit.userservice.entity.FriendType;
 import vn.edu.iuh.fit.userservice.entity.User;
 
 import java.util.List;
@@ -17,4 +16,14 @@ public class CustomUserRepositoryImpl implements CustomUserRepository {
         this.neo4jTemplate = neo4jTemplate;
     }
 
+    @Override
+    public List<User> findByKeyword(String keyword) {
+        //search by multi field from name, email
+        Statement statement = Cypher.match(node("User").named("u"))
+                .where(Cypher.anyNode("u").property("name").contains(Cypher.literalOf(keyword))
+                        .or(Cypher.anyNode("u").property("email").contains(Cypher.literalOf(keyword))))
+                .returning("u")
+                .build();
+        return neo4jTemplate.findAll(statement, Map.of(), User.class);
+    }
 }

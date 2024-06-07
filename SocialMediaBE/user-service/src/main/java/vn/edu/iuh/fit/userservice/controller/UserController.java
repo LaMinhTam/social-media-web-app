@@ -1,5 +1,7 @@
 package vn.edu.iuh.fit.userservice.controller;
 
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.userservice.dto.RequestCreateUser;
@@ -27,5 +29,19 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUserById(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(userService.getUserById(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUser(@QueryParam("keyword") String keyword) {
+        return ResponseEntity.ok(userService.searchUser(keyword));
     }
 }

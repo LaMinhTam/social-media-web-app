@@ -77,6 +77,7 @@ services:
 
     mongo-express:
         image: mongo-express
+        container_name: mongo-express-con
         restart: always
         ports:
             - 8081:8081
@@ -132,6 +133,7 @@ services:
 
     redis:
         image: redis:latest
+        container_name: redis-con
         restart: always
         ports:
             - "6379:6379"
@@ -192,8 +194,6 @@ services:
         environment:
             - SPRING_PROFILES_ACTIVE=native
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-        volumes:
-            - ./SocialMedia/config-server:/config
         networks:
             - backend
         deploy:
@@ -219,8 +219,6 @@ services:
             - SPRING_DATA_REDIS_TIMEOUT=60000
             - SPRING_DATA_REDIS_PASSWORD=123456
             - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
-        volumes:
-            - ./SocialMedia/api-gateway:/config
         networks:
             - backend
             - db-redis-net
@@ -257,8 +255,6 @@ services:
             - SPRING_DATA_REDIS_PORT=6379
             - SPRING_DATA_REDIS_TIMEOUT=60000
             - SPRING_DATA_REDIS_PASSWORD=123456
-        volumes:
-            - ./SocialMedia/auth-service:/config
         depends_on:
             - service-registry
             - config-server
@@ -276,6 +272,27 @@ services:
                     memory: 512M
                 reservations:
                     memory: 256M
+    
+    user-service:
+        image: laminhtam/social-media-user-service:latest
+        container_name: user-service-con
+        restart: always
+        ports:
+            - "8082:8082"
+        environment:
+            - CONFIG_SERVER_URL=http://config-server:8888
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+            - SPRING_NEO4J_URI=bolt://neo4j:7687
+            - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
+            - SPRING_NEO4J_AUTHENTICATION_PASSWORD=12345678
+        depends_on:
+            - service-registry
+            - config-server
+            - gateway
+            - neo4j
+        networks:
+            - backend
+            - db-neo4j-net
 
 volumes:
     mysql-data:
