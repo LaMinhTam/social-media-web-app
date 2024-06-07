@@ -2,7 +2,10 @@ package vn.edu.iuh.fit.userservice.service;
 
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.userservice.entity.User;
+import vn.edu.iuh.fit.userservice.model.UserModel;
 import vn.edu.iuh.fit.userservice.repository.UserRepository;
+
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -18,7 +21,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long userId) throws Exception {
-        return userRepository.findByUserId(userId).orElseThrow(() -> new Exception("User not found"));
+    public UserModel getUserById(Long userId) throws Exception {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new Exception("User not found"));
+        return new UserModel(user.getUserId(), user.getName(), user.getEmail(), user.getImageUrl());
+    }
+
+    @Override
+    public List<UserModel> searchUser(String keyword) {
+        List<User> user = userRepository.findByKeyword(keyword);
+        return user.stream().map(u -> new UserModel(u.getUserId(), u.getName(), u.getEmail(), u.getImageUrl())).toList();
     }
 }
