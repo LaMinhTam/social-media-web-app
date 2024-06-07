@@ -3,6 +3,8 @@ import { Manrope } from "next/font/google";
 import "./globals.scss";
 import ReactQueryProvider from "@/utils/providers/ReactQueryProvider";
 import CustomThemeProvider from "@/utils/theme/CustomThemeProvider";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const manrope = Manrope({
     weight: ["400", "500", "600", "700"],
@@ -25,6 +27,7 @@ export default function RootLayout({
                 <CustomThemeProvider>
                     <ReactQueryProvider>{children}</ReactQueryProvider>
                 </CustomThemeProvider>
+                <ToastContainer bodyClassName="font-primary text-sm"></ToastContainer>
             </body>
         </html>
     );

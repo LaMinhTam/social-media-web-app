@@ -8,7 +8,8 @@ const userKey = "SOCIAL_MEDIA_USER";
 
 const objCookies = {
     expires: 30,
-    domain: window.location.hostname,
+    domain:
+        typeof window !== "undefined" ? window.location.hostname : "localhost",
 };
 
 export const saveAccessToken = (access_token: string) => {
@@ -20,7 +21,10 @@ export const saveAccessToken = (access_token: string) => {
         Cookies.remove(accessTokenKey, {
             ...objCookies,
             path: "/",
-            domain: window.location.hostname,
+            domain:
+                typeof window !== "undefined"
+                    ? window.location.hostname
+                    : "localhost",
         });
     }
 };
@@ -34,7 +38,10 @@ export const saveRefreshToken = (refresh_token: string) => {
         Cookies.remove(refreshTokenKey, {
             ...objCookies,
             path: "/",
-            domain: window.location.hostname,
+            domain:
+                typeof window !== "undefined"
+                    ? window.location.hostname
+                    : "localhost",
         });
     }
 };

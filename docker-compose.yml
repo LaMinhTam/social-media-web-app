@@ -293,6 +293,15 @@ services:
         networks:
             - backend
             - db-neo4j-net
+    
+    nextjs14-social-media-fe: 
+        image: dinhthong17/nextjs14-social-media-fe:latest
+        container_name: nextjs14-social-media-fe-con
+        restart: always
+        ports:
+            - "3000:3000"
+        networks:
+            - frontend
 
 volumes:
     mysql-data:
@@ -305,3 +314,4 @@ networks:
     backend:
     db-redis-net:
     rabbitmq-net:
+    frontend:

@@ -14,6 +14,7 @@ import * as yup from "yup";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const schema = yup.object({
     email: yup
@@ -52,14 +53,19 @@ export default function SignInPage() {
     const handleSignIn = handleSubmit(async (data) => {
         if (!data) return;
         try {
-            const response = await SOCIAL_MEDIA_API.login(
+            const response = await SOCIAL_MEDIA_API.AUTH.login(
                 data.email,
                 data.password
             );
-            saveAccessToken(response.accessToken);
-            saveRefreshToken(response.refreshToken);
-            route.push("/");
-        } catch (error) {}
+            if (response.status === 200) {
+                saveAccessToken(response.data.accessToken);
+                saveRefreshToken(response.data.refreshToken);
+                route.push("/");
+                toast.success("Sign in successfully");
+            }
+        } catch (error) {
+            console.error(error);
+        }
     });
 
     return (
