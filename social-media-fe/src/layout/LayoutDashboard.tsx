@@ -3,10 +3,10 @@ import React from "react";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
     return (
-        <div>
+        <>
             <DashboardTopBar></DashboardTopBar>
             {children}
-        </div>
+        </>
     );
 };
 

@@ -21,7 +21,7 @@ const ListFriend = () => {
                 </Button>
             </Grid>
             <Grid container spacing={2}>
-                {Array.from({ length: 6 }).map((_, index) => (
+                {Array.from({ length: 9 }).map((_, index) => (
                     <Grid item md={4} xs={4} key={index}>
                         <Image
                             src={`https://source.unsplash.com/random`}

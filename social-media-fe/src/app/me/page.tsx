@@ -15,31 +15,25 @@ const Profile = () => {
     return (
         <RequiredAuthLayout>
             <LayoutDashboard>
-                <div className="w-full h-full bg-strock">
+                <div className="w-full h-full overflow-y-auto bg-strock">
                     <Header></Header>
                     <div className="w-full max-w-[1048px] h-full px-4 mx-auto mt-4 flex">
-                        <Grid container spacing={3} style={{ height: "100%" }}>
-                            <Grid
-                                item
-                                md={5}
-                                xs={12}
-                                style={{ height: "100%", overflowY: "auto" }}
-                            >
+                        <Grid container spacing={3}>
+                            <Grid item md={5} xs={12}>
                                 <ProfileInfo></ProfileInfo>
                                 <ListImage></ListImage>
                                 <ListFriend></ListFriend>
                             </Grid>
-                            <Grid
-                                item
-                                md={7}
-                                xs={12}
-                                style={{ height: "100%", overflowY: "auto" }}
-                            >
-                                <PostHeader></PostHeader>
-                                <PostFilter></PostFilter>
-                                {Array.from({ length: 5 }).map((_, index) => (
-                                    <Post key={index}></Post>
-                                ))}
+                            <Grid item md={7} xs={12} className="flex flex-col">
+                                <div className="overflow-x-hidden overflow-y-auto basis-0 grow">
+                                    <PostHeader></PostHeader>
+                                    <PostFilter></PostFilter>
+                                    {Array.from({ length: 5 }).map(
+                                        (_, index) => (
+                                            <Post key={index}></Post>
+                                        )
+                                    )}
+                                </div>
                             </Grid>
                         </Grid>
                     </div>

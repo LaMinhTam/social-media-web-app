@@ -15,15 +15,14 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { Typography } from "@mui/material";
 import ToggleButton from "@/components/button/ToggleButton";
 import LogoutIcon from "@mui/icons-material/Logout";
-import HomeIcon from "@mui/icons-material/Home";
-import PeopleOutlineRoundedIcon from "@mui/icons-material/PeopleOutlineRounded";
 import DashboardSearch from "./DashboardSearch";
 import useClickOutSide from "@/hooks/useClickOutSide";
 import { useRouter } from "next/navigation";
+import DashboardTab from "./DashboardTab";
+import DashboardFeature from "./DashboardFeature";
 
 export default function DashboardTopBar() {
     const router = useRouter();
-    const [currentTab, setCurrentTab] = React.useState(0);
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
@@ -152,87 +151,11 @@ export default function DashboardTopBar() {
                         setShowSearch={setShowSearch}
                         searchRef={searchRef}
                     ></DashboardSearch>
-                    <Box
-                        sx={{
-                            flexGrow: 1,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            ml: showSearch ? "320px" : 0,
-                        }}
-                    >
-                        <button
-                            className={`flex items-center justify-center w-[112px] h-[56px] 
-                            flex-shrink-0 hover:text-secondary ${
-                                currentTab === 0
-                                    ? "border-b-4 border-secondary"
-                                    : ""
-                            }`}
-                            onClick={() => setCurrentTab(0)}
-                        >
-                            <HomeIcon
-                                className={`w-8 h-8 ${
-                                    currentTab === 0 ? "text-secondary" : ""
-                                }`}
-                            />
-                        </button>
-                        <button
-                            className={`flex items-center justify-center w-[112px] h-[56px] 
-                            flex-shrink-0 hover:text-secondary ${
-                                currentTab === 1
-                                    ? "border-b-4 border-secondary"
-                                    : ""
-                            }`}
-                            onClick={() => setCurrentTab(1)}
-                        >
-                            <PeopleOutlineRoundedIcon
-                                className={`w-8 h-8 ${
-                                    currentTab === 1 ? "text-secondary" : ""
-                                }`}
-                            />
-                        </button>
-                    </Box>
-                    <Box
-                        sx={{
-                            display: { xs: "none", md: "flex" },
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 1,
-                        }}
-                    >
-                        <IconButton
-                            size="large"
-                            aria-label="show 4 new mails"
-                            color="inherit"
-                            className="flex items-center justify-center w-10 h-10 bg-strock hover:text-primary"
-                        >
-                            <Badge badgeContent={4} color="error">
-                                <MailIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton
-                            size="large"
-                            aria-label="show 17 new notifications"
-                            color="inherit"
-                            className="flex items-center justify-center w-10 h-10 bg-strock hover:text-primary"
-                        >
-                            <Badge badgeContent={17} color="error">
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton
-                            size="large"
-                            edge="end"
-                            aria-label="account of current user"
-                            aria-controls={menuId}
-                            aria-haspopup="true"
-                            onClick={handleProfileMenuOpen}
-                            color="inherit"
-                            className="flex items-center justify-center w-10 h-10 bg-strock hover:text-primary"
-                        >
-                            <AccountCircle />
-                        </IconButton>
-                    </Box>
+                    <DashboardTab showSearch={showSearch}></DashboardTab>
+                    <DashboardFeature
+                        handleProfileMenuOpen={handleProfileMenuOpen}
+                        menuId={menuId}
+                    ></DashboardFeature>
                     <Box sx={{ display: { xs: "flex", md: "none" } }}>
                         <IconButton
                             size="large"
