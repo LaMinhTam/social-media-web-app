@@ -1,3 +1,4 @@
+"use client";
 import useRefreshToken from "@/hooks/useRefreshTokenHandler";
 import {
     getAccessToken,

@@ -14,6 +14,7 @@ import * as yup from "yup";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import { useRouter } from "next/navigation";
 import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
+import { toast } from "react-toastify";
 
 const schema = yup.object({
     firstName: yup.string().required("First Name is required"),
@@ -67,17 +68,19 @@ export default function SignUpPage() {
                 data.password
             );
             console.log("handleSignUp ~ response:", response);
-            if (response.success) {
+            if (response.status === 201) {
                 const loginResponse = await SOCIAL_MEDIA_API.AUTH.login(
                     data.email,
                     data.password
                 );
-                saveAccessToken(loginResponse.accessToken);
-                saveRefreshToken(loginResponse.refreshToken);
-                route.push("/");
-                console.log("Sign up successfully");
+                if (loginResponse.status === 200) {
+                    saveAccessToken(loginResponse.data.accessToken);
+                    saveRefreshToken(loginResponse.data.refreshToken);
+                    route.push("/");
+                    toast.success("Sign up successfully");
+                }
             } else {
-                console.error("Failed to sign up", response.message);
+                console.error("Failed to sign up", response.data.message);
             }
         } catch (error) {
             console.error("Failed to sign up", error);

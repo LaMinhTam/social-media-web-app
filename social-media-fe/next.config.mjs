@@ -7,6 +7,9 @@ const nextConfig = {
         minimumCacheTTL: 60,
         // disableStaticImages: true,
     },
+    experimental: {
+        missingSuspenseWithCSRBailout: false,
+    },
 };
 
 export default nextConfig;

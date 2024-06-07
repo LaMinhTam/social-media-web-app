@@ -1,7 +1,7 @@
 "use client";
 import { saveRefreshToken } from "@/utils/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { toast } from "react-toastify";
 
 const OAuth2RedirectHandler = () => {
@@ -23,7 +23,7 @@ const OAuth2RedirectHandler = () => {
         }
     }, [token, error]);
 
-    return <div>OAuth2</div>;
+    return <Suspense>OAuth2</Suspense>;
 };
 
 export default OAuth2RedirectHandler;
