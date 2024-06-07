@@ -23,8 +23,8 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-              - Path=/friends/**
-              - Path=/user/**
+            - Path=/friends/**
+            - Path=/user/**
       globalcors:
         corsConfigurations:
           '[/**]':

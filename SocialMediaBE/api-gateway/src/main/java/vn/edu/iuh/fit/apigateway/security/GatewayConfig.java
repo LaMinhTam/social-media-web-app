@@ -20,7 +20,15 @@ public class GatewayConfig {
                 .route("user-service", r -> r.path("/friends/**", "/user/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://user-service"))
+                .route("chat-service", r -> r.path("/websocket/**")
+                        .filters(f -> f.rewritePath("/websocket/(?<remains>.*)", "/${remains}")
+                                .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
+                        )
+                        .uri("lb://CHAT-SERVICE/"))
                 .build();
     }
+
+
 }
 

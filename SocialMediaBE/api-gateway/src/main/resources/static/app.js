@@ -12,7 +12,7 @@ function setConnected(connected) {
 
 function connect() {
 	//connect to stomp where stomp endpoint is exposed
-	var socket = new SockJS("ws://localhost:8060/websocket/app/greeting");
+	var socket = new SockJS("localhost:8060/websocket/greeting");
 	ws = Stomp.over(socket);
 
 	ws.connect({}, function(frame) {
