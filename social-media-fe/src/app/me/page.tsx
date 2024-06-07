@@ -2,7 +2,7 @@
 import LayoutDashboard from "@/layout/LayoutDashboard";
 import RequiredAuthLayout from "@/layout/RequiredAuthLayout";
 import { Grid } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "@/modules/profile/Header";
 import Post from "@/modules/posts/Post";
 import PostHeader from "@/modules/posts/PostHeader";
@@ -10,8 +10,25 @@ import PostFilter from "@/modules/posts/PostFilter";
 import ListImage from "@/modules/profile/ListImage";
 import ListFriend from "@/modules/profile/ListFriend";
 import ProfileInfo from "@/modules/profile/ProfileInfo";
+import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import { UserResponse } from "@/types/authType";
 
 const Profile = () => {
+    const [me, setMe] = React.useState<UserResponse>({} as UserResponse);
+    console.log("Profile ~ me:", me);
+    useEffect(() => {
+        async function fetchingMe() {
+            try {
+                const response = await SOCIAL_MEDIA_API.AUTH.getMe();
+                if (response.status === 200) {
+                    setMe(response.data);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        fetchingMe();
+    }, []);
     return (
         <RequiredAuthLayout>
             <LayoutDashboard>

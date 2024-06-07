@@ -20,6 +20,7 @@ import useClickOutSide from "@/hooks/useClickOutSide";
 import { useRouter } from "next/navigation";
 import DashboardTab from "./DashboardTab";
 import DashboardFeature from "./DashboardFeature";
+import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 
 export default function DashboardTopBar() {
     const router = useRouter();
@@ -71,7 +72,12 @@ export default function DashboardTopBar() {
                 <ToggleButton checked={true} text="" />
             </MenuItem>
             <MenuItem
-                onClick={handleMenuClose}
+                onClick={() => {
+                    handleMenuClose();
+                    saveAccessToken("");
+                    saveRefreshToken("");
+                    router.push("/signin");
+                }}
                 className="flex items-center justify-start gap-x-3 w-[360px]"
             >
                 <LogoutIcon />

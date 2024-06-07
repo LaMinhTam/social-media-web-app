@@ -61,14 +61,14 @@ export default function SignUpPage() {
         console.log("Running handleSignUp");
         if (!data) return;
         try {
-            const response = await SOCIAL_MEDIA_API.createUser(
+            const response = await SOCIAL_MEDIA_API.AUTH.createUser(
                 data.firstName + " " + data.lastName,
                 data.email,
                 data.password
             );
             console.log("handleSignUp ~ response:", response);
             if (response.success) {
-                const loginResponse = await SOCIAL_MEDIA_API.login(
+                const loginResponse = await SOCIAL_MEDIA_API.AUTH.login(
                     data.email,
                     data.password
                 );
