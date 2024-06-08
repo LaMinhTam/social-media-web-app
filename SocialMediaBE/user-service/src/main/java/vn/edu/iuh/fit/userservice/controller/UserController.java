@@ -6,7 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.userservice.dto.RequestCreateUser;
 import vn.edu.iuh.fit.userservice.entity.User;
+import vn.edu.iuh.fit.userservice.model.UserModel;
 import vn.edu.iuh.fit.userservice.service.UserService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -43,5 +46,10 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<?> searchUser(@QueryParam("keyword") String keyword) {
         return ResponseEntity.ok(userService.searchUser(keyword));
+    }
+
+    @GetMapping
+    public List<UserModel> getUsersByIds(@RequestParam List<Long> ids) {
+        return userService.getUsersByIds(ids);
     }
 }

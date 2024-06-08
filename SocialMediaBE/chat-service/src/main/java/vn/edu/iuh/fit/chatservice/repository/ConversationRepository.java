@@ -10,5 +10,6 @@ import java.util.Optional;
 
 public interface ConversationRepository extends MongoRepository<Conversation, String>, ConversationRepositoryCustom {
     @Query("{ '_id' : ?0 }")
+    //notice about user must in the conversation and disbanded, then dont need to validate
     public Optional<Conversation> findById(ObjectId id);
 }

@@ -26,6 +26,9 @@ public class GatewayConfig {
                                 .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
                         )
                         .uri("lb://CHAT-SERVICE/"))
+                .route("chat-service", r -> r.path("/conversations/**", "/messages/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://chat-service"))
                 .build();
     }
 

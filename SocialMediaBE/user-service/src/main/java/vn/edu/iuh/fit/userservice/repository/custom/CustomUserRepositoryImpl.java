@@ -26,4 +26,14 @@ public class CustomUserRepositoryImpl implements CustomUserRepository {
                 .build();
         return neo4jTemplate.findAll(statement, Map.of(), User.class);
     }
+
+    @Override
+    public List<User> findByUserIdIn(List<Long> ids) {
+        //search by list of ids
+        Statement statement = Cypher.match(node("User").named("u"))
+                .where(Cypher.anyNode("u").property("userId").in(Cypher.literalOf(ids)))
+                .returning("u")
+                .build();
+        return neo4jTemplate.findAll(statement, Map.of(), User.class);
+    }
 }

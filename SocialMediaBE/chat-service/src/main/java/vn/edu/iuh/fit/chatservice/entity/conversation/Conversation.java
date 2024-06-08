@@ -3,6 +3,7 @@ package vn.edu.iuh.fit.chatservice.entity.conversation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Conversation {
     @MongoId
     @Column(name = "id")
@@ -25,12 +27,15 @@ public class Conversation {
     private ObjectId id;
     @Column(name = "owner_id")
     @JsonProperty("owner_id")
-    private String ownerId;
+    private Long ownerId;
+    @Column(name = "deputies")
+    @JsonProperty("deputies")
+    private List<Long> deputies;
     @Enumerated(EnumType.ORDINAL)
     private ConversationType type;
     private String name;
     private String avatar;
-    private List<String> participants;
+    private List<Long> members;
     @Column(name = "last_message_id")
     @JsonProperty("last_message_id")
     private String lastMessageId;
@@ -38,7 +43,7 @@ public class Conversation {
     @JsonProperty("last_activity")
     private Date lastActivity;
     private ConversationSettings settings;
-    private String status;
+    private ConversationStatus status;
     private Map<String, String> views;
     @Column(name = "muted_status")
     @JsonProperty("muted_status")
@@ -53,8 +58,4 @@ public class Conversation {
     @Column(name = "updated_at")
     @JsonProperty("updated_at")
     private Date updatedAt;
-
-    public Conversation(ObjectId id) {
-        this.id = id;
-    }
 }

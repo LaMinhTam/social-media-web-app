@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Reaction {
-    private String userId;
+    private Long userId;
     private ReactionType reaction;
 }

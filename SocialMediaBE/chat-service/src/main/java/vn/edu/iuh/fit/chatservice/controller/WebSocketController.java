@@ -7,11 +7,12 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
+import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageErrorDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
-import vn.edu.iuh.fit.chatservice.dto.MessageResponse;
+import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
-import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
+import vn.edu.iuh.fit.chatservice.service.ConversationService;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
 
 import java.util.Date;
@@ -21,20 +22,24 @@ import java.util.Map;
 public class WebSocketController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageService messageService;
+    private final ConversationService conversationService;
 
-    public WebSocketController(SimpMessagingTemplate simpMessagingTemplate, MessageService messageService) {
+    public WebSocketController(SimpMessagingTemplate simpMessagingTemplate, MessageService messageService, ConversationService conversationService) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.messageService = messageService;
+        this.conversationService = conversationService;
     }
 
     @MessageMapping("/message")
     public void processMessageFromClient(SimpMessageHeaderAccessor sha, @Payload MessageFromClientDTO message) {
         String userId = sha.getNativeHeader("sub").get(0);
-        Message savedMessage = null;
         try {
-            savedMessage = messageService.saveMessage(Long.parseLong(userId), message);
-            MessageResponse response = new MessageResponse(savedMessage);
-            sendMessageToUser(userId, "message", response);
+            Message savedMessage = messageService.saveMessage(Long.parseLong(userId), message);
+            Conversation conversation = conversationService.getConversation(Long.parseLong(userId), savedMessage.getConversationId());
+            MessageDTO response = new MessageDTO(savedMessage);
+            conversation.getMembers().forEach(
+                    member -> sendMessageToUser(member.toString(), "message", response)
+            );
         } catch (Exception e) {
             MessageErrorDTO error = new MessageErrorDTO(
                     null,
@@ -62,9 +67,7 @@ public class WebSocketController {
         return exception.getMessage();
     }
 
-    private void sendMessageToUser(String userId, String destination, Object error) {
+    public void sendMessageToUser(String userId, String destination, Object error) {
         simpMessagingTemplate.convertAndSendToUser(userId, "/" + destination, error);
     }
-
-
 }

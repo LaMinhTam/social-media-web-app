@@ -31,4 +31,10 @@ public class UserServiceImpl implements UserService {
         List<User> user = userRepository.findByKeyword(keyword);
         return user.stream().map(u -> new UserModel(u.getUserId(), u.getName(), u.getEmail(), u.getImageUrl())).toList();
     }
+
+    @Override
+    public List<UserModel> getUsersByIds(List<Long> ids) {
+        List<User> users = userRepository.findByUserIdIn(ids);
+        return users.stream().map(u -> new UserModel(u.getUserId(), u.getName(), u.getEmail(), u.getImageUrl())).toList();
+    }
 }

@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "messages")
 @Data
@@ -39,7 +40,7 @@ public class Message {
     private String status;
     @Enumerated(EnumType.ORDINAL)
     private MessageType type;
-    private List<Reaction> reactions;
+    private Map<ReactionType, List<Long>> reactions;
     @Column(name = "created_at")
     @JsonProperty("created_at")
     private Date createdAt;
