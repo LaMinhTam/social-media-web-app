@@ -45,6 +45,7 @@ public class FriendServiceImpl implements FriendService {
 
         FriendRelationship friendRequest = new FriendRelationship();
         friendRequest.setTargetUser(receiverId);
+        friendRequest.setSourceUser(senderId);
         friendRequest.setCreatedAt(new Date());
         friendRequest.setUpdatedAt(new Date());
 
@@ -119,6 +120,7 @@ public class FriendServiceImpl implements FriendService {
 
         FriendRelationship friendRequest = new FriendRelationship();
         friendRequest.setTargetUser(receiverId);
+        friendRequest.setSourceUser(senderId);
         friendRequest.setCreatedAt(new Date());
 
         sender.getBlocked().add(friendRequest);
@@ -152,7 +154,7 @@ public class FriendServiceImpl implements FriendService {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new Exception("User not found"));
         UserRelationship userRelationship = new UserRelationship(
                 user.getSentRequests().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
-                user.getReceivedRequests().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
+                user.getReceivedRequests().stream().collect(Collectors.toMap(FriendRelationship::getSourceUser, FriendRelationship::getId)),
                 user.getBlocked().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
                 user.getFriends().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId))
         );

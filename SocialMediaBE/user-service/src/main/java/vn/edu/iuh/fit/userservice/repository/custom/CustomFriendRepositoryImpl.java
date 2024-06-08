@@ -56,9 +56,9 @@ public class CustomFriendRepositoryImpl implements CustomFriendRepository {
     public List<UserModel> getReceiveFriendRequest(Long userId) {
         Statement statement = Cypher.match(
                         node("User").named("receiver").withProperties("userId", Cypher.parameter("userId"))
-                                .relationshipTo(node("FriendRelationship").named("friend"), "RECEIVE"),
+                                .relationshipFrom(node("FriendRelationship").named("friend"), "RECEIVE"),
                         node("FriendRelationship").named("friend")
-                                .relationshipTo(node("User").named("sender"), "SEND")
+                                .relationshipFrom(node("User").named("sender"), "SEND")
                 )
                 .returning("sender")
                 .build();
