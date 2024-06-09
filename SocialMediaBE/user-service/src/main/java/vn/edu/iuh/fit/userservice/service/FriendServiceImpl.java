@@ -14,6 +14,7 @@ import vn.edu.iuh.fit.userservice.repository.UserRepository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -152,12 +153,8 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public UserDTO getFriendByType(Long userId, int type) throws Exception {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new Exception("User not found"));
-        UserRelationship userRelationship = new UserRelationship(
-                user.getSentRequests().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
-                user.getReceivedRequests().stream().collect(Collectors.toMap(FriendRelationship::getSourceUser, FriendRelationship::getId)),
-                user.getBlocked().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
-                user.getFriends().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId))
-        );
+
+        UserRelationship userRelationship = new UserRelationship(user);
         UserDTO userDTO = new UserDTO(userId);
         if (type == FriendStatus.ALL.getValue()) {
             userDTO = new UserDTO(
