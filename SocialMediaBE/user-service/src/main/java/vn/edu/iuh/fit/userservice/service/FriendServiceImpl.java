@@ -76,7 +76,7 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public FriendRelationship acceptFriendRequest(Long senderId, Long receiverId, Long friendRequestId) throws Exception {
+    public FriendRelationship acceptFriendRequest(Long receiverId, Long senderId, Long friendRequestId) throws Exception {
         User sender = userRepository.findByUserId(senderId).orElseThrow(() -> new Exception("User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new Exception("User not found"));
 
