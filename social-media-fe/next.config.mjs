@@ -12,6 +12,7 @@ const nextConfig = {
     },
     experimental: {
         missingSuspenseWithCSRBailout: false,
+        outputStandalone: true,
     },
 };
 
