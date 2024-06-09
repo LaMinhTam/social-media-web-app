@@ -1,4 +1,4 @@
-package vn.edu.iuh.fit.chatservice.config;
+package vn.edu.iuh.fit.chatservice.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

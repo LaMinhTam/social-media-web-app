@@ -18,6 +18,12 @@ spring:
       database: chat_db
       authentication-database: admin
       uri: mongodb://root:123456@localhost:27017/admin
+    redis:
+      database: 0
+      host: localhost
+      port: 6379
+      timeout: 60000
+      password: 123456
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
     
