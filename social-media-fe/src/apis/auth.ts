@@ -2,7 +2,6 @@ import {
     LoginResponse,
     RefreshTokenResponse,
     SignUpResponse,
-    UserResponse,
 } from "@/types/authType";
 import axios, { axiosPrivate } from "./axios";
 import apiRoutes from ".";
@@ -27,13 +26,6 @@ const login = async (email: string, password: string) => {
             email,
             password,
         }
-    );
-    return response;
-};
-
-const getMe = async () => {
-    const response: AxiosResponse<UserResponse> = await axiosPrivate.get(
-        apiRoutes.auth.userDetails
     );
     return response;
 };
@@ -67,7 +59,6 @@ const refreshToken = async (accessToken: string, refreshToken: string) => {
 export const AUTH = {
     createUser,
     login,
-    getMe,
     refreshToken,
     refreshOAuth2Token,
 };

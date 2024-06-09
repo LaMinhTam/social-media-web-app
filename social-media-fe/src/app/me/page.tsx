@@ -10,30 +10,24 @@ import PostFilter from "@/modules/posts/PostFilter";
 import ListImage from "@/modules/profile/ListImage";
 import ListFriend from "@/modules/profile/ListFriend";
 import ProfileInfo from "@/modules/profile/ProfileInfo";
-import { SOCIAL_MEDIA_API } from "@/apis/constants";
-import { UserResponse } from "@/types/authType";
+import { useQuery } from "@tanstack/react-query";
+import { fetchingMe } from "@/apis/profile.service";
 
 const Profile = () => {
-    const [me, setMe] = React.useState<UserResponse>({} as UserResponse);
-    console.log("Profile ~ me:", me);
-    useEffect(() => {
-        async function fetchingMe() {
-            try {
-                const response = await SOCIAL_MEDIA_API.AUTH.getMe();
-                if (response.status === 200) {
-                    setMe(response.data);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        fetchingMe();
-    }, []);
+    const {
+        data,
+        isLoading: loading,
+        error,
+    } = useQuery({
+        queryKey: ["fetchMe"],
+        queryFn: fetchingMe,
+    });
+    if (!data || error) return null;
     return (
         <RequiredAuthLayout>
             <LayoutDashboard>
                 <div className="w-full h-full overflow-y-auto bg-strock">
-                    <Header></Header>
+                    <Header data={data}></Header>
                     <div className="w-full max-w-[1048px] h-full px-4 mx-auto mt-4 flex">
                         <Grid container spacing={3}>
                             <Grid item md={5} xs={12}>

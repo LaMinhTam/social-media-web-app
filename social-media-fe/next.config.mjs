@@ -2,10 +2,13 @@
 const nextConfig = {
     reactStrictMode: false,
     images: {
-        domains: ["source.unsplash.com"],
-        formats: ["image/webp"],
-        minimumCacheTTL: 60,
-        // disableStaticImages: true,
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "source.unsplash.com",
+                pathname: "**",
+            },
+        ],
     },
     experimental: {
         missingSuspenseWithCSRBailout: false,

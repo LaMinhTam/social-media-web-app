@@ -42,18 +42,18 @@ const Post = () => {
             </div>
             <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center gap-x-2">
-                    <Button type="button" variant="text" color="inherit">
+                    <div className="flex items-center justify-center gap-x-1">
                         <IconButton>
                             <InsertPhotoIcon></InsertPhotoIcon>
                         </IconButton>
                         <Typography>24</Typography>
-                    </Button>
-                    <Button type="button" variant="text" color="inherit">
+                    </div>
+                    <div className="flex items-center justify-center gap-x-1">
                         <IconButton>
                             <VideoCameraFrontIcon></VideoCameraFrontIcon>
                         </IconButton>
                         <Typography>24</Typography>
-                    </Button>
+                    </div>
                 </div>
                 <Button type="button" variant="text" color="inherit">
                     <Typography>24 bình luận</Typography>

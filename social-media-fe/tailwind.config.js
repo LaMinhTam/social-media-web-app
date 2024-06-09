@@ -7,7 +7,7 @@ module.exports = {
                 primary: "#1DC071",
                 secondary: "#0068ff",
                 thirdly: "#3498DB",
-                tertiary: "#B7DFFF",
+                tertiary: "#1DA1F2",
                 text1: "#171725",
                 text2: "#4B5264",
                 text3: "#808191",

@@ -6,7 +6,8 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-const Header = () => {
+import { UserResponse } from "@/types/userType";
+const Header = ({ data }: { data: UserResponse }) => {
     const [currentTab, setCurrentTab] = React.useState(1);
     return (
         <div className="w-full h-full shadow-md bg-lite">
@@ -14,7 +15,7 @@ const Header = () => {
                 <div className="relative">
                     <div>
                         <Image
-                            src={`https://source.unsplash.com/random`}
+                            src={data.image_url}
                             width={1095}
                             height={500}
                             className="max-w-[1095px] h-[500px] rounded-lg object-cover"
@@ -32,7 +33,7 @@ const Header = () => {
                     </div>
                     <div>
                         <Image
-                            src={`https://source.unsplash.com/random`}
+                            src={data.image_url}
                             width={168}
                             height={168}
                             className="w-[168px] h-[168px] object-cover rounded-full absolute bottom-[-140px] left-8"
@@ -50,7 +51,7 @@ const Header = () => {
                 <div className="ml-[220px] mt-3 mb-4 flex items-center justify-between">
                     <div>
                         <Typography variant="h4" className="font-bold">
-                            Thong Dinh
+                            {data.name}
                         </Typography>
                         <Link href={`/friends`}>
                             <span className="text-sm font-medium hover:underline text-text3">
