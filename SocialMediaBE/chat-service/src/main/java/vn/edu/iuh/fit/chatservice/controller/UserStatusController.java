@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import vn.edu.iuh.fit.chatservice.config.websocket.UserSessionManager;
 import vn.edu.iuh.fit.chatservice.service.UserSessionService;
 
 import java.util.List;

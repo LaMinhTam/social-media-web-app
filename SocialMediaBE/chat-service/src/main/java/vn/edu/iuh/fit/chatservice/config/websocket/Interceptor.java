@@ -18,7 +18,6 @@ import vn.edu.iuh.fit.chatservice.util.JwtUtil;
 public class Interceptor implements ChannelInterceptor {
     private final JwtUtil jwtUtil;
     private final Logger log = LoggerFactory.getLogger(Interceptor.class);
-    private final UserSessionManager userSessionManager = UserSessionManager.getInstance();
     private final UserSessionService userSessionService;
 
     public Interceptor(JwtUtil jwtUtil, UserSessionService userSessionService) {
@@ -37,14 +36,12 @@ public class Interceptor implements ChannelInterceptor {
                     Claims claims = jwtUtil.getAllClaimsFromToken(token);
                     String userId = claims.getSubject();
                     headerAccessor.addNativeHeader("sub", userId);
-//                    userSessionManager.addUserSession(headerAccessor.getSessionId(), userId);
                     userSessionService.addUserSession(userId, headerAccessor.getSessionId());
                 }
 //                if (StompCommand.SEND.equals(headerAccessor.getCommand())) {
 //            return MessageBuilder.createMessage(msg.getPayload(), headerAccessor.getMessageHeaders());
 //                }
                 if (StompCommand.DISCONNECT.equals(headerAccessor.getCommand())) {
-//                    userSessionManager.removeUserSession(headerAccessor.getSessionId());
                     userSessionService.removeUserSession(headerAccessor.getSessionId());
                 }
             } catch (NullPointerException e) {
