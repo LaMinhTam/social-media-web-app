@@ -107,6 +107,7 @@ services:
             - NEO4J_dbms_memory_pagecache_size=1G
             - NEO4J_dbms_memory_heap_max__size=512M
         volumes:
+            - neo4j-data:/data
             - ./neo4j/data:/data
             - ./neo4j/conf:/conf
             - ./neo4j/logs:/logs
@@ -163,6 +164,22 @@ services:
             - RABBITMQ_DEFAULT_PASS=123456
         networks:
             - rabbitmq-net
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.50"
+                    memory: 512M
+                reservations:
+                    memory: 256M
+    kurento:
+        image: kurento/kurento-media-server:latest
+        container_name: kurento-con
+        restart: always
+        ports:
+            - "8888:8888"
+            - "5000:5000"
+        networks:
+            - backend
         deploy:
             resources:
                 limits:

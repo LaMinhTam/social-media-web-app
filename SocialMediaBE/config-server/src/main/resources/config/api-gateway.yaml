@@ -14,6 +14,9 @@ management:
 spring:
   cloud:
     gateway:
+      httpclient:
+        ssl:
+          use-insecure-trust-manager: true
       routes:
         - id: auth-service
           uri: lb://auth-service
