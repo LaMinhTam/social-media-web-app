@@ -10,24 +10,18 @@ import PostFilter from "@/modules/posts/PostFilter";
 import ListImage from "@/modules/profile/ListImage";
 import ListFriend from "@/modules/profile/ListFriend";
 import ProfileInfo from "@/modules/profile/ProfileInfo";
-import { useQuery } from "@tanstack/react-query";
-import { fetchingMe } from "@/apis/profile.service";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 
 const Profile = () => {
-    const {
-        data,
-        isLoading: loading,
-        error,
-    } = useQuery({
-        queryKey: ["fetchMe"],
-        queryFn: fetchingMe,
-    });
-    if (!data || error) return null;
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
     return (
         <RequiredAuthLayout>
             <LayoutDashboard>
                 <div className="w-full h-full overflow-y-auto bg-strock">
-                    <Header data={data}></Header>
+                    <Header data={currentUserProfile}></Header>
                     <div className="w-full max-w-[1048px] h-full px-4 mx-auto mt-4 flex">
                         <Grid container spacing={3}>
                             <Grid item md={5} xs={12}>

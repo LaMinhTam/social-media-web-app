@@ -6,7 +6,9 @@ import RequiredAuthLayout from "@/layout/RequiredAuthLayout";
 export default function Home() {
     return (
         <RequiredAuthLayout>
-            <LayoutDashboard>Hello world</LayoutDashboard>
+            <LayoutDashboard>
+                <span></span>
+            </LayoutDashboard>
         </RequiredAuthLayout>
     );
 }

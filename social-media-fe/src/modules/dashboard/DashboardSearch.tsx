@@ -22,6 +22,7 @@ import { getSearchResultFromLocalStorage } from "@/utils/auth/handleLocalStorage
 import StorageSearchResult from "../search/StorageSearchResult";
 import SearchResult from "../search/SearchResult";
 import { v4 as uuidv4 } from "uuid";
+import SearchInput from "@/components/common/SearchInput";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -137,22 +138,17 @@ const DashboardSearch = ({
                             <ArrowBackRoundedIcon className="w-6 h-full" />
                         </IconButton>
                     )}
-                    <Search>
-                        <SearchIconWrapper>
-                            <SearchIcon />
-                        </SearchIconWrapper>
-                        <StyledInputBase
-                            placeholder="Search…"
-                            inputProps={{ "aria-label": "search" }}
-                            className="search-input"
-                            value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowSearch(true);
-                            }}
-                        />
-                    </Search>
+                    <SearchInput
+                        placeholder="Search…"
+                        inputProps={{ "aria-label": "search" }}
+                        className="search-input"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowSearch(true);
+                        }}
+                    ></SearchInput>
                 </div>
                 <div
                     className="flex flex-col flex-shrink-0 mt-2 gap-y-2"

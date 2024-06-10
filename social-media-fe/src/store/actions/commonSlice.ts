@@ -3,10 +3,12 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type CommonType = {
     triggerReFetchingRelationship: boolean;
+    showChatModal: boolean;
 };
 
 const initialState: CommonType = {
     triggerReFetchingRelationship: true,
+    showChatModal: false,
 };
 
 const commonSlice = createSlice({
@@ -19,8 +21,12 @@ const commonSlice = createSlice({
         ) {
             state.triggerReFetchingRelationship = action.payload;
         },
+        setShowChatModal(state, action: PayloadAction<boolean>) {
+            state.showChatModal = action.payload;
+        },
     },
 });
 
-export const { setTriggerReFetchingRelationship } = commonSlice.actions;
+export const { setTriggerReFetchingRelationship, setShowChatModal } =
+    commonSlice.actions;
 export default commonSlice.reducer;
