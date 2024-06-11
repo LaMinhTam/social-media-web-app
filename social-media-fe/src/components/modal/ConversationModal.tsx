@@ -10,12 +10,20 @@ import { RootState } from "@/store/configureStore";
 import { PopupState } from "material-ui-popup-state/hooks";
 import { setShowChatModal } from "@/store/actions/commonSlice";
 import { setUserClicked } from "@/store/actions/userSlice";
+import { UserResponse } from "@/types/userType";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     const relationshipUsers = useSelector(
         (state: RootState) => state.user.relationshipUsers
     );
     const dispatch = useDispatch();
+
+    const handleClickConversation = async (user: UserResponse) => {
+        dispatch(setShowChatModal(true));
+        dispatch(setUserClicked(user));
+        popupState.close();
+    };
+
     return (
         <>
             <div className="w-[360px] h-full">
@@ -67,11 +75,9 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                     className="flex items-center justify-start w-full h-full normal-case gap-x-2"
                                     color="inherit"
                                     variant="text"
-                                    onClick={() => {
-                                        dispatch(setShowChatModal(true));
-                                        dispatch(setUserClicked(user));
-                                        popupState.close();
-                                    }}
+                                    onClick={() =>
+                                        handleClickConversation(user)
+                                    }
                                 >
                                     <Image
                                         src={user.image_url}

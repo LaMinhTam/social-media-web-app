@@ -1,11 +1,11 @@
 import { toast } from "react-toastify";
-import { SOCIAL_MEDIA_API } from "./constants";
+import { SOCIAL_MEDIA_API } from "../apis/constants";
 
 export async function handleSendFriendRequest(userId: number) {
     try {
         const response = await SOCIAL_MEDIA_API.USER.sendFriendRequest(userId);
         if (response?.status === 200) {
-            toast.success(response.data);
+            toast.success("Đã gửi lời mời kết bạn!");
         }
     } catch (error) {
         console.error(error);
@@ -23,7 +23,14 @@ export async function handleAcceptFriendRequest(
             friendRequestId
         );
         if (response?.status === 200) {
-            toast.success(response.data);
+            const conversationId =
+                await SOCIAL_MEDIA_API.CONVERSATION.createConversation(
+                    "PRIVATE",
+                    [targetId]
+                );
+            if (conversationId) {
+                toast.success("Hai bạn đã trở thành bạn bè!");
+            }
         }
     } catch (error) {
         console.error(error);
@@ -41,7 +48,7 @@ export async function handleRevokeFriendRequest(
             friendRequestId
         );
         if (response?.status === 200) {
-            toast.success(response.data);
+            toast.success("Đã hủy lời mời kết bạn!");
         }
     } catch (error) {
         console.error(error);

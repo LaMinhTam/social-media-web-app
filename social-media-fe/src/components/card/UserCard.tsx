@@ -10,10 +10,14 @@ import { FriendRequestData } from "@/types/userType";
 import {
     handleAcceptFriendRequest,
     handleRevokeFriendRequest,
-} from "@/apis/friend.service";
+} from "@/services/friend.service";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
-import { setTriggerReFetchingRelationship } from "@/store/actions/commonSlice";
+import {
+    setShowChatModal,
+    setTriggerReFetchingRelationship,
+} from "@/store/actions/commonSlice";
+import { setUserClicked } from "@/store/actions/userSlice";
 
 export default function UserCard({
     user,
@@ -58,6 +62,7 @@ export default function UserCard({
         setBtnTopLoading(true);
         switch (type) {
             case "friend":
+                console.log("friend");
                 setBtnTopLoading(false);
                 return;
             case "receive":
@@ -84,6 +89,8 @@ export default function UserCard({
         setBtnBottomLoading(false);
         switch (type) {
             case "friend":
+                dispatch(setShowChatModal(true));
+                dispatch(setUserClicked(user));
                 setBtnBottomLoading(false);
                 return;
             case "receive":

@@ -16,9 +16,18 @@ const user = {
     recallFriendRequest: `/friends/revoke`,
 };
 
+const conversation = {
+    create: "/conversations/create",
+    list: "/conversations/list",
+    detail: (id: string) => `/conversations/detail/${id}`,
+    disband: (id: string) => `/conversations/disband/${id}`,
+    getUserStatus: (id: string) => `/user-status/online?user_ids=${id}`,
+};
+
 const apiRoutes = {
     auth,
     user,
+    conversation,
 };
 
 export default apiRoutes;

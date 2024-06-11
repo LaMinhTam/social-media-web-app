@@ -1,4 +1,4 @@
-import { SOCIAL_MEDIA_API } from "./constants";
+import { SOCIAL_MEDIA_API } from "../apis/constants";
 
 export async function findUserById(id: string) {
     try {

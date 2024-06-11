@@ -31,7 +31,7 @@ const RequiredAuthLayout = ({ children }: { children: React.ReactNode }) => {
             } else {
                 saveAccessToken("");
                 saveRefreshToken("");
-                push("/dang-nhap");
+                push("/signin");
             }
         }
         handleExpiredToken();

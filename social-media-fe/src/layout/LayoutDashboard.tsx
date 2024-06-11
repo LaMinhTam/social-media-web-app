@@ -1,6 +1,6 @@
 "use client";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
-import { fetchingMe } from "@/apis/profile.service";
+import { fetchingMe } from "@/services/profile.service";
 import ChatModal from "@/components/modal/ChatModal";
 import DashboardTopBar from "@/modules/dashboard/DashboardTopBar";
 import { setCurrentUserProfile } from "@/store/actions/profileSlice";
@@ -47,7 +47,7 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
         <div className="relative w-full h-full min-h-screen bg-strock">
             <DashboardTopBar></DashboardTopBar>
             {showChatModal && (
-                <div className="absolute bottom-0 rounded-lg shadow-md right-14 bg-lite">
+                <div className="fixed bottom-0 rounded-lg shadow-md right-14 bg-lite">
                     <ChatModal></ChatModal>
                 </div>
             )}

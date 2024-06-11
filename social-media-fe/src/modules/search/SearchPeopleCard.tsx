@@ -2,9 +2,13 @@ import {
     handleAcceptFriendRequest,
     handleRevokeFriendRequest,
     handleSendFriendRequest,
-} from "@/apis/friend.service";
+} from "@/services/friend.service";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
-import { setTriggerReFetchingRelationship } from "@/store/actions/commonSlice";
+import {
+    setShowChatModal,
+    setTriggerReFetchingRelationship,
+} from "@/store/actions/commonSlice";
+import { setUserClicked } from "@/store/actions/userSlice";
 import { RootState } from "@/store/configureStore";
 import { UserResponse } from "@/types/userType";
 import { Button, Typography } from "@mui/material";
@@ -55,7 +59,8 @@ const SearchPeopleCard = ({ user }: { user: UserResponse }) => {
     const handleClicked = async () => {
         setLoading(true);
         if (isFriend) {
-            // handle chat
+            dispatch(setShowChatModal(true));
+            dispatch(setUserClicked(user));
             setLoading(false);
         } else if (isBlocked) {
             // handle unblock

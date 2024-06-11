@@ -171,6 +171,7 @@ services:
                     memory: 512M
                 reservations:
                     memory: 256M
+
     kurento:
         image: kurento/kurento-media-server:latest
         container_name: kurento-con
@@ -178,7 +179,8 @@ services:
         ports:
             - "8888:8888"
             - "5000:5000"
-        network_mode: host
+        networks:
+            - backend
         deploy:
             resources:
                 limits:
@@ -327,27 +329,29 @@ services:
         ports:
             - "8086:8086"
         environment:
-            - CONFIG_SERVER_URL=http://localhost:8889
-            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+            - CONFIG_SERVER_URL=http://config-server:8889
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
             - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
             - SPRING_DATA_MONGODB_PORT=27017
             - SPRING_DATA_MONGODB_HOST=db-mongodb-con
-            - SPRING_DATA_MONGODB_DATABASE=course_db
+            - SPRING_DATA_MONGODB_DATABASE=chat_db
             - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
-            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@localhost:27017/admin
+            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
         depends_on:
             service-registry:
                 condition: service_healthy
-        network_mode: host
-
-    nextjs14-social-media-fe:
-        image: dinhthong17/nextjs14-social-media-fe:latest
-        container_name: nextjs14-social-media-fe-con
-        restart: always
-        ports:
-            - "3000:3000"
         networks:
-            - frontend
+            - backend
+            - db-mongodb-net
+
+    # nextjs14-social-media-fe:
+    #     image: dinhthong17/nextjs14-social-media-fe:latest
+    #     container_name: nextjs14-social-media-fe-con
+    #     restart: always
+    #     ports:
+    #         - "3000:3000"
+    #     networks:
+    #         - frontend
 
 volumes:
     mysql-data:

@@ -33,6 +33,6 @@ export default async function handleRefreshToken(
         saveAccessToken("");
         saveRefreshToken("");
         toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
-        push("/dang-nhap");
+        push("/signin");
     }
 }
