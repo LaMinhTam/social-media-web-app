@@ -12,9 +12,9 @@ public interface MessageService {
 
     List<MessageDTO> getMessagesByConversationId(String conversationId, int page, int size);
 
-    MessageDTO revokeMessage(String messageId) throws Exception;
+    MessageDTO revokeMessage(String messageId) ;
 
-    List<MessageDTO> shareMessage(Long senderId, String messageId, List<String> conversationIds) throws Exception;
+    List<MessageDTO> shareMessage(Long senderId, String messageId, List<String> conversationIds);
 
-    MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction) throws Exception;
+    MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction);
 }

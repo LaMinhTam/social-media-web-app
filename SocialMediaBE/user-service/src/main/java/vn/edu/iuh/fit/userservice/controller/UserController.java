@@ -1,6 +1,5 @@
 package vn.edu.iuh.fit.userservice.controller;
 
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,20 +26,12 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader("sub") Long userId) {
-        try {
-            return ResponseEntity.ok(userService.getUserById(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserById(@PathVariable Long userId) {
-        try {
-            return ResponseEntity.ok(userService.getUserById(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     @GetMapping("/search")

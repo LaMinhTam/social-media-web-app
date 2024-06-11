@@ -17,6 +17,7 @@ import vn.edu.iuh.fit.chatservice.service.MessageService;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class WebSocketController {
@@ -42,7 +43,7 @@ public class WebSocketController {
             );
         } catch (Exception e) {
             MessageErrorDTO error = new MessageErrorDTO(
-                    null,
+                    Optional.of(message.conversationId()).orElse(null),
                     message.content(),
                     e.getMessage(),
                     new Date());

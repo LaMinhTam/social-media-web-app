@@ -50,15 +50,11 @@ public class ConversationController {
 
     @GetMapping("/detail/{conversationId}")
     public ResponseEntity<?> getConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
-        try {
-            Conversation conversation = conversationService.getConversation(id, conversationId);
-            List<Long> memberIds = conversation.getMembers().stream().distinct().toList();
-            Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
-            ConversationDTO conversationDTO = createConversationDTO(conversation, userModels, id);
-            return ResponseEntity.ok(conversationDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Conversation conversation = conversationService.getConversation(id, conversationId);
+        List<Long> memberIds = conversation.getMembers().stream().distinct().toList();
+        Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
+        ConversationDTO conversationDTO = createConversationDTO(conversation, userModels, id);
+        return ResponseEntity.ok(conversationDTO);
     }
 
     @GetMapping("/list")
@@ -106,13 +102,8 @@ public class ConversationController {
 
     @PatchMapping("/disband/{conversationId}")
     public ResponseEntity<?> disbandConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
-        try {
-            conversationService.disbandConversation(id, conversationId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-
+        conversationService.disbandConversation(id, conversationId);
+        return ResponseEntity.ok().build();
     }
 
 //    @PatchMapping("/{conversationId}/update")

@@ -1,11 +1,13 @@
 package vn.edu.iuh.fit.chatservice.service.impl;
 
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
+import vn.edu.iuh.fit.chatservice.exception.AppException;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 
@@ -64,8 +66,8 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public Conversation getConversation(Long userId, String conversationId) throws Exception {
-        return conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new Exception("Conversation not found or you are not a member of this conversation"));
+    public Conversation getConversation(Long userId, String conversationId) {
+        return conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
     }
 
     @Override
@@ -74,12 +76,12 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public void disbandConversation(Long userId, String conversationId) throws Exception {
-        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new Exception("Conversation not found or you are not a member of this conversation"));
+    public void disbandConversation(Long userId, String conversationId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         if (conversation.getType().equals(ConversationType.PRIVATE)) {
-            throw new Exception("You can not disband a private conversation");
+            throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "You can not disband a private conversation");
         } else if (!conversation.getOwnerId().equals(userId)) {
-            throw new Exception("You are not the owner of this conversation");
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not the owner of this conversation");
         } else {
             conversation.setStatus(ConversationStatus.DISBAND);
             conversationRepository.save(conversation);

@@ -40,40 +40,28 @@ public class MessageController {
 
     @PostMapping("/share")
     public ResponseEntity<?> shareMessage(@RequestHeader("sub") Long id, @RequestBody ShareMessageRequest request) {
-        try {
-            List<MessageDTO> message = messageService.shareMessage(id, request.messageId(), request.conversationIds());
-            for (MessageDTO sharedMessage : message) {
-                Conversation conversation = conversationService.getConversation(id, sharedMessage.conversationId());
-                conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "message", sharedMessage));
-            }
-            return ResponseEntity.ok(message);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        List<MessageDTO> message = messageService.shareMessage(id, request.messageId(), request.conversationIds());
+        for (MessageDTO sharedMessage : message) {
+            Conversation conversation = conversationService.getConversation(id, sharedMessage.conversationId());
+            conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "message", sharedMessage));
         }
+        return ResponseEntity.ok(message);
     }
 
     @PatchMapping("/revoke/{messageId}")
-    public ResponseEntity<?> revokeMessage(@RequestHeader("sub") Long id ,@PathVariable String messageId) {
-        try {
-            MessageDTO message = messageService.revokeMessage(messageId);
-            Conversation conversation = conversationService.getConversation(id, message.conversationId());
-            conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "revoke", message));
-            return ResponseEntity.ok(message);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> revokeMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+        MessageDTO message = messageService.revokeMessage(messageId);
+        Conversation conversation = conversationService.getConversation(id, message.conversationId());
+        conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "revoke", message));
+        return ResponseEntity.ok(message);
     }
 
     @PostMapping("/react")
     public ResponseEntity<?> reactMessage(@RequestHeader("sub") Long id, @RequestBody ReactRequest request) {
-        try {
-            MessageDTO message = messageService.reactMessage(id, request.messageId(), request.reaction());
-            Conversation conversation = conversationService.getConversation(id, message.conversationId());
-            conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "react", message));
-            return ResponseEntity.ok(message);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        MessageDTO message = messageService.reactMessage(id, request.messageId(), request.reaction());
+        Conversation conversation = conversationService.getConversation(id, message.conversationId());
+        conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "react", message));
+        return ResponseEntity.ok(message);
     }
 
     public void sendMessageToUser(String userId, String destination, Object error) {

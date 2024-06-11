@@ -1,9 +1,11 @@
-package vn.edu.iuh.fit.userservice.service;
+package vn.edu.iuh.fit.userservice.service.impl;
 
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.userservice.entity.User;
+import vn.edu.iuh.fit.userservice.exception.AppException;
 import vn.edu.iuh.fit.userservice.model.UserModel;
 import vn.edu.iuh.fit.userservice.repository.UserRepository;
+import vn.edu.iuh.fit.userservice.service.UserService;
 
 import java.util.List;
 
@@ -21,8 +23,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserModel getUserById(Long userId) throws Exception {
-        User user = userRepository.findByUserId(userId).orElseThrow(() -> new Exception("User not found"));
+    public UserModel getUserById(Long userId) {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new AppException(404, "User not found"));
         return new UserModel(user.getUserId(), user.getName(), user.getEmail(), user.getImageUrl());
     }
 

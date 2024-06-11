@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.userservice.dto.FriendRequest;
 import vn.edu.iuh.fit.userservice.dto.FriendRequestCreate;
+import vn.edu.iuh.fit.userservice.dto.UserDTO;
+import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
 import vn.edu.iuh.fit.userservice.service.FriendService;
 
 @RestController
@@ -16,71 +18,37 @@ public class FriendController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getFriends(@RequestHeader("sub") Long userId, @RequestParam("type") int type) throws Exception {
-        try{
-            return ResponseEntity.ok(friendService.getFriendByType(userId, type));
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<UserDTO> getFriends(@RequestHeader("sub") Long userId, @RequestParam("type") int type) throws Exception {
+        return ResponseEntity.ok(friendService.getFriendByType(userId, type));
     }
 
     @PostMapping("/send")
-    public ResponseEntity<String> sendFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequestCreate friendRequest) {
-        try {
-            friendService.sendFriendRequest(senderId, friendRequest.targetId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok("Friend request send successfully!");
+    public ResponseEntity<FriendRelationship> sendFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequestCreate friendRequest) {
+        return ResponseEntity.ok(friendService.sendFriendRequest(senderId, friendRequest.targetId()));
     }
 
     @DeleteMapping("/revoke")
-    public ResponseEntity<String> revokeFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequest friendRequest) {
-        try {
-            friendService.revokeFriendRequest(senderId, friendRequest.targetId(), friendRequest.friendRequestId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok("Friend request revoked successfully!");
+    public ResponseEntity<FriendRelationship> revokeFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequest friendRequest) {
+        return ResponseEntity.ok(friendService.revokeFriendRequest(senderId, friendRequest.targetId(), friendRequest.friendRequestId()));
     }
 
     @PostMapping("/accept")
-    public ResponseEntity<String> acceptFriendRequest(@RequestHeader("sub") Long receiverId, @RequestBody FriendRequest friendRequest) {
-        try {
-            friendService.acceptFriendRequest(receiverId, friendRequest.targetId(), friendRequest.friendRequestId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok("Friend request accepted successfully!");
+    public ResponseEntity<FriendRelationship> acceptFriendRequest(@RequestHeader("sub") Long receiverId, @RequestBody FriendRequest friendRequest) {
+        return ResponseEntity.ok(friendService.acceptFriendRequest(receiverId, friendRequest.targetId(), friendRequest.friendRequestId()));
     }
 
     @PostMapping("/block")
-    public ResponseEntity<String> blockFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequestCreate friendRequest) {
-        try {
-            friendService.blockFriendRequest(senderId, friendRequest.targetId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok("Friend request blocked successfully!");
+    public ResponseEntity<FriendRelationship> blockFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequestCreate friendRequest) {
+        return ResponseEntity.ok(friendService.blockFriendRequest(senderId, friendRequest.targetId()));
     }
 
     @DeleteMapping("/unblock")
-    public ResponseEntity<String> unblockFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequest friendRequest) {
-        try {
-            friendService.unblockFriendRequest(senderId, friendRequest.targetId(), friendRequest.friendRequestId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok("Friend request unblocked successfully!");
+    public ResponseEntity<FriendRelationship> unblockFriendRequest(@RequestHeader("sub") Long senderId, @RequestBody FriendRequest friendRequest) {
+        return ResponseEntity.ok(friendService.unblockFriendRequest(senderId, friendRequest.targetId(), friendRequest.friendRequestId()));
     }
 
     @DeleteMapping("/remove")
-    public ResponseEntity<String> removeFriend(@RequestHeader("sub") Long senderId, @RequestBody FriendRequest friendRequest) {
-        try {
-            friendService.removeFriend(senderId, friendRequest.targetId(), friendRequest.friendRequestId());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        return ResponseEntity.ok("Friend removed successfully!");
+    public ResponseEntity<FriendRelationship> removeFriend(@RequestHeader("sub") Long senderId, @RequestBody FriendRequest friendRequest) {
+        return ResponseEntity.ok(friendService.removeFriend(senderId, friendRequest.targetId(), friendRequest.friendRequestId()));
     }
 }

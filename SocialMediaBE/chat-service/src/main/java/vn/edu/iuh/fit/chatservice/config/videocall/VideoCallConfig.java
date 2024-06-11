@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.chatservice.config.videocall;
 
 
 import org.kurento.client.KurentoClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -17,6 +18,9 @@ import vn.edu.iuh.fit.chatservice.config.videocall.one2One.One2OneUserRegistry;
 @Configuration
 @EnableWebSocket
 public class VideoCallConfig implements WebSocketConfigurer {
+    @Value("${kurento.ws.url}")
+    private String kurentoWsUrl;
+
     @Bean
     public GroupCallUserRegistry groupCallRegistry() {
         return new GroupCallUserRegistry();
@@ -44,7 +48,7 @@ public class VideoCallConfig implements WebSocketConfigurer {
 
     @Bean
     public KurentoClient kurentoClient() {
-        return KurentoClient.create();
+        return KurentoClient.create(kurentoWsUrl);
     }
 
     @Bean

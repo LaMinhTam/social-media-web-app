@@ -18,7 +18,7 @@ public class UserSessionServiceImpl implements UserSessionService {
         this.redisTemplate = redisTemplate;
     }
 
-    //    opsForValue Map<Key, Object>
+//    opsForValue Map<Key, Object>
 //    Map<Key, Object> map for store session user status, with key is session id, and user status have 2 field (online/offline) and timestamp
 //    opsForSet Map<Key, Set<String>>
 //    Map<Key, Set<String>> map for store user session, with key is user id, and value is list of session id
@@ -38,18 +38,6 @@ public class UserSessionServiceImpl implements UserSessionService {
 
         redisTemplate.opsForValue().set(sessionId, userStatus);
         redisTemplate.opsForSet().add(userId, sessionId);
-//        UserStatus existStatus = (UserStatus) redisTemplate.opsForValue().get(existSessionId);
-//        if (existStatus != null && existStatus.online().equals(OnlineStatus.OFFLINE)) {
-//            //remove the offline and add new online
-//            redisTemplate.delete(existStatus.userId());
-//            redisTemplate.delete(existSessionId);
-//
-//            redisTemplate.opsForValue().set(sessionId, userStatus);
-//            redisTemplate.opsForSet().add(userId, sessionId);
-//        } else {
-//            redisTemplate.opsForValue().set(sessionId, userStatus);
-//            redisTemplate.opsForSet().add(userId, sessionId);
-//        }
     }
 
     @Override

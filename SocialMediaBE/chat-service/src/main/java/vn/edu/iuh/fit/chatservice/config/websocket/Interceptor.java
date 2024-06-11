@@ -38,9 +38,14 @@ public class Interceptor implements ChannelInterceptor {
                     headerAccessor.addNativeHeader("sub", userId);
                     userSessionService.addUserSession(userId, headerAccessor.getSessionId());
                 }
-//                if (StompCommand.SEND.equals(headerAccessor.getCommand())) {
+                if (StompCommand.SEND.equals(headerAccessor.getCommand())) {
+                    String token = headerAccessor.getNativeHeader("Authorization").get(0);
+                    Claims claims = jwtUtil.getAllClaimsFromToken(token);
+                    String userId = claims.getSubject();
+                    headerAccessor.addNativeHeader("sub", userId);
+
 //            return MessageBuilder.createMessage(msg.getPayload(), headerAccessor.getMessageHeaders());
-//                }
+                }
                 if (StompCommand.DISCONNECT.equals(headerAccessor.getCommand())) {
                     userSessionService.removeUserSession(headerAccessor.getSessionId());
                 }
