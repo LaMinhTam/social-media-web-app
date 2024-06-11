@@ -333,6 +333,7 @@ services:
             - SPRING_DATA_MONGODB_DATABASE=chat_db
             - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
             - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
+            - KURENTO_WS_URL=ws://kurento-con:8888/kurento
         depends_on:
             service-registry:
                 condition: service_healthy

@@ -10,6 +10,7 @@ public class ConversationSettings {
     private boolean isConfirmNewMember;
     private boolean isRestrictedMessaging;
     private boolean isAllowDeputySendMessages;
+    private boolean isJoinByLink;
     private String linkToJoinGroup;
     private boolean isAllowMemberToChangeGroupInfo;
     private boolean isAllowDeputyToInviteMember;

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
 import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
 import vn.edu.iuh.fit.chatservice.dto.CreateConversationRequest;
+import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
@@ -106,8 +107,32 @@ public class ConversationController {
         return ResponseEntity.ok().build();
     }
 
-//    @PatchMapping("/{conversationId}/update")
-//    public ResponseEntity<String> updateConversation(@PathVariable String conversationId, @RequestHeader("sub") Long id, @RequestBody CreateConversationRequest request) {
-//        return ResponseEntity.ok();
-//    }
+    @PatchMapping("/{conversationId}/kick")
+    public ResponseEntity<?> kickMember(@RequestHeader("sub") Long adminId,
+                                        @PathVariable String conversationId,
+                                        @RequestParam Long memberId) {
+        return ResponseEntity.ok(conversationService.kickMember(adminId, conversationId, memberId));
+    }
+
+    @PatchMapping("/{conversationId}/grant-deputy")
+    public ResponseEntity<?> grantDeputy(@RequestHeader("sub") Long adminId,
+                                         @PathVariable String conversationId,
+                                         @RequestParam Long memberId) {
+        return ResponseEntity.ok(conversationService.grantDeputy(adminId, conversationId, memberId));
+    }
+
+    @PatchMapping("/{conversationId}/revoke-deputy")
+    public ResponseEntity<?> revokeDeputy(@RequestHeader("sub") Long adminId,
+                                          @PathVariable String conversationId,
+                                          @RequestParam Long memberId) {
+        return ResponseEntity.ok(conversationService.revokeDeputy(adminId, conversationId, memberId));
+    }
+
+    @PatchMapping("/{conversationId}/update-settings")
+    public ResponseEntity<?> updateConversationSettings(@RequestHeader("sub") Long adminId,
+                                                        @PathVariable String conversationId,
+                                                        @RequestBody ConversationSettingsRequest settings) {
+        return ResponseEntity.ok(conversationService.updateConversationSettings(adminId, conversationId, settings));
+    }
+
 }
