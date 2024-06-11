@@ -178,8 +178,7 @@ services:
         ports:
             - "8888:8888"
             - "5000:5000"
-        networks:
-            - backend
+        network_mode: host
         deploy:
             resources:
                 limits:
@@ -219,7 +218,7 @@ services:
         image: laminhtam/social-media-config-server:latest
         container_name: config-server-con
         ports:
-            - "8888:8888"
+            - "8889:8889"
         environment:
             - SPRING_PROFILES_ACTIVE=native
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
@@ -240,7 +239,7 @@ services:
         ports:
             - "8060:8060"
         environment:
-            - CONFIG_SERVER_URL=http://config-server:8888
+            - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
             - SPRING_DATA_REDIS_DATABASE=0
             - SPRING_DATA_REDIS_HOST=redis
@@ -269,7 +268,7 @@ services:
         ports:
             - "9004:9004"
         environment:
-            - CONFIG_SERVER_URL=http://config-server:8888
+            - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
             - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true
             - SPRING_DATASOURCE_USERNAME=root
@@ -305,7 +304,7 @@ services:
         ports:
             - "8082:8082"
         environment:
-            - CONFIG_SERVER_URL=http://config-server:8888
+            - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
             - SPRING_NEO4J_URI=bolt://neo4j:7687
             - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
@@ -324,20 +323,18 @@ services:
         ports:
             - "8086:8086"
         environment:
-            - CONFIG_SERVER_URL=http://config-server:8888
-            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+            - CONFIG_SERVER_URL=http://localhost:8889
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
             - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
             - SPRING_DATA_MONGODB_PORT=27017
             - SPRING_DATA_MONGODB_HOST=db-mongodb-con
             - SPRING_DATA_MONGODB_DATABASE=course_db
             - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
-            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
+            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@localhost:27017/admin
         depends_on:
             service-registry:
                 condition: service_healthy
-        networks:
-            - backend
-            - db-mongodb-net
+        network_mode: host
     
     nextjs14-social-media-fe: 
         image: dinhthong17/nextjs14-social-media-fe:latest
