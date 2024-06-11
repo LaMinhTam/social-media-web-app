@@ -17,7 +17,7 @@ spring:
       host: localhost
       database: chat_db
       authentication-database: admin
-      uri: mongodb://root:123456@localhost:27017/admin
+      uri: mongodb://root:123456@localhost:27017/test?authSource=admin&authMechanism=SCRAM-SHA-1
     redis:
       database: 0
       host: localhost
