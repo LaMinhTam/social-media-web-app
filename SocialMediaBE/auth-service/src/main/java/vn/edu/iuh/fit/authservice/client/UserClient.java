@@ -17,14 +17,7 @@ public class UserClient {
         this.webClient = userWebClient;
     }
 
-    public void createUser(User user, OAuth2UserInfo oAuth2UserInfo) {
-        RequestCreateUser requestCreateUser = new RequestCreateUser(
-                user.getId(),
-                oAuth2UserInfo.getName(),
-                oAuth2UserInfo.getEmail(),
-                oAuth2UserInfo.getImageUrl()
-        );
-
+    public void createUser(RequestCreateUser requestCreateUser) {
         webClient.post()
                 .uri("/user/create-user")
                 .bodyValue(requestCreateUser)

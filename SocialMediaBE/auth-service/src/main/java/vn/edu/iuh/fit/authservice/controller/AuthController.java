@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import vn.edu.iuh.fit.authservice.client.UserClient;
 import vn.edu.iuh.fit.authservice.exception.BadRequestException;
 import vn.edu.iuh.fit.authservice.model.AuthProvider;
 import vn.edu.iuh.fit.authservice.model.User;
@@ -28,17 +29,16 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private TokenProvider tokenProvider;
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private UserClient userClient;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -76,13 +76,14 @@ public class AuthController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/user/me")
                 .buildAndExpand(result.getId()).toUri();
+        userClient.createUser(new RequestCreateUser(result.getId(), signUpRequest.getName(), signUpRequest.getEmail(), "https://source.unsplash.com/random"));
 
         return ResponseEntity.created(location)
                 .body(new ApiResponse(true, "User registered successfully"));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader("email") String email , @Valid @RequestBody TokenRefreshRequest tokenRefreshRequest) {
+    public ResponseEntity<?> refreshToken(@RequestHeader("email") String email, @Valid @RequestBody TokenRefreshRequest tokenRefreshRequest) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         String accessToken = tokenProvider.accessToken((UserPrincipal) userDetails);
         String refreshToken = tokenProvider.refreshToken((UserPrincipal) userDetails);

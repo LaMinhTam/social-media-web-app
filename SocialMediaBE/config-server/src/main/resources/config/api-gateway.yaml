@@ -14,6 +14,9 @@ management:
 spring:
   cloud:
     gateway:
+      httpclient:
+        ssl:
+          use-insecure-trust-manager: true
       routes:
         - id: auth-service
           uri: lb://auth-service
@@ -23,8 +26,8 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-              - Path=/friends/**
-              - Path=/user/**
+            - Path=/friends/**
+            - Path=/user/**
       globalcors:
         corsConfigurations:
           '[/**]':

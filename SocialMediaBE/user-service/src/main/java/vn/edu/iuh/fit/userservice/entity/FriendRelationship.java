@@ -16,6 +16,8 @@ public class FriendRelationship {
 
     @Property("targetUser")
     private Long targetUser;
+    @Property("sourceUser")
+    private Long sourceUser;
 
     @Override
     public boolean equals(Object o) {
@@ -33,11 +35,12 @@ public class FriendRelationship {
     public FriendRelationship() {
     }
 
-    public FriendRelationship(Long id, Date createdAt, Date updatedAt, Long targetUser) {
+    public FriendRelationship(Long id, Date createdAt, Date updatedAt, Long targetUser, Long sourceUser) {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.targetUser = targetUser;
+        this.sourceUser = sourceUser;
     }
 
     public Long getId() {
@@ -70,5 +73,13 @@ public class FriendRelationship {
 
     public void setTargetUser(Long targetUser) {
         this.targetUser = targetUser;
+    }
+
+    public Long getSourceUser() {
+        return sourceUser;
+    }
+
+    public void setSourceUser(Long sourceUser) {
+        this.sourceUser = sourceUser;
     }
 }

@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface CustomUserRepository {
     List<User> findByKeyword(String keyword);
+
+    List<User> findByUserIdIn(List<Long> ids);
 }

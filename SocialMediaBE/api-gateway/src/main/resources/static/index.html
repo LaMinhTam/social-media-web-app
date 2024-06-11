@@ -1,55 +1,182 @@
+<!--<html>-->
+<!--<head>-->
+<!--    <meta charset="utf-8">-->
+<!--    <link rel="styleSheet" href="style.css" type="text/css" media="screen">-->
+
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/6.1.4/adapter.js"></script>-->
+<!--    <script src="./js/conferenceroom.js"></script>-->
+<!--    <script src="./js/participant.js"></script>-->
+<!--    <script src="./js/kurento-utils.js"></script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div id="container">-->
+<!--    <div id="wrapper">-->
+<!--        <div id="join" class="animate join">-->
+<!--            <h1>Join a Room</h1>-->
+<!--            <form onsubmit="register(); return false;" accept-charset="UTF-8">-->
+<!--                <p>-->
+<!--                    <input type="text" name="name" value="" id="name"-->
+<!--                           placeholder="Username" required>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    <input type="text" name="room" value="" id="roomName"-->
+<!--                           placeholder="Room" required>-->
+<!--                </p>-->
+<!--                <p class="submit">-->
+<!--                    <input type="submit" name="commit" value="Join!">-->
+<!--                </p>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--        <div id="room" style="display: none;">-->
+<!--            <h2 id="room-header"></h2>-->
+<!--            <div id="participants"></div>-->
+<!--            <input type="button" id="button-leave" onmouseup="leaveRoom();"-->
+<!--                   value="Leave room">-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->
+
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hello WebSocket</title>
-    <link href="/bootstrap.min.css" rel="stylesheet">
-    <link href="/main.css" rel="stylesheet">
-    <script src="/jquery-1.10.2.min.js"></script>
-    <script src="/app.js"></script>
-    <script src="/stomp.js"></script>
-    
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="img/kurento.png" type="image/png" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.2.0/ekko-lightbox.min.css" />
+    <link rel="stylesheet" href="css/kurento.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.2.0/ekko-lightbox.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/draggabilly/2.1.0/draggabilly.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/7.4.0/adapter.js"></script>
+
+    <script src="js/kurento-utils.js"></script>
+    <script src="js2/index.js"></script>
+    <title>Kurento Tutorial 4: Video Call 1 to 1 with WebRTC</title>
 </head>
 <body>
-<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
-    enabled. Please enable
-    Javascript and reload this page!</h2></noscript>
-<div id="main-content" class="container">
-    <div class="row">
-        <div class="col-md-6">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="connect">WebSocket connection:</label>
-                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                    </button>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="name">What is your name?</label>
-                    <input type="text" id="name" class="form-control" placeholder="Your name here...">
-                </div>
-                <button id="send" class="btn btn-default" type="button">Send</button>
-            </form>
+<header>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse"
+                        data-target=".navbar-collapse"></button>
+                <a class="navbar-brand" href=".">Kurento Tutorial</a>
+            </div>
+            <div class="collapse navbar-collapse"
+                 id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a
+                            href="https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2one-call"><span
+                            class="glyphicon glyphicon-file"></span> Source Code</a></li>
+                </ul>
+            </div>
         </div>
     </div>
+</header>
+<div class="container">
+    <div class="page-header">
+        <h1>Tutorial 4: Video Call 1 to 1 with WebRTC</h1>
+        <p>
+            This web application consists on an one to one video call using <a
+                href="http://www.webrtc.org/">WebRTC</a>. In other words, this
+            application is similar to a phone but also with video. The <a
+                href="img/pipeline.png" data-toggle="lightbox"
+                data-title="Video Call 1 to 1 Media Pipeline"
+                data-footer="Two interconnected WebRtcEnpoints Media Elements">Media
+            Pipeline</a> is composed by two interconnected <i>WebRtcEndpoints</i>.
+            To run this demo follow these steps:
+        </p>
+        <ol>
+            <li>Open this page with a browser compliant with WebRTC
+                (Chrome, Firefox).</li>
+            <li>Type a nick in the field <i>Name</i> and click on <i>Register</i>.
+            </li>
+            <li>In a different machine (or a different tab in the same
+                browser) follow the same procedure to register another user.</li>
+            <li>Type the name of the user to be called in the field <i>Peer</i>
+                and click <i>Call</i>.
+            </li>
+            <li>Grant the access to the camera and microphone for both
+                users. After the SDP negotiation the communication should start.</li>
+            <li>The called user should accept the incoming call (by a
+                confirmation dialog).</li>
+            <li>Click on <i>Stop</i> to finish the communication.
+            </li>
+        </ol>
+    </div>
     <div class="row">
-        <div class="col-md-12">
-            <table id="conversation" class="table table-striped">
-                <thead>
-                <tr>
-                    <th>test</th>
-                </tr>
-                </thead>
-                <tbody id="greetings">
-                </tbody>
-            </table>
+        <div class="col-md-5">
+            <label class="control-label" for="name">Name</label>
+            <div class="row">
+                <div class="col-md-6">
+                    <input id="name" name="name" class="form-control" type="text"
+                           onkeydown="if (event.keyCode == 13) register();" />
+                </div>
+                <div class="col-md-6 text-right">
+                    <a id="register" href="#" class="btn btn-primary"><span
+                            class="glyphicon glyphicon-plus"></span> Register</a>
+                </div>
+            </div>
+
+            <br /> <br /> <label class="control-label" for="peer">Peer</label>
+            <div class="row">
+                <div class="col-md-6">
+                    <input id="peer" name="peer" class="form-control" type="text"
+                           onkeydown="if (event.keyCode == 13) call();">
+                </div>
+                <div class="col-md-6 text-right">
+                    <a id="call" href="#" class="btn btn-success"><span
+                            class="glyphicon glyphicon-play"></span> Call</a> <a id="terminate"
+                                                                                 href="#" class="btn btn-danger"><span
+                        class="glyphicon glyphicon-stop"></span> Stop</a>
+                </div>
+            </div>
+            <br />
+        </div>
+        <div class="col-md-7">
+            <div id="videoBig">
+                <video id="videoOutput" autoplay width="640px" height="480px"
+                       poster="img/webrtc.png"></video>
+            </div>
+            <div id="videoSmall">
+                <video id="videoInput" autoplay width="240px" height="180px"
+                       poster="img/webrtc.png"></video>
+            </div>
         </div>
     </div>
- 
 </div>
-<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
+
+<footer>
+    <div class="foot-fixed-bottom">
+        <div class="container text-center">
+            <hr />
+            <div class="row">&copy; 2014-2015 Kurento</div>
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="http://www.urjc.es"><img src="img/urjc.gif"
+                                                      alt="Universidad Rey Juan Carlos" height="50px" /></a>
+                </div>
+                <div class="col-md-4">
+                    <a href="https://kurento.openvidu.io/"><img src="img/kurento.png"
+                                                                alt="Kurento" height="50px" /></a>
+                </div>
+                <div class="col-md-4">
+                    <a href="http://www.naevatec.com"><img src="img/naevatec.png"
+                                                           alt="Naevatec" height="50px" /></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

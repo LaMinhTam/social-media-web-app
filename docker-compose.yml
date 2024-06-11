@@ -107,6 +107,7 @@ services:
             - NEO4J_dbms_memory_pagecache_size=1G
             - NEO4J_dbms_memory_heap_max__size=512M
         volumes:
+            - neo4j-data:/data
             - ./neo4j/data:/data
             - ./neo4j/conf:/conf
             - ./neo4j/logs:/logs
@@ -170,6 +171,22 @@ services:
                     memory: 512M
                 reservations:
                     memory: 256M
+    kurento:
+        image: kurento/kurento-media-server:latest
+        container_name: kurento-con
+        restart: always
+        ports:
+            - "8888:8888"
+            - "5000:5000"
+        networks:
+            - backend
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.50"
+                    memory: 512M
+                reservations:
+                    memory: 256M
 
     service-registry:
         image: laminhtam/social-media-service-registry:latest
@@ -178,6 +195,12 @@ services:
             - "8761:8761"
         networks:
             - backend
+        depends_on:
+            - mysql
+            - redis
+            - rabbitmq
+            - neo4j
+            - mongodb
         deploy:
             resources:
                 limits:
@@ -185,6 +208,16 @@ services:
                     memory: 256M
                 reservations:
                     memory: 128M
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:8761/actuator/health || exit 1",
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 40s
 
     config-server:
         image: laminhtam/social-media-config-server:latest
@@ -223,9 +256,8 @@ services:
             - backend
             - db-redis-net
         depends_on:
-            - service-registry
-            - config-server
-            - redis
+            service-registry:
+                condition: service_healthy
         deploy:
             resources:
                 limits:
@@ -256,11 +288,8 @@ services:
             - SPRING_DATA_REDIS_TIMEOUT=60000
             - SPRING_DATA_REDIS_PASSWORD=123456
         depends_on:
-            - service-registry
-            - config-server
-            - gateway
-            - mysql
-            - redis
+            service-registry:
+                condition: service_healthy
         networks:
             - backend
             - db-mysql-net
@@ -286,10 +315,8 @@ services:
             - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
             - SPRING_NEO4J_AUTHENTICATION_PASSWORD=12345678
         depends_on:
-            - service-registry
-            - config-server
-            - gateway
-            - neo4j
+            service-registry:
+                condition: service_healthy
         networks:
             - backend
             - db-neo4j-net

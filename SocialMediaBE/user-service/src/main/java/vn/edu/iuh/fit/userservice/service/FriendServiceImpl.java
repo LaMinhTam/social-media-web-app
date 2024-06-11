@@ -14,6 +14,7 @@ import vn.edu.iuh.fit.userservice.repository.UserRepository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,7 @@ public class FriendServiceImpl implements FriendService {
 
         FriendRelationship friendRequest = new FriendRelationship();
         friendRequest.setTargetUser(receiverId);
+        friendRequest.setSourceUser(senderId);
         friendRequest.setCreatedAt(new Date());
         friendRequest.setUpdatedAt(new Date());
 
@@ -75,7 +77,7 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public FriendRelationship acceptFriendRequest(Long senderId, Long receiverId, Long friendRequestId) throws Exception {
+    public FriendRelationship acceptFriendRequest(Long receiverId, Long senderId, Long friendRequestId) throws Exception {
         User sender = userRepository.findByUserId(senderId).orElseThrow(() -> new Exception("User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new Exception("User not found"));
 
@@ -119,6 +121,7 @@ public class FriendServiceImpl implements FriendService {
 
         FriendRelationship friendRequest = new FriendRelationship();
         friendRequest.setTargetUser(receiverId);
+        friendRequest.setSourceUser(senderId);
         friendRequest.setCreatedAt(new Date());
 
         sender.getBlocked().add(friendRequest);
@@ -150,12 +153,8 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public UserDTO getFriendByType(Long userId, int type) throws Exception {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new Exception("User not found"));
-        UserRelationship userRelationship = new UserRelationship(
-                user.getSentRequests().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
-                user.getReceivedRequests().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
-                user.getBlocked().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId)),
-                user.getFriends().stream().collect(Collectors.toMap(FriendRelationship::getTargetUser, FriendRelationship::getId))
-        );
+
+        UserRelationship userRelationship = new UserRelationship(user);
         UserDTO userDTO = new UserDTO(userId);
         if (type == FriendStatus.ALL.getValue()) {
             userDTO = new UserDTO(

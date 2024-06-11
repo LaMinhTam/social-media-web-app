@@ -11,4 +11,6 @@ public interface UserService {
     UserModel getUserById(Long userId) throws Exception;
 
     List<UserModel> searchUser(String keyword);
+
+    List<UserModel> getUsersByIds(List<Long> ids);
 }

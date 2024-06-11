@@ -10,7 +10,7 @@ public interface FriendService {
 
     FriendRelationship revokeFriendRequest(Long sender, Long receiverId, Long friendRequestId) throws Exception;
 
-    FriendRelationship acceptFriendRequest(Long senderId, Long receiverId, Long friendRequestId) throws Exception;
+    FriendRelationship acceptFriendRequest(Long receiverId, Long senderId, Long friendRequestId) throws Exception;
 
     FriendRelationship removeFriend(Long senderId, Long receiverId, Long friendRequestId) throws Exception;
 
