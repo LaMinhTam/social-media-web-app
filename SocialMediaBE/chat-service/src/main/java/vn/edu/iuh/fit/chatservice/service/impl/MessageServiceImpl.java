@@ -9,7 +9,6 @@ import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
-import vn.edu.iuh.fit.chatservice.entity.message.Reaction;
 import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
 import vn.edu.iuh.fit.chatservice.exception.AppException;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
@@ -51,7 +50,7 @@ public class MessageServiceImpl implements MessageService {
         Optional.ofNullable(messageDTO.media()).ifPresent(messageBuilder::media);
         Optional.of(timestamp).ifPresent(messageBuilder::createdAt);
         Optional.of(timestamp).ifPresent(messageBuilder::updatedAt);
-        Optional.ofNullable(messageDTO.taggedUserIds()).ifPresent(messageBuilder::taggedUserId);
+        Optional.ofNullable(messageDTO.taggedUserIds()).ifPresent(messageBuilder::targetUserId);
         Optional.ofNullable(messageDTO.type()).ifPresent(messageBuilder::type);
 
         return messageRepository.save(messageBuilder.build());

@@ -2,7 +2,10 @@ package vn.edu.iuh.fit.chatservice.service.impl;
 
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.fit.chatservice.client.UserClient;
+import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
 import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
 import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
@@ -10,23 +13,32 @@ import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
-import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
+import vn.edu.iuh.fit.chatservice.entity.message.NotificationType;
 import vn.edu.iuh.fit.chatservice.exception.AppException;
+import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
 import vn.edu.iuh.fit.chatservice.repository.MessageRepository;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ConversationServiceImpl implements ConversationService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
 
-    public ConversationServiceImpl(ConversationRepository conversationRepository, MessageRepository messageRepository) {
+    private final SimpMessagingTemplate messagingTemplate;
+    private final UserClient userClient;
+
+    public ConversationServiceImpl(ConversationRepository conversationRepository, MessageRepository messageRepository, SimpMessagingTemplate messagingTemplate, UserClient userClient) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
+        this.messagingTemplate = messagingTemplate;
+        this.userClient = userClient;
     }
+
 
     public String createPrivateConversation(List<Long> members) {
         Conversation conversation = Conversation.builder()
@@ -34,6 +46,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .type(ConversationType.PRIVATE)
+                .status(ConversationStatus.ACTIVE)
                 .build();
         Optional<Conversation> optionalConversation = conversationRepository.findConversationByMembersAndType(members, ConversationType.PRIVATE);
 
@@ -47,8 +60,8 @@ public class ConversationServiceImpl implements ConversationService {
 
     public String createGroupConversation(Long id, String name, String image, List<Long> members) {
         Conversation conversation = Conversation.builder()
-                .name(name)
-                .avatar(image)
+                .name(Optional.ofNullable(name).orElse(""))
+                .avatar(Optional.ofNullable(image).orElse(""))
                 .ownerId(id)
                 .settings(new ConversationSettings())
                 .type(ConversationType.GROUP)
@@ -58,6 +71,8 @@ public class ConversationServiceImpl implements ConversationService {
                 .updatedAt(new Date())
                 .build();
         Conversation savedConversation = conversationRepository.save(conversation);
+        ConversationDTO conversationDTO = createConversationDTO(savedConversation, members);
+        notifyTargetUser(members, conversationDTO);
         return savedConversation.getId().toHexString();
     }
 
@@ -71,17 +86,44 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public Conversation getConversation(Long userId, String conversationId) {
+    public ConversationDTO getConversation(Long userId, String conversationId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        List<Long> memberIds = conversation.getMembers();
+        Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
+        return new ConversationDTO(conversation, userModels, userId);
+    }
+
+    @Override
+    public Conversation getPlainConversation(Long userId, String conversationId) {
         return conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
     }
 
     @Override
-    public List<Conversation> findConversationsByUserId(Long id) {
-        return conversationRepository.findByMembersAndStatus(List.of(id), ConversationStatus.ACTIVE);
+    public List<ConversationDTO> findConversationsByUserId(Long id) {
+        List<Conversation> conversations = conversationRepository.findByMembersAndStatus(List.of(id), ConversationStatus.ACTIVE);
+        List<Long> memberIds = conversations.stream()
+                .flatMap(conversation -> conversation.getMembers().stream())
+                .distinct().toList();
+        Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
+        List<ConversationDTO> conversationDTOS = conversations.stream()
+                .map(conversation -> new ConversationDTO(conversation, userModels, id))
+                .toList();
+        conversationDTOS.forEach(currentConversation -> {
+            if (currentConversation.getType().equals(ConversationType.PRIVATE)) {
+                UserDetail userDetail = currentConversation.getOtherMember(id);
+                if (userDetail != null) {
+                    currentConversation.setName(userDetail.name());
+                    currentConversation.setImage(userDetail.image_url());
+                }
+            }
+        });
+        return conversations.stream()
+                .map(conversation -> new ConversationDTO(conversation, userModels, id))
+                .toList();
     }
 
     @Override
-    public void disbandConversation(Long userId, String conversationId) {
+    public Conversation disbandConversation(Long userId, String conversationId) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         if (conversation.getType().equals(ConversationType.PRIVATE)) {
             throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "You can not disband a private conversation");
@@ -89,8 +131,140 @@ public class ConversationServiceImpl implements ConversationService {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not the owner of this conversation");
         } else {
             conversation.setStatus(ConversationStatus.DISBAND);
-            conversationRepository.save(conversation);
+            Message message = Message.builder()
+                    .conversationId(conversationId)
+                    .senderId(userId)
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .notificationType(NotificationType.DISBAND_GROUP)
+                    .build();
+            notifyConversationMembers(conversation, message);
         }
+        return conversationRepository.save(conversation);
+    }
+
+    @Override
+    public SimpleConversationDTO addMember(Long userId, String conversationId, Long memberId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        if (conversation.getMembers().contains(memberId)) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Member already in this conversation");
+        }
+        conversation.getMembers().add(memberId);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(userId)
+                .targetUserId(List.of(memberId))
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.ADD_MEMBER)
+                .build();
+        notifyConversationMembers(conversation, message);
+        Conversation savedConversation = conversationRepository.save(conversation);
+        List<Long> members = Stream.concat(conversation.getMembers().stream(), Stream.of(memberId)).toList();
+        ConversationDTO conversationDTO = createConversationDTO(savedConversation, members);
+        notifyTargetUser(members, conversationDTO);
+        return saveAndReturnDTO(conversation);
+    }
+
+    @Override
+    public ConversationDTO joinByLink(Long id, String link) {
+        Conversation conversation = conversationRepository.findByLink(link).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Link not found"));
+        if (conversation.getMembers().contains(id)) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "You are already a member of this conversation");
+        }
+        if (!conversation.getSettings().isJoinByLink()) {
+            throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "This conversation does not allow join by link");
+        }
+        conversation.getMembers().add(id);
+        Message message = Message.builder()
+                .conversationId(conversation.getId().toHexString())
+                .senderId(id)
+                .targetUserId(conversation.getMembers())
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.JOIN_BY_LINK)
+                .build();
+        Conversation savedConversation = conversationRepository.save(conversation);
+        notifyConversationMembers(conversation, message);
+        return createConversationDTO(savedConversation, conversation.getMembers());
+    }
+
+    @Override
+    public ConversationDTO findByLink(String link) {
+        Conversation conversation = conversationRepository.findByLink(link).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Link not found"));
+        return createConversationDTO(conversation, conversation.getMembers());
+    }
+
+    @Override
+    public Conversation leaveConversation(Long id, String conversationId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        if (conversation.getType().equals(ConversationType.PRIVATE)) {
+            throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "You can not leave a private conversation");
+        }
+        if (conversation.getOwnerId().equals(id)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are the owner of this conversation");
+        }
+        conversation.getMembers().remove(id);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(id)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.LEAVE_GROUP)
+                .build();
+        notifyConversationMembers(conversation, message);
+        return conversationRepository.save(conversation);
+    }
+
+    @Override
+    public Conversation changeName(Long id, String conversationId, String name) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        conversation.setName(name);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(id)
+                .content(name)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.CHANGE_GROUP_NAME)
+                .build();
+        notifyConversationMembers(conversation, message);
+        return conversationRepository.save(conversation);
+    }
+
+    @Override
+    public Conversation changeImage(Long id, String conversationId, String image) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        conversation.setAvatar(image);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(id)
+                .content(image)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.CHANGE_GROUP_AVATAR)
+                .build();
+        notifyConversationMembers(conversation, message);
+        return conversationRepository.save(conversation);
+    }
+
+    @Override
+    public Conversation grantOwner(Long adminId, String conversationId, Long memberId) {
+        Conversation conversation = validateConversationAndAdmin(conversationId, adminId);
+        if (!conversation.getMembers().contains(memberId)) {
+            throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
+        }
+        conversation.setOwnerId(memberId);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(adminId)
+                .targetUserId(List.of(memberId))
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.CHANGE_GROUP_OWNER)
+                .build();
+        notifyConversationMembers(conversation, message);
+        return conversationRepository.save(conversation);
     }
 
     @Override
@@ -99,14 +273,18 @@ public class ConversationServiceImpl implements ConversationService {
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
+        if (memberId.equals(conversation.getOwnerId())) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You can not kick the owner of this conversation");
+        }
         Message message = Message.builder()
                 .conversationId(conversationId)
-
-                .content("You have been kicked from this conversation")
+                .senderId(adminId)
+                .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
-                .type(MessageType.NOTIFICATION)
+                .notificationType(NotificationType.REMOVE_MEMBER)
                 .build();
+        notifyConversationMembers(conversation, message);
         conversation.getMembers().remove(memberId);
         return saveAndReturnDTO(conversation);
     }
@@ -117,7 +295,19 @@ public class ConversationServiceImpl implements ConversationService {
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
+        if (conversation.getDeputies() == null) {
+            conversation.setDeputies(new ArrayList<>());
+        }
         conversation.getDeputies().add(memberId);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(adminId)
+                .targetUserId(List.of(memberId))
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.GRANT_DEPUTY)
+                .build();
+        notifyConversationMembers(conversation, message);
         return saveAndReturnDTO(conversation);
     }
 
@@ -128,14 +318,27 @@ public class ConversationServiceImpl implements ConversationService {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
         conversation.getDeputies().remove(memberId);
-
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(adminId)
+                .targetUserId(List.of(memberId))
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(NotificationType.REVOKE_DEPUTY)
+                .build();
+        notifyConversationMembers(conversation, message);
         return saveAndReturnDTO(conversation);
     }
 
     @Override
     public ConversationSettings updateConversationSettings(Long adminId, String conversationId, ConversationSettingsRequest settings) {
-        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
-        String linkToJoinGroup = settings.isJoinByLink() ? UUID.randomUUID().toString() : "";
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+
+        ConversationSettings oldSettings = conversation.getSettings();
+
+        String linkToJoinGroup = settings.isJoinByLink() && oldSettings.getLinkToJoinGroup().isEmpty() ? UUID.randomUUID().toString() : oldSettings.getLinkToJoinGroup();
+
         ConversationSettings newSettings = new ConversationSettings(
                 settings.isConfirmNewMember(),
                 settings.isRestrictedMessaging(),
@@ -151,8 +354,74 @@ public class ConversationServiceImpl implements ConversationService {
                 settings.isAllowDeputyPromoteMember(),
                 settings.isAllowDeputyDemoteMember()
         );
+
         conversation.setSettings(newSettings);
+        List<Message> notificationMessages = generateSettingsChangeMessages(conversationId, adminId, oldSettings, newSettings);
+        notificationMessages.forEach(message -> notifyConversationMembers(conversation, message));
+
+        conversationRepository.save(conversation);
+
         return conversationRepository.save(conversation).getSettings();
+    }
+
+    private List<Message> generateSettingsChangeMessages(String conversationId, Long adminId, ConversationSettings oldSettings, ConversationSettings newSettings) {
+        List<Message> messages = new ArrayList<>();
+
+        if (oldSettings.isConfirmNewMember() != newSettings.isConfirmNewMember()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.CONFIRM_NEW_MEMBER, Boolean.toString(newSettings.isConfirmNewMember())));
+        }
+        if (oldSettings.isRestrictedMessaging() != newSettings.isRestrictedMessaging()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.RESTRICTED_MESSAGING, Boolean.toString(newSettings.isRestrictedMessaging())));
+        }
+        if (oldSettings.isAllowDeputySendMessages() != newSettings.isAllowDeputySendMessages()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.DEPUTY_SEND_MESSAGES, Boolean.toString(newSettings.isAllowDeputySendMessages())));
+        }
+        if (oldSettings.isJoinByLink() != newSettings.isJoinByLink()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.JOIN_BY_LINK, newSettings.getLinkToJoinGroup()));
+        }
+        if (oldSettings.isAllowMemberToChangeGroupInfo() != newSettings.isAllowMemberToChangeGroupInfo()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.MEMBER_CHANGE_GROUP_INFO, Boolean.toString(newSettings.isAllowMemberToChangeGroupInfo())));
+        }
+        if (oldSettings.isAllowDeputyToInviteMember() != newSettings.isAllowDeputyToInviteMember()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.DEPUTY_INVITE_MEMBER, Boolean.toString(newSettings.isAllowDeputyToInviteMember())));
+        }
+        if (oldSettings.isAllowMemberToInviteMember() != newSettings.isAllowMemberToInviteMember()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.MEMBER_INVITE_MEMBER, Boolean.toString(newSettings.isAllowMemberToInviteMember())));
+        }
+        if (oldSettings.isAllowDeputyRemoveMember() != newSettings.isAllowDeputyRemoveMember()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.DEPUTY_REMOVE_MEMBER, Boolean.toString(newSettings.isAllowDeputyRemoveMember())));
+        }
+        if (oldSettings.isAllowDeputyChangeGroupInfo() != newSettings.isAllowDeputyChangeGroupInfo()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.DEPUTY_CHANGE_GROUP_INFO, Boolean.toString(newSettings.isAllowDeputyChangeGroupInfo())));
+        }
+        if (oldSettings.isAllowMemberToPinMessage() != newSettings.isAllowMemberToPinMessage()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.MEMBER_PIN_MESSAGE, Boolean.toString(newSettings.isAllowMemberToPinMessage())));
+        }
+        if (oldSettings.isAllowDeputyPromoteMember() != newSettings.isAllowDeputyPromoteMember()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.DEPUTY_PROMOTE_MEMBER, Boolean.toString(newSettings.isAllowDeputyPromoteMember())));
+        }
+        if (oldSettings.isAllowDeputyDemoteMember() != newSettings.isAllowDeputyDemoteMember()) {
+            messages.add(createNotificationMessageForUpdateSetting(conversationId, adminId, NotificationType.DEPUTY_DEMOTE_MEMBER, Boolean.toString(newSettings.isAllowDeputyDemoteMember())));
+        }
+
+        return messages;
+    }
+
+    private ConversationDTO createConversationDTO(Conversation conversation, List<Long> members) {
+        Map<Long, UserDetail> userModels = userClient.getUsersByIds(members).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
+        return new ConversationDTO(conversation, userModels, conversation.getOwnerId());
+    }
+
+    private Message createNotificationMessageForUpdateSetting(String conversationId, Long adminId, NotificationType type, String content) {
+        return Message.builder()
+                .conversationId(conversationId)
+                .senderId(adminId)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .notificationType(type)
+                .content(content)
+                .notificationType(type)
+                .build();
     }
 
     private Conversation validateConversationAndAdmin(String conversationId, Long adminId) {
@@ -162,6 +431,26 @@ public class ConversationServiceImpl implements ConversationService {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not the owner of this conversation");
         }
         return conversation;
+    }
+
+    private void notifyConversationMembers(Conversation conversation, Message message) {
+        Thread thread = new Thread(() -> {
+            messageRepository.save(message);
+            for (Long memberId : conversation.getMembers()) {
+                messagingTemplate.convertAndSendToUser(memberId.toString(), "/message", message);
+            }
+        });
+        thread.start();
+    }
+
+
+    private void notifyTargetUser(List<Long> memberId, ConversationDTO conversation) {
+        Thread thread = new Thread(() -> {
+            for (Long id : memberId) {
+                messagingTemplate.convertAndSendToUser(id.toString(), "/conversation", conversation);
+            }
+        });
+        thread.start();
     }
 
     private SimpleConversationDTO saveAndReturnDTO(Conversation conversation) {

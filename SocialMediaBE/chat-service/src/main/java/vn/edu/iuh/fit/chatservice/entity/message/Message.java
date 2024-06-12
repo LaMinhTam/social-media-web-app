@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -32,14 +31,16 @@ public class Message {
     @Column(name = "sender_id")
     @JsonProperty("sender_id")
     private Long senderId;
-    @Column(name = "tagged_user_id")
-    @JsonProperty("tagged_user_id")
-    private List<Long> taggedUserId;
+    @Column(name = "target_user_id")
+    @JsonProperty("target_user_id")
+    private List<Long> targetUserId;
     private String content;
     private List<String> media;
     private String status;
     @Enumerated(EnumType.ORDINAL)
     private MessageType type;
+    @Enumerated(EnumType.ORDINAL)
+    private NotificationType notificationType;
     private Map<ReactionType, List<Long>> reactions;
     @Column(name = "created_at")
     @JsonProperty("created_at")

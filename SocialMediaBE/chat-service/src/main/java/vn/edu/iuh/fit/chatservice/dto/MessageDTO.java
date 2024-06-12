@@ -2,7 +2,6 @@ package vn.edu.iuh.fit.chatservice.dto;
 
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
-import vn.edu.iuh.fit.chatservice.entity.message.Reaction;
 import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
 
 import java.util.Date;
@@ -23,7 +22,7 @@ public record MessageDTO(String messageId,
         this(message.getId().toString(),
                 message.getConversationId(),
                 message.getSenderId(),
-                message.getTaggedUserId(),
+                message.getTargetUserId(),
                 message.getContent(),
                 message.getMedia(),
                 message.getType(),

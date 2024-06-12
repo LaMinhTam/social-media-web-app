@@ -58,4 +58,5 @@ public class Conversation {
     @Column(name = "updated_at")
     @JsonProperty("updated_at")
     private Date updatedAt;
+
 }

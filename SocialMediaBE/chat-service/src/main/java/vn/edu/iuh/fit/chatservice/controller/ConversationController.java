@@ -21,54 +21,18 @@ import java.util.stream.Stream;
 @RequestMapping("/conversations")
 public class ConversationController {
     private final ConversationService conversationService;
-    private final UserClient userClient;
-
-    public ConversationController(ConversationService conversationService, UserClient userClient) {
+    public ConversationController(ConversationService conversationService) {
         this.conversationService = conversationService;
-        this.userClient = userClient;
-    }
-
-    private ConversationDTO createConversationDTO(Conversation conversation, Map<Long, UserDetail> userModels, Long id) {
-        ConversationDTO conversationDTO = ConversationDTO.builder()
-                .conversationId(conversation.getId().toHexString())
-                .members(conversation.getMembers().stream().map(userModels::get).toList())
-                .type(conversation.getType())
-                .build();
-        if (conversation.getType().equals(ConversationType.PRIVATE)) {
-            Optional<Long> remainingMember = conversation.getMembers().stream()
-                    .filter(memberId -> !memberId.equals(id))
-                    .findFirst();
-            if (remainingMember.isPresent() && userModels.get(remainingMember.get()) != null) {
-                conversationDTO.setName(userModels.get(remainingMember.get()).name());
-                conversationDTO.setImage(userModels.get(remainingMember.get()).image_url());
-            }
-        } else {
-            conversationDTO.setName(conversation.getName());
-            conversationDTO.setImage(conversation.getAvatar());
-        }
-        return conversationDTO;
     }
 
     @GetMapping("/detail/{conversationId}")
     public ResponseEntity<?> getConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
-        Conversation conversation = conversationService.getConversation(id, conversationId);
-        List<Long> memberIds = conversation.getMembers().stream().distinct().toList();
-        Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
-        ConversationDTO conversationDTO = createConversationDTO(conversation, userModels, id);
-        return ResponseEntity.ok(conversationDTO);
+        return ResponseEntity.ok(conversationService.getConversation(id, conversationId));
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<ConversationDTO>> getConversations(@RequestHeader("sub") Long id) {
-        List<Conversation> conversations = conversationService.findConversationsByUserId(id);
-        List<Long> memberIds = conversations.stream()
-                .flatMap(conversation -> conversation.getMembers().stream())
-                .distinct().toList();
-        Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
-        List<ConversationDTO> conversationDTOS = conversations.stream()
-                .map(conversation -> createConversationDTO(conversation, userModels, id))
-                .toList();
-        return ResponseEntity.ok(conversationDTOS);
+    public ResponseEntity<?> getConversations(@RequestHeader("sub") Long id) {
+        return ResponseEntity.ok(conversationService.findConversationsByUserId(id));
     }
 
     @PostMapping("/create")
@@ -80,9 +44,7 @@ public class ConversationController {
         List<Long> members = getMembersWithId(request.members(), id);
 
         if (request.type().equals(ConversationType.GROUP)) {
-            if (isNullOrEmpty(request.name())) {
-                return ResponseEntity.badRequest().body("Name and image is required");
-            } else if (members.size() <= 2) {
+            if (members.size() <= 2) {
                 return ResponseEntity.badRequest().body("Group conversation must have at least 3 members");
             }
         } else if (request.type().equals(ConversationType.PRIVATE) && members.size() != 2) {
@@ -97,34 +59,60 @@ public class ConversationController {
         return Stream.concat(members.stream(), Stream.of(id)).distinct().toList();
     }
 
-    private boolean isNullOrEmpty(String str) {
-        return str == null || str.isEmpty();
+    @PatchMapping("/{conversationId}/add-member")
+    public ResponseEntity<?> addMember(@RequestHeader("sub") Long id,
+                                       @PathVariable String conversationId,
+                                       @RequestParam(name = "member-id") Long memberId) {
+        return ResponseEntity.ok(conversationService.addMember(id, conversationId, memberId));
+    }
+
+    @PatchMapping("/{conversationId}/leave")
+    public ResponseEntity<?> leaveConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
+        Conversation conversation = conversationService.leaveConversation(id, conversationId);
+        return ResponseEntity.ok(conversation.getId().toHexString());
+    }
+
+    @PatchMapping("/{conversationId}/change-name")
+    public ResponseEntity<?> changeName(@RequestHeader("sub") Long id, @PathVariable String conversationId, @RequestParam String name) {
+        return ResponseEntity.ok(conversationService.changeName(id, conversationId, name));
+    }
+
+    @PatchMapping("/{conversationId}/change-image")
+    public ResponseEntity<?> changeImage(@RequestHeader("sub") Long id, @PathVariable String conversationId, @RequestParam String image) {
+        return ResponseEntity.ok(conversationService.changeImage(id, conversationId, image));
+    }
+
+    @PatchMapping("/{conversationId}/grant-owner")
+    public ResponseEntity<?> grantOwner(@RequestHeader("sub") Long adminId,
+                                        @PathVariable String conversationId,
+                                        @RequestParam(name = "member-id") Long memberId) {
+        return ResponseEntity.ok(conversationService.grantOwner(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/disband/{conversationId}")
     public ResponseEntity<?> disbandConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
-        conversationService.disbandConversation(id, conversationId);
-        return ResponseEntity.ok().build();
+        Conversation conversation = conversationService.disbandConversation(id, conversationId);
+        return ResponseEntity.ok(conversation.getId().toHexString());
     }
 
     @PatchMapping("/{conversationId}/kick")
     public ResponseEntity<?> kickMember(@RequestHeader("sub") Long adminId,
                                         @PathVariable String conversationId,
-                                        @RequestParam Long memberId) {
+                                        @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.kickMember(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/grant-deputy")
     public ResponseEntity<?> grantDeputy(@RequestHeader("sub") Long adminId,
                                          @PathVariable String conversationId,
-                                         @RequestParam Long memberId) {
+                                         @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.grantDeputy(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/revoke-deputy")
     public ResponseEntity<?> revokeDeputy(@RequestHeader("sub") Long adminId,
                                           @PathVariable String conversationId,
-                                          @RequestParam Long memberId) {
+                                          @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.revokeDeputy(adminId, conversationId, memberId));
     }
 
@@ -133,6 +121,16 @@ public class ConversationController {
                                                         @PathVariable String conversationId,
                                                         @RequestBody ConversationSettingsRequest settings) {
         return ResponseEntity.ok(conversationService.updateConversationSettings(adminId, conversationId, settings));
+    }
+
+    @GetMapping("/link/{link}")
+    public ResponseEntity<?> getConversationByLink(@RequestHeader("sub") Long id, @PathVariable String link) {
+        return ResponseEntity.ok(conversationService.findByLink(link));
+    }
+
+    @PatchMapping("/join/{link}")
+    public ResponseEntity<?> joinByLink(@RequestHeader("sub") Long id, @PathVariable String link) {
+        return ResponseEntity.ok(conversationService.joinByLink(id, link));
     }
 
 }

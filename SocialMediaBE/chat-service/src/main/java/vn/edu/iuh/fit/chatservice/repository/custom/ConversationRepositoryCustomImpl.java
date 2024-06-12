@@ -50,4 +50,11 @@ public class ConversationRepositoryCustomImpl implements ConversationRepositoryC
                 )
                 .first();
     }
+
+    @Override
+    public Optional<Conversation> findByLink(String link) {
+        return mongoTemplate.query(Conversation.class)
+                .matching(query(where("settings.linkToJoinGroup").is(link)))
+                .first();
+    }
 }

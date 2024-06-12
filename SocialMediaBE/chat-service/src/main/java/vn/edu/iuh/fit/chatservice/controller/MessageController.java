@@ -3,6 +3,7 @@ package vn.edu.iuh.fit.chatservice.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
 import vn.edu.iuh.fit.chatservice.dto.ReactRequest;
 import vn.edu.iuh.fit.chatservice.dto.ShareMessageRequest;
@@ -42,7 +43,7 @@ public class MessageController {
     public ResponseEntity<?> shareMessage(@RequestHeader("sub") Long id, @RequestBody ShareMessageRequest request) {
         List<MessageDTO> message = messageService.shareMessage(id, request.messageId(), request.conversationIds());
         for (MessageDTO sharedMessage : message) {
-            Conversation conversation = conversationService.getConversation(id, sharedMessage.conversationId());
+            Conversation conversation = conversationService.getPlainConversation(id, sharedMessage.conversationId());
             conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "message", sharedMessage));
         }
         return ResponseEntity.ok(message);
@@ -51,7 +52,7 @@ public class MessageController {
     @PatchMapping("/revoke/{messageId}")
     public ResponseEntity<?> revokeMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
         MessageDTO message = messageService.revokeMessage(messageId);
-        Conversation conversation = conversationService.getConversation(id, message.conversationId());
+        Conversation conversation = conversationService.getPlainConversation(id, message.conversationId());
         conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "revoke", message));
         return ResponseEntity.ok(message);
     }
@@ -59,7 +60,7 @@ public class MessageController {
     @PostMapping("/react")
     public ResponseEntity<?> reactMessage(@RequestHeader("sub") Long id, @RequestBody ReactRequest request) {
         MessageDTO message = messageService.reactMessage(id, request.messageId(), request.reaction());
-        Conversation conversation = conversationService.getConversation(id, message.conversationId());
+        Conversation conversation = conversationService.getPlainConversation(id, message.conversationId());
         conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "react", message));
         return ResponseEntity.ok(message);
     }

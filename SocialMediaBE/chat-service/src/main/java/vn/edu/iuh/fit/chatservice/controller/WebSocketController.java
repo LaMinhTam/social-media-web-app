@@ -36,7 +36,7 @@ public class WebSocketController {
         String userId = sha.getNativeHeader("sub").get(0);
         try {
             Message savedMessage = messageService.saveMessage(Long.parseLong(userId), message);
-            Conversation conversation = conversationService.getConversation(Long.parseLong(userId), savedMessage.getConversationId());
+            Conversation conversation = conversationService.getPlainConversation(Long.parseLong(userId), savedMessage.getConversationId());
             MessageDTO response = new MessageDTO(savedMessage);
             conversation.getMembers().forEach(
                     member -> sendMessageToUser(member.toString(), "message", response)
