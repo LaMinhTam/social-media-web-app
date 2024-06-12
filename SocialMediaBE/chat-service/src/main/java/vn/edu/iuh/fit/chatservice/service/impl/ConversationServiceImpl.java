@@ -149,6 +149,15 @@ public class ConversationServiceImpl implements ConversationService {
         if (conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.BAD_REQUEST.value(), "Member already in this conversation");
         }
+        //1. check if user is owner, if owner then could invite
+        //2. check if member have permission to invite
+        //3. check if deputy have permission to invite, and deputy is not null, and user is deputy
+        if (!conversation.getOwnerId().equals(userId) &&
+                !conversation.getSettings().isAllowMemberToInviteMember() &&
+                !(conversation.getSettings().isAllowDeputyToInviteMember() && conversation.getDeputies() != null && conversation.getDeputies().contains(userId))) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to invite member");
+        }
+
         conversation.getMembers().add(memberId);
         Message message = Message.builder()
                 .conversationId(conversationId)
@@ -219,6 +228,10 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public Conversation changeName(Long id, String conversationId, String name) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        if (!conversation.getSettings().isAllowMemberToChangeGroupInfo() && !(conversation.getSettings().isAllowDeputyChangeGroupInfo() && conversation.getDeputies() != null && conversation.getDeputies().contains(id))) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to change group info");
+        }
+
         conversation.setName(name);
         Message message = Message.builder()
                 .conversationId(conversationId)
@@ -235,6 +248,9 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public Conversation changeImage(Long id, String conversationId, String image) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        if (!conversation.getSettings().isAllowMemberToChangeGroupInfo() && !(conversation.getSettings().isAllowDeputyChangeGroupInfo() && conversation.getDeputies() != null && conversation.getDeputies().contains(id))) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to change group info");
+        }
         conversation.setAvatar(image);
         Message message = Message.builder()
                 .conversationId(conversationId)
@@ -268,17 +284,27 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public SimpleConversationDTO kickMember(Long adminId, String conversationId, Long memberId) {
-        Conversation conversation = validateConversationAndAdmin(conversationId, adminId);
+    public SimpleConversationDTO kickMember(Long senderId, String conversationId, Long memberId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), senderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
+        //1. check if user is owner, if owner then could kick
+        //2. check if deputy have permission to remove
+        //3. check if user is deputy
+        if (!conversation.getOwnerId().equals(senderId) &&
+                conversation.getSettings().isAllowDeputyRemoveMember() &&
+                !(conversation.getDeputies() != null && conversation.getDeputies().contains(senderId))) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to kick member");
+        }
+
         if (memberId.equals(conversation.getOwnerId())) {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You can not kick the owner of this conversation");
         }
         Message message = Message.builder()
                 .conversationId(conversationId)
-                .senderId(adminId)
+                .senderId(senderId)
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
@@ -286,22 +312,32 @@ public class ConversationServiceImpl implements ConversationService {
                 .build();
         notifyConversationMembers(conversation, message);
         conversation.getMembers().remove(memberId);
+        conversation.getDeputies().remove(memberId);
         return saveAndReturnDTO(conversation);
     }
 
     @Override
-    public SimpleConversationDTO grantDeputy(Long adminId, String conversationId, Long memberId) {
-        Conversation conversation = validateConversationAndAdmin(conversationId, adminId);
+    public SimpleConversationDTO grantDeputy(Long senderId, String conversationId, Long memberId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), senderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
+        if(conversation.getDeputies().contains(memberId)){
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Member is already a deputy");
+        }
+        if (!conversation.getOwnerId().equals(senderId) &&
+                !(conversation.getSettings().isAllowDeputyPromoteMember() && conversation.getDeputies() != null && conversation.getDeputies().contains(senderId))) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to grant deputy");
+        }
+
         if (conversation.getDeputies() == null) {
             conversation.setDeputies(new ArrayList<>());
         }
         conversation.getDeputies().add(memberId);
         Message message = Message.builder()
                 .conversationId(conversationId)
-                .senderId(adminId)
+                .senderId(senderId)
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
@@ -312,15 +348,20 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public SimpleConversationDTO revokeDeputy(Long adminId, String conversationId, Long memberId) {
-        Conversation conversation = validateConversationAndAdmin(conversationId, adminId);
+    public SimpleConversationDTO revokeDeputy(Long senderId, String conversationId, Long memberId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), senderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
+        if (!conversation.getOwnerId().equals(senderId) && !(conversation.getSettings().isAllowDeputyDemoteMember() && conversation.getDeputies() != null && conversation.getDeputies().contains(senderId))) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to revoke deputy");
+        }
+
         conversation.getDeputies().remove(memberId);
         Message message = Message.builder()
                 .conversationId(conversationId)
-                .senderId(adminId)
+                .senderId(senderId)
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
@@ -331,7 +372,8 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public ConversationSettings updateConversationSettings(Long adminId, String conversationId, ConversationSettingsRequest settings) {
+    public ConversationSettings updateConversationSettings(Long adminId, String
+            conversationId, ConversationSettingsRequest settings) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId))
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
 
@@ -346,10 +388,10 @@ public class ConversationServiceImpl implements ConversationService {
                 settings.isJoinByLink(),
                 linkToJoinGroup,
                 settings.isAllowMemberToChangeGroupInfo(),
+                settings.isAllowDeputyChangeGroupInfo(),
                 settings.isAllowDeputyToInviteMember(),
                 settings.isAllowMemberToInviteMember(),
                 settings.isAllowDeputyRemoveMember(),
-                settings.isAllowDeputyChangeGroupInfo(),
                 settings.isAllowMemberToPinMessage(),
                 settings.isAllowDeputyPromoteMember(),
                 settings.isAllowDeputyDemoteMember()
@@ -364,7 +406,8 @@ public class ConversationServiceImpl implements ConversationService {
         return conversationRepository.save(conversation).getSettings();
     }
 
-    private List<Message> generateSettingsChangeMessages(String conversationId, Long adminId, ConversationSettings oldSettings, ConversationSettings newSettings) {
+    private List<Message> generateSettingsChangeMessages(String conversationId, Long adminId, ConversationSettings
+            oldSettings, ConversationSettings newSettings) {
         List<Message> messages = new ArrayList<>();
 
         if (oldSettings.isConfirmNewMember() != newSettings.isConfirmNewMember()) {
@@ -412,7 +455,8 @@ public class ConversationServiceImpl implements ConversationService {
         return new ConversationDTO(conversation, userModels, conversation.getOwnerId());
     }
 
-    private Message createNotificationMessageForUpdateSetting(String conversationId, Long adminId, NotificationType type, String content) {
+    private Message createNotificationMessageForUpdateSetting(String conversationId, Long adminId, NotificationType
+            type, String content) {
         return Message.builder()
                 .conversationId(conversationId)
                 .senderId(adminId)

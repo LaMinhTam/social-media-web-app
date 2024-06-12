@@ -37,7 +37,10 @@ public class MessageServiceImpl implements MessageService {
             if (conversation.getType().equals(ConversationType.GROUP)) {
                 if (conversation.getStatus().equals(ConversationStatus.DISBAND)) {
                     throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
-                } else if (conversation.getSettings().isRestrictedMessaging()) {
+                } else if (conversation.getSettings().isRestrictedMessaging() &&
+                        !(conversation.getSettings().isAllowDeputySendMessages() &&
+                                conversation.getDeputies() != null &&
+                                conversation.getDeputies().contains(userId))) {
                     throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
                 }
             }
@@ -84,11 +87,13 @@ public class MessageServiceImpl implements MessageService {
             } else if (conversation.getType().equals(ConversationType.GROUP)) {
                 if (conversation.getStatus().equals(ConversationStatus.DISBAND)) {
                     throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
-                } else if (conversation.getSettings().isRestrictedMessaging()) {
+                } else if (conversation.getSettings().isRestrictedMessaging() &&
+                        !(conversation.getSettings().isAllowDeputySendMessages() &&
+                                conversation.getDeputies() != null &&
+                                conversation.getDeputies().contains(senderId))) {
                     throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
                 }
             }
-
             Message.MessageBuilder messageBuilder = Message.builder();
             messageBuilder.senderId(senderId);
             messageBuilder.conversationId(conversationId);
