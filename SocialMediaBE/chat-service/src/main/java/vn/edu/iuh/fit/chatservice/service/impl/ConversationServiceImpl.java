@@ -78,6 +78,15 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     public String createConversation(Long id, String name, String image, List<Long> members, ConversationType conversationType) {
+        List<UserDetail> userDetails = userClient.getUsersByIds(members);
+        if (members.size() == userDetails.size()) {
+            members.forEach(member -> {
+                if (userDetails.stream().noneMatch(userDetail -> userDetail.user_id().equals(member))) {
+                    throw new AppException(HttpStatus.NOT_FOUND.value(), "Member with id " + member + " not found");
+                }
+            });
+        }
+        
         if (conversationType.equals(ConversationType.PRIVATE)) {
             return createPrivateConversation(members);
         } else {
@@ -323,7 +332,7 @@ public class ConversationServiceImpl implements ConversationService {
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
-        if(conversation.getDeputies().contains(memberId)){
+        if (conversation.getDeputies().contains(memberId)) {
             throw new AppException(HttpStatus.BAD_REQUEST.value(), "Member is already a deputy");
         }
         if (!conversation.getOwnerId().equals(senderId) &&
