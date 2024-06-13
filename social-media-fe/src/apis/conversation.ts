@@ -2,7 +2,10 @@ import { AxiosResponse } from "axios";
 import { axiosPrivate } from "./axios";
 import apiRoutes from ".";
 import { OnlineResponse } from "@/types/commonType";
-import { ConversationDetailResponse } from "@/types/conversationType";
+import {
+    ConversationResponse,
+    MessageResponse,
+} from "@/types/conversationType";
 
 const createConversation = async (
     type: string,
@@ -23,14 +26,13 @@ const createConversation = async (
 };
 
 const getListConversation = async () => {
-    const response: AxiosResponse<string> = await axiosPrivate.get(
-        apiRoutes.conversation.list
-    );
+    const response: AxiosResponse<ConversationResponse[]> =
+        await axiosPrivate.get(apiRoutes.conversation.list);
     return response;
 };
 
 const getConversationDetail = async (id: string) => {
-    const response: AxiosResponse<ConversationDetailResponse> =
+    const response: AxiosResponse<ConversationResponse> =
         await axiosPrivate.get(apiRoutes.conversation.detail(id));
     return response;
 };
@@ -49,10 +51,50 @@ const getUserStatus = async (id: string) => {
     return response;
 };
 
+const getListMessage = async (id: string, page: number, size: number) => {
+    const response: AxiosResponse<MessageResponse> = await axiosPrivate.get(
+        apiRoutes.conversation.getListMessageByPage(id, page, size)
+    );
+    return response;
+};
+
+const shareMessage = async (messageId: string, conversationIds: string[]) => {
+    const response: AxiosResponse<string> = await axiosPrivate.post(
+        apiRoutes.conversation.shareMessage,
+        {
+            message_id: messageId,
+            conversation_ids: conversationIds,
+        }
+    );
+    return response;
+};
+
+const revokeMessage = async (messageId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.revokeMessage(messageId)
+    );
+    return response;
+};
+
+const reactionMessage = async (messageId: string, reaction: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.post(
+        apiRoutes.conversation.reactMessage,
+        {
+            message_id: messageId,
+            reaction,
+        }
+    );
+    return response;
+};
+
 export const CONVERSATION = {
     createConversation,
     getListConversation,
     getConversationDetail,
     disbandGroup,
     getUserStatus,
+    getListMessage,
+    shareMessage,
+    revokeMessage,
+    reactionMessage,
 };

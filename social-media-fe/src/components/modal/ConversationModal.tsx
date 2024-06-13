@@ -1,6 +1,6 @@
 import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import OpenWithOutlinedIcon from "@mui/icons-material/OpenWithOutlined";
 import SearchInput from "../common/SearchInput";
 import Image from "next/image";
@@ -9,20 +9,54 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import { PopupState } from "material-ui-popup-state/hooks";
 import { setShowChatModal } from "@/store/actions/commonSlice";
-import { setUserClicked } from "@/store/actions/userSlice";
-import { UserResponse } from "@/types/userType";
+import { ConversationResponse } from "@/types/conversationType";
+import {
+    handleGetListConversation,
+    handleGetListMessage,
+} from "@/services/conversation.service";
+import { setCurrentConversation } from "@/store/actions/conversationSlice";
+import { useSocket } from "@/contexts/socket-context";
+import handleReverseMessages from "@/utils/conversation/messages/handleReverseMessages";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
-    const relationshipUsers = useSelector(
-        (state: RootState) => state.user.relationshipUsers
+    const { setMessages } = useSocket();
+    const [listConversation, setListConversation] = useState<
+        ConversationResponse[]
+    >([]);
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
+    const currentPage = useSelector(
+        (state: RootState) => state.conversation.currentPage
     );
     const dispatch = useDispatch();
 
-    const handleClickConversation = async (user: UserResponse) => {
-        dispatch(setShowChatModal(true));
-        dispatch(setUserClicked(user));
-        popupState.close();
+    const handleClickConversation = async (
+        conversation: ConversationResponse
+    ) => {
+        const data = await handleGetListMessage(
+            conversation.conversation_id,
+            currentPage,
+            10
+        );
+        if (data) {
+            dispatch(setShowChatModal(true));
+            dispatch(setCurrentConversation(conversation));
+            const messages = handleReverseMessages(data);
+            setMessages(messages);
+            popupState.close();
+        }
     };
+
+    useEffect(() => {
+        async function fetchData() {
+            const response = await handleGetListConversation();
+            if (response) {
+                setListConversation(response);
+            }
+        }
+        fetchData();
+    }, []);
 
     return (
         <>
@@ -66,38 +100,56 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                         className=""
                     ></SearchInput>
                 </Box>
-                <Box className="w-full h-full max-h-[500px] overflow-x-hidden overflow-y-auto">
-                    {relationshipUsers &&
-                        relationshipUsers.friends &&
-                        Object.values(relationshipUsers.friends).map((user) => (
-                            <Box className="px-2" key={user.user_id}>
-                                <Button
-                                    className="flex items-center justify-start w-full h-full normal-case gap-x-2"
-                                    color="inherit"
-                                    variant="text"
-                                    onClick={() =>
-                                        handleClickConversation(user)
-                                    }
+                <Box className="w-full h-full max-h-[500px] overflow-x-hidden overflow-y-auto custom-scrollbar">
+                    {listConversation &&
+                        listConversation.map((conversation) => {
+                            const user = conversation.members.find(
+                                (member) =>
+                                    member.user_id !==
+                                    currentUserProfile.user_id
+                            );
+                            return (
+                                <Box
+                                    className="px-2"
+                                    key={conversation.conversation_id}
                                 >
-                                    <Image
-                                        src={user.image_url}
-                                        width={56}
-                                        height={56}
-                                        className="object-cover rounded-full w-14 h-14"
-                                        alt="avatar"
-                                    ></Image>
-                                    <Box className="flex flex-col items-start justify-center flex-1 gap-y-2">
-                                        <Typography>{user.name}</Typography>
-                                        <Box className="flex items-center justify-center gap-x-2">
-                                            <Typography>Chao ban</Typography>
+                                    <Button
+                                        className="flex items-center justify-start w-full h-full normal-case gap-x-2"
+                                        color="inherit"
+                                        variant="text"
+                                        onClick={() =>
+                                            handleClickConversation(
+                                                conversation
+                                            )
+                                        }
+                                    >
+                                        <Image
+                                            src={
+                                                user?.image_url ||
+                                                "https://source.unsplash.com/random"
+                                            }
+                                            width={56}
+                                            height={56}
+                                            className="object-cover rounded-full w-14 h-14"
+                                            alt="avatar"
+                                        ></Image>
+                                        <Box className="flex flex-col items-start justify-center flex-1 gap-y-2">
                                             <Typography>
-                                                &sdot; 19 giờ
+                                                {user?.name}
                                             </Typography>
+                                            <Box className="flex items-center justify-center gap-x-2">
+                                                <Typography>
+                                                    Chao ban
+                                                </Typography>
+                                                <Typography>
+                                                    &sdot; 19 giờ
+                                                </Typography>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                </Button>
-                            </Box>
-                        ))}
+                                    </Button>
+                                </Box>
+                            );
+                        })}
                 </Box>
                 <Box className="z-50 flex items-center justify-center py-4 border-t shadow-md">
                     <Link

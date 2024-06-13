@@ -89,8 +89,8 @@ export default function UserCard({
         setBtnBottomLoading(false);
         switch (type) {
             case "friend":
-                dispatch(setShowChatModal(true));
-                dispatch(setUserClicked(user));
+                // dispatch(setShowChatModal(true));
+                // dispatch(setUserClicked(user));
                 setBtnBottomLoading(false);
                 return;
             case "receive":

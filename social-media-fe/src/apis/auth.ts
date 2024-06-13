@@ -51,6 +51,11 @@ const refreshToken = async (accessToken: string, refreshToken: string) => {
         {
             accessToken,
             refreshToken,
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${refreshToken}`,
+            },
         }
     );
     return response;

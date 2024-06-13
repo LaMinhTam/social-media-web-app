@@ -4,6 +4,7 @@ import userSlice from "./actions/userSlice";
 import commonSlice from "./actions/commonSlice";
 import profileSlice from "./actions/profileSlice";
 import chatSlice from "./actions/chatSlice";
+import conversationSlice from "./actions/conversationSlice";
 
 const reducer = combineReducers({
     user: userSlice,
@@ -11,6 +12,7 @@ const reducer = combineReducers({
     common: commonSlice,
     profile: profileSlice,
     chat: chatSlice,
+    conversation: conversationSlice,
 });
 
 const store = configureStore({

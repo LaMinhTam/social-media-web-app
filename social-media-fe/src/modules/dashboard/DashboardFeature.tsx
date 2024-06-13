@@ -5,8 +5,6 @@ import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import ConversationModal from "@/components/modal/ConversationModal";
-import { useDispatch } from "react-redux";
-import { setShowChatModal } from "@/store/actions/commonSlice";
 const DashboardFeature = ({
     handleProfileMenuOpen,
     menuId,
@@ -14,7 +12,6 @@ const DashboardFeature = ({
     handleProfileMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
     menuId: string;
 }) => {
-    const dispatch = useDispatch();
     return (
         <>
             <Box

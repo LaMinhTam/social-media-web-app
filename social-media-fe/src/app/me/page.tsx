@@ -20,7 +20,7 @@ const Profile = () => {
     return (
         <RequiredAuthLayout>
             <LayoutDashboard>
-                <div className="w-full h-full overflow-y-auto bg-strock">
+                <div className="w-full h-full overflow-y-auto bg-strock custom-scrollbar">
                     <Header data={currentUserProfile}></Header>
                     <div className="w-full max-w-[1048px] h-full px-4 mx-auto mt-4 flex">
                         <Grid container spacing={3}>

@@ -9,6 +9,11 @@ import { RootState } from "@/store/configureStore";
 import { Drawer } from "@mui/material";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { SocketProvider } from "@/contexts/socket-context";
+import SocketType from "@/types/socketType";
+import { getAccessToken, getUser } from "@/utils/auth";
+import CryptoJS from "crypto-js";
+import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
     const dispatch = useDispatch();
@@ -34,25 +39,24 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
     }, [triggerReFetchingRelationship]);
 
     useEffect(() => {
-        async function fetchMe() {
-            const data = await fetchingMe();
-            if (data) {
-                dispatch(setCurrentUserProfile(data));
-            }
+        const decryptedData = getUserInfoFromCookie();
+        if (decryptedData) {
+            dispatch(setCurrentUserProfile(decryptedData));
         }
-        fetchMe();
     }, []);
 
     return (
-        <div className="relative w-full h-full min-h-screen bg-strock">
-            <DashboardTopBar></DashboardTopBar>
-            {showChatModal && (
-                <div className="fixed bottom-0 rounded-lg shadow-md right-14 bg-lite">
-                    <ChatModal></ChatModal>
-                </div>
-            )}
-            {children}
-        </div>
+        <SocketProvider value={{} as SocketType}>
+            <div className="relative w-full h-full min-h-screen bg-strock">
+                <DashboardTopBar></DashboardTopBar>
+                {showChatModal && (
+                    <div className="fixed bottom-0 rounded-lg shadow-md right-14 bg-lite">
+                        <ChatModal></ChatModal>
+                    </div>
+                )}
+                {children}
+            </div>
+        </SocketProvider>
     );
 };
 

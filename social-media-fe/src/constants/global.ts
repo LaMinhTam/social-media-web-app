@@ -2,6 +2,8 @@ export const API_BASE_URL = "https://localhost:8060";
 
 export const APP_BASE_URL = "http://localhost:3000";
 
+export const SOCKET_URL = "https://localhost:8060/websocket/ws";
+
 export const OAUTH2_REDIRECT_URI = `${APP_BASE_URL}/oauth2/redirect`;
 
 export const GOOGLE_AUTH_URL =

@@ -108,10 +108,6 @@ services:
             - NEO4J_dbms_memory_heap_max__size=512M
         volumes:
             - neo4j-data:/data
-            - ./neo4j/data:/data
-            - ./neo4j/conf:/conf
-            - ./neo4j/logs:/logs
-            - ./neo4j/plugins:/plugins
         networks:
             - backend
             - db-neo4j-net
@@ -337,12 +333,19 @@ services:
             - SPRING_DATA_MONGODB_DATABASE=chat_db
             - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
             - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
+            - KURENTO_WS_URL=ws://kurento-con:8888/kurento
+            - SPRING_DATA_REDIS_DATABASE=0
+            - SPRING_DATA_REDIS_HOST=redis
+            - SPRING_DATA_REDIS_PORT=6379
+            - SPRING_DATA_REDIS_TIMEOUT=60000
+            - SPRING_DATA_REDIS_PASSWORD=123456
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
             - db-mongodb-net
+            - db-redis-net
 
     # nextjs14-social-media-fe:
     #     image: dinhthong17/nextjs14-social-media-fe:latest
@@ -364,4 +367,4 @@ networks:
     backend:
     db-redis-net:
     rabbitmq-net:
-    frontend:
+    # frontend:

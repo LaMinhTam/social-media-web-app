@@ -7,6 +7,7 @@ import ModalChatFooter from "@/modules/conversation/modal/ModalChatFooter";
 import ModalChatContent from "@/modules/conversation/modal/ModalChatContent";
 import { handleGetUserStatus } from "@/services/conversation.service";
 import { OnlineResponse, OnlineStatus } from "@/types/commonType";
+import { useSocket } from "@/contexts/socket-context";
 
 const ChatModal = () => {
     const dispatch = useDispatch();
@@ -16,48 +17,60 @@ const ChatModal = () => {
         nodeRef: activeRef,
     } = useClickOutSide();
     const [showFullInput, setShowFullInput] = React.useState(false);
-    const [message, setMessage] = React.useState("");
-    const [userStatus, setUserStatus] = React.useState<OnlineStatus>(
-        {} as OnlineStatus
-    );
-    const [messageShow, setMessageShow] = React.useState<string>("");
-    const userClicked = useSelector(
-        (state: RootState) => state.user.userClicked
+    // const [userStatus, setUserStatus] = React.useState<OnlineStatus>(
+    //     {} as OnlineStatus
+    // );
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
     );
 
-    useEffect(() => {
-        async function getStatus() {
-            const data = await handleGetUserStatus(
-                userClicked.user_id.toString()
-            );
-            if (data) {
-                setUserStatus(data[userClicked.user_id.toString()]);
-            }
-        }
-        if (userClicked) {
-            getStatus();
-        }
-    }, []);
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
 
-    if (!userClicked) return null;
+    const anotherUser = currentConversation.members.find(
+        (user) => user.user_id !== currentUserProfile.user_id
+    );
+
+    const { messages, stompClient, setMessages } = useSocket();
+
+    // useEffect(() => {
+    //     async function getStatus() {
+    //         if (anotherUser) {
+    //             const data = await handleGetUserStatus(
+    //                 anotherUser.user_id.toString()
+    //             );
+    //             if (data) {
+    //                 setUserStatus(data[anotherUser.user_id.toString()]);
+    //             }
+    //         }
+    //     }
+    //     getStatus();
+    // }, []);
+
+    if (!anotherUser || !currentConversation || !stompClient) return null;
     return (
-        <div className="w-[328px] h-[467px] rounded-lg flex flex-col">
+        <div className="w-[382px] h-[467px] rounded-lg flex flex-col">
             <ModalChatHeader
-                userStatus={userStatus}
-                username={userClicked.name}
+                // userStatus={userStatus}
+                username={currentConversation.name}
                 dispatch={dispatch}
-                avatar={userClicked.image_url}
+                avatar={currentConversation.image}
             ></ModalChatHeader>
-            <ModalChatContent message={messageShow}></ModalChatContent>
+            <ModalChatContent
+                conversationId={currentConversation.conversation_id}
+                messages={messages}
+                currentUserId={currentUserProfile.user_id}
+                setMessages={setMessages}
+            ></ModalChatContent>
             <ModalChatFooter
                 isActive={isActive}
                 setIsActive={setIsActive}
                 showFullInput={showFullInput}
                 setShowFullInput={setShowFullInput}
-                setMessage={setMessage}
-                setMessageShow={setMessageShow}
                 activeRef={activeRef}
-                message={message}
+                stompClient={stompClient}
+                conversationId={currentConversation.conversation_id}
             ></ModalChatFooter>
         </div>
     );

@@ -1,26 +1,32 @@
-import { ConversationDetailResponse } from "@/types/conversationType";
+import { ConversationResponse } from "@/types/conversationType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type ConversationType = {
-    currentConversationDetails: ConversationDetailResponse;
+    currentConversation: ConversationResponse;
+    currentPage: number;
 };
 
 const initialState: ConversationType = {
-    currentConversationDetails: {} as ConversationDetailResponse,
+    currentConversation: {} as ConversationResponse,
+    currentPage: 1,
 };
 
 const conversationSlice = createSlice({
     name: "conversation",
     initialState,
     reducers: {
-        setCurrentConversationDetails(
+        setCurrentConversation(
             state,
-            action: PayloadAction<ConversationDetailResponse>
+            action: PayloadAction<ConversationResponse>
         ) {
-            state.currentConversationDetails = action.payload;
+            state.currentConversation = action.payload;
+        },
+        setCurrentPage(state, action: PayloadAction<number>) {
+            state.currentPage = action.payload;
         },
     },
 });
 
-export const { setCurrentConversationDetails } = conversationSlice.actions;
+export const { setCurrentConversation, setCurrentPage } =
+    conversationSlice.actions;
 export default conversationSlice.reducer;

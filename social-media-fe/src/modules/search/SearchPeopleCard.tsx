@@ -59,8 +59,8 @@ const SearchPeopleCard = ({ user }: { user: UserResponse }) => {
     const handleClicked = async () => {
         setLoading(true);
         if (isFriend) {
-            dispatch(setShowChatModal(true));
-            dispatch(setUserClicked(user));
+            // dispatch(setShowChatModal(true));
+            // dispatch(setUserClicked(user));
             setLoading(false);
         } else if (isBlocked) {
             // handle unblock

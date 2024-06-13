@@ -20,3 +20,19 @@ export type ListFriendResponse = {
     blocked: Record<string, FriendRequestData>;
     friends: Record<string, FriendRequestData>;
 };
+
+export type AcceptFriendRequestResponse = {
+    id: number;
+    created_at: string;
+    updated_at: string;
+    target_user: number;
+    source_user: string;
+};
+
+export type SendFriendRequestResponse = {
+    id: number;
+    created_at: string;
+    updated_at: string;
+    target_user: number;
+    source_user: string;
+};
