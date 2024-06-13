@@ -21,9 +21,10 @@ public record MessageDetailDTO(String messageId,
                                NotificationType notificationType,
                                EnumMap<ReactionType, List<Long>> reactions,
                                Date createdAt,
-                               Date updatedAt) {
+                               Date updatedAt,
+                               Map<Long, UserDetail> readBy) {
 
-    public MessageDetailDTO(Message message, UserDetail senderUserDetail, List<UserDetail> targetUserDetails) {
+    public MessageDetailDTO(Message message, UserDetail senderUserDetail, List<UserDetail> targetUserDetails, Map<Long, UserDetail> readBy) {
         this(message.getId().toString(),
                 message.getConversationId(),
                 senderUserDetail,
@@ -34,6 +35,7 @@ public record MessageDetailDTO(String messageId,
                 message.getNotificationType(),
                 message.getReactions(),
                 message.getCreatedAt(),
-                message.getUpdatedAt());
+                message.getUpdatedAt(),
+                readBy);
     }
 }

@@ -20,6 +20,7 @@ import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -67,23 +68,38 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageDetailDTO> getMessagesByConversationId(String conversationId, int page, int size) {
-        List<Message> messages = messageRepository.findByConversationId(conversationId, page, size);
+    public List<MessageDetailDTO> getMessagesByConversationId(Conversation conversation, int page, int size) {
+        List<Message> messages = messageRepository.findByConversationId(conversation.getId().toHexString(), page, size);
 
-        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(
-                messages.stream().flatMap(message -> Stream.concat(
-                        Stream.of(
-                                message.getSenderId()),
-                        message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
-                ).distinct().toList()
-        );
+        Set<Long> userIds = messages.stream().flatMap(message -> Stream.concat(
+                Stream.of(
+                        message.getSenderId()),
+                message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
+        ).collect(Collectors.toSet());
+        userIds.addAll(conversation.getReadBy().keySet().stream().toList());
+
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
 
         return messages.stream()
                 .map(message -> {
                     List<UserDetail> targetUserDetails = UserDetail.getUserDetailsFromMap(message, userDetailMap);
-                    return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails);
+                    Map<Long, UserDetail> readBy = getReadByUserDetails(conversation, message, userDetailMap);
+                    return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails, readBy);
                 })
                 .toList();
+    }
+
+    private Map<Long, UserDetail> getReadByUserDetails(Conversation conversation, Message message, Map<Long, UserDetail> userDetailMap) {
+        Map<Long, UserDetail> readBy = new HashMap<>();
+        ObjectId messageId = message.getId();
+
+        conversation.getReadBy().forEach((userId, lastReadMessageId) -> {
+            if (lastReadMessageId.compareTo(messageId) >= 0) {
+                readBy.put(userId, userDetailMap.get(userId));
+            }
+        });
+
+        return readBy;
     }
 
     @Override
@@ -141,5 +157,22 @@ public class MessageServiceImpl implements MessageService {
         message.getReactions().computeIfAbsent(reaction, k -> new ArrayList<>());
         message.getReactions().get(reaction).add(senderId);
         return new MessageDTO(messageRepository.save(message));
+    }
+
+    @Override
+    public void markMessageAsRead(Long id, ObjectId messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId()))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+        ObjectId lastReadMessageId = conversation.getReadBy().get(id);
+        if (lastReadMessageId == null || isLaterMessage(lastReadMessageId, messageId)) {
+            conversation.getReadBy().put(id, messageId);
+            conversationRepository.save(conversation);
+        }
+    }
+
+    private boolean isLaterMessage(ObjectId lastReadMessageId, ObjectId currentMessageId) {
+        return currentMessageId.compareTo(lastReadMessageId) > 0;
     }
 }

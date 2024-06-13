@@ -1,5 +1,6 @@
 package vn.edu.iuh.fit.chatservice.controller;
 
+import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -36,16 +37,15 @@ public class MessageController {
                                                                                      @RequestParam int size) {
 
         Conversation conversation = conversationService.getPlainConversation(id, conversationId);
-
-        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversationId, page, size);
+        String eTag = String.valueOf(conversation.getUpdatedAt().getTime());
+        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(eTag).build();
+        }
+        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversation, page, size);
 
         Map<String, MessageDetailDTO> messageMap = messages.stream()
                 .collect(Collectors.toMap(MessageDetailDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-        if (ifNoneMatch != null && ifNoneMatch.equals(String.valueOf(conversation.getUpdatedAt().getTime()))) {
-            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(String.valueOf(conversation.getUpdatedAt().getTime())).build();
-        } else {
-            return ResponseEntity.ok().eTag(String.valueOf(conversation.getUpdatedAt().getTime())).body(messageMap);
-        }
+        return ResponseEntity.ok().eTag(eTag).body(messageMap);
     }
 
     @PostMapping("/share")
@@ -76,5 +76,11 @@ public class MessageController {
 
     public void sendMessageToUser(String userId, String destination, Object error) {
         simpMessagingTemplate.convertAndSendToUser(userId, "/" + destination, error);
+    }
+
+    @PatchMapping("/{messageId}/read")
+    public ResponseEntity<Void> markMessageAsRead(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+        messageService.markMessageAsRead(id, new ObjectId(messageId));
+        return ResponseEntity.ok().build();
     }
 }

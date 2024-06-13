@@ -504,15 +504,18 @@ public class ConversationServiceImpl implements ConversationService {
     private void notifyConversationMembers(Conversation conversation, Message message) {
         Thread thread = new Thread(() -> {
             messageRepository.save(message);
-            List<Long> userIds = Stream.concat(
-                            Stream.of(message.getSenderId()),
-                            message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
-                    .toList();
+            List<Long> userIds = new ArrayList<>(Stream.concat(
+                            Stream.concat(
+                                    Stream.of(message.getSenderId()),
+                                    message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream()),
+                            conversation.getReadBy().keySet().stream())
+                    .collect(Collectors.toSet()));
+
             List<UserDetail> userDetails = userClient.getUsersByIds(userIds);
             UserDetail senderUserDetail = userDetails.stream().filter(userDetail -> userDetail.user_id().equals(message.getSenderId())).findFirst().get();
             List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromList(message, userDetails);
             for (Long memberId : conversation.getMembers()) {
-                messagingTemplate.convertAndSendToUser(memberId.toString(), "/message", new MessageDetailDTO(message, senderUserDetail, targetUserDetail));
+                messagingTemplate.convertAndSendToUser(memberId.toString(), "/message", new MessageDetailDTO(message, senderUserDetail, targetUserDetail, null));
             }
         });
         thread.start();

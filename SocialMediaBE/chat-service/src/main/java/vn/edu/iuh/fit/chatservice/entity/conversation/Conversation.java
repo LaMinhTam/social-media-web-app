@@ -56,6 +56,10 @@ public class Conversation {
     @Column(name = "updated_at")
     @JsonProperty("updated_at")
     private Date updatedAt;
+    @Column(name = "read-by")
+    @JsonProperty("read-by")
+//    user id, last read message id
+    private Map<Long, ObjectId> readBy = new HashMap<>();
 
     public Conversation(Conversation conversation) {
         this.id = conversation.id;
