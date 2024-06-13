@@ -10,6 +10,15 @@ import SendIcon from "@mui/icons-material/Send";
 import React from "react";
 import { Client } from "stompjs";
 import { getAccessToken } from "@/utils/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
+import CloseIcon from "@mui/icons-material/Close";
+import { Member } from "@/types/conversationType";
+import {
+    setIsReplying,
+    setMessageReply,
+} from "@/store/actions/conversationSlice";
+import MessageReply from "@/components/common/MessageReply";
 
 const ModalChatFooter = ({
     isActive,
@@ -28,8 +37,18 @@ const ModalChatFooter = ({
     stompClient: Client;
     conversationId: string;
 }) => {
+    const dispatch = useDispatch();
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
     const accessToken = getAccessToken();
     const [message, setMessage] = React.useState<string>("");
+    const isReplying = useSelector(
+        (state: RootState) => state.conversation.isReplying
+    );
+    const replyMessage = useSelector(
+        (state: RootState) => state.conversation.messageReply
+    );
     const handleSendMessage = () => {
         if (message.trim() === "") return;
         const chatMessage = {
@@ -56,6 +75,19 @@ const ModalChatFooter = ({
 
     return (
         <div className="z-50 w-full min-h-[60px] px-1 py-3 border-t shadow-md">
+            {isReplying && (
+                <MessageReply
+                    name={
+                        replyMessage.user_detail.name ===
+                        currentUserProfile.name
+                            ? "yourself"
+                            : replyMessage.user_detail.name || "Unknown"
+                    }
+                    content={replyMessage.content}
+                    dispatch={dispatch}
+                ></MessageReply>
+            )}
+
             <div className="flex items-center w-full">
                 {showFullInput ? (
                     <Tooltip title="More action">

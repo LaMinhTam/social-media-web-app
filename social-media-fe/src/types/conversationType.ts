@@ -1,3 +1,5 @@
+import { Moment } from "moment";
+
 export interface Member {
     user_id: number;
     name?: string;
@@ -26,3 +28,9 @@ export interface MessageData {
 export type MessageResponse = {
     [key: string]: MessageData;
 };
+
+export interface GroupedMessage {
+    time: Moment;
+    formattedTime: string;
+    data: MessageData[];
+}

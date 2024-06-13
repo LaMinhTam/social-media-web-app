@@ -2,10 +2,16 @@ import MessageFeature from "@/components/common/MessageFeature";
 import MessageFeatureDialog from "@/components/common/MessageFeatureDialog";
 import useClickOutSide from "@/hooks/useClickOutSide";
 import useHover from "@/hooks/useHover";
+import {
+    setIsReplying,
+    setMessageReply,
+} from "@/store/actions/conversationSlice";
 import { MessageData } from "@/types/conversationType";
-import { Button, Grid, Typography } from "@mui/material";
+import formatTime from "@/utils/conversation/messages/handleGroupMessage";
+import { Tooltip } from "@mui/material";
 import Image from "next/image";
 import React from "react";
+import { useDispatch } from "react-redux";
 
 const ModalChatMessage = ({
     type,
@@ -14,12 +20,17 @@ const ModalChatMessage = ({
     type: string;
     message: MessageData;
 }) => {
+    const dispatch = useDispatch();
     const [hoverRef, isHovered] = useHover();
     const {
         show: showFeature,
         setShow: setShowFeature,
         nodeRef: featureRef,
     } = useClickOutSide();
+    const handleReplyMessage = () => {
+        dispatch(setMessageReply(message));
+        dispatch(setIsReplying(true));
+    };
     return (
         <>
             <div
@@ -40,19 +51,21 @@ const ModalChatMessage = ({
                         />
                     )}
                 </div>
-                <div
-                    className={`rounded-lg w-fit max-w-[212px] px-3 py-2 my-2 ${
-                        type === "send"
-                            ? "bg-secondary text-lite ml-auto"
-                            : "bg-strock text-text1 mr-auto"
-                    }`}
-                    style={{
-                        wordWrap: "break-word",
-                        overflowWrap: "break-word",
-                    }}
-                >
-                    <p className="text-wrap">{message.content}</p>
-                </div>
+                <Tooltip title={formatTime(message.created_at)}>
+                    <div
+                        className={`rounded-lg w-fit max-w-[212px] px-3 py-2 my-2 ${
+                            type === "send"
+                                ? "bg-secondary text-lite ml-auto"
+                                : "bg-strock text-text1 mr-auto"
+                        }`}
+                        style={{
+                            wordWrap: "break-word",
+                            overflowWrap: "break-word",
+                        }}
+                    >
+                        <p className="text-wrap">{message.content}</p>
+                    </div>
+                </Tooltip>
                 {isHovered && (
                     <div
                         className={`absolute p-2 transform -translate-y-1/2 bg-lite top-1/2 ${
@@ -63,16 +76,19 @@ const ModalChatMessage = ({
                             <MessageFeature
                                 messageId={message.message_id}
                                 setIsOpen={setShowFeature}
+                                handleReplyMessage={handleReplyMessage}
                             ></MessageFeature>
                         </div>
-                        {showFeature && (
-                            <div
-                                ref={featureRef}
-                                className="absolute top-0 right-0 z-10 rounded-lg shadow-md bg-lite"
-                            >
-                                <MessageFeatureDialog />
-                            </div>
-                        )}
+                    </div>
+                )}
+                {showFeature && (
+                    <div
+                        ref={featureRef}
+                        className={`absolute -translate-y-[30px] top-[-30px] rounded-lg shadow-md bg-lite ${
+                            type === "send" ? "left-0" : "right-0"
+                        }`}
+                    >
+                        <MessageFeatureDialog />
                     </div>
                 )}
             </div>

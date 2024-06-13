@@ -14,7 +14,10 @@ import {
     handleGetListConversation,
     handleGetListMessage,
 } from "@/services/conversation.service";
-import { setCurrentConversation } from "@/store/actions/conversationSlice";
+import {
+    setCurrentConversation,
+    setCurrentPage,
+} from "@/store/actions/conversationSlice";
 import { useSocket } from "@/contexts/socket-context";
 import handleReverseMessages from "@/utils/conversation/messages/handleReverseMessages";
 
@@ -36,12 +39,13 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     ) => {
         const data = await handleGetListMessage(
             conversation.conversation_id,
-            currentPage,
+            1,
             10
         );
         if (data) {
             dispatch(setShowChatModal(true));
             dispatch(setCurrentConversation(conversation));
+            dispatch(setCurrentPage(1));
             const messages = handleReverseMessages(data);
             setMessages(messages);
             popupState.close();

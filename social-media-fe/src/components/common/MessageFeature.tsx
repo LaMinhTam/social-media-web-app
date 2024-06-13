@@ -6,9 +6,11 @@ import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt
 const MessageFeature = ({
     messageId,
     setIsOpen,
+    handleReplyMessage,
 }: {
     messageId: string;
     setIsOpen: (value: boolean) => void;
+    handleReplyMessage: () => void;
 }) => {
     return (
         <Stack
@@ -24,7 +26,7 @@ const MessageFeature = ({
                     aria-controls="long-menu"
                     aria-haspopup="true"
                     color="inherit"
-                    className="w-7 h-7"
+                    className="w-7 h-7 btn-chat-action"
                     onClick={(e) => {
                         e.stopPropagation();
                         setIsOpen(true);
@@ -41,6 +43,7 @@ const MessageFeature = ({
                     aria-haspopup="true"
                     color="inherit"
                     className="w-7 h-7"
+                    onClick={handleReplyMessage}
                 >
                     <ReplyIcon />
                 </IconButton>

@@ -8,7 +8,8 @@ import handleReverseMessages from "@/utils/conversation/messages/handleReverseMe
 import { setCurrentPage } from "@/store/actions/conversationSlice";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useSocket } from "@/contexts/socket-context";
-
+import { groupMessages } from "@/utils/conversation/messages/handleGroupMessage";
+import { v4 as uuidv4 } from "uuid";
 const ModalChatContent = ({
     conversationId,
     messages,
@@ -34,6 +35,7 @@ const ModalChatContent = ({
                 chatContentRef.current.scrollHeight;
         }
     }, [triggerScrollChat]);
+    const groupedMessages = groupMessages(Object.values(messages));
     const handleScroll = async () => {
         if (chatContentRef.current?.scrollTop === 0) {
             setLoading(true);
@@ -63,16 +65,23 @@ const ModalChatContent = ({
             onScroll={() => !isEnd && handleScroll()}
         >
             {loading && <LoadingSpinner></LoadingSpinner>}
-            {Object.values(messages).map((message, index) => (
-                <ModalChatMessage
-                    key={index}
-                    message={message}
-                    type={
-                        message.user_detail.user_id === currentUserId
-                            ? "send"
-                            : "receive"
-                    }
-                />
+            {groupedMessages.map((group, index) => (
+                <div key={uuidv4()}>
+                    <div className="mt-2 text-xs text-center text-gray-500">
+                        {group.formattedTime}
+                    </div>
+                    {group.data.map((message) => (
+                        <ModalChatMessage
+                            key={uuidv4()}
+                            message={message}
+                            type={
+                                message.user_detail.user_id === currentUserId
+                                    ? "send"
+                                    : "receive"
+                            }
+                        />
+                    ))}
+                </div>
             ))}
         </div>
     );
