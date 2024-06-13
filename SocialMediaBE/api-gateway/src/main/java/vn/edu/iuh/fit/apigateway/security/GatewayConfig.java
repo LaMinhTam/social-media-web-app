@@ -26,12 +26,12 @@ public class GatewayConfig {
                                 .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
                         )
                         .uri("lb://notification-service/"))
-                .route("chat-service", r -> r.path("/conversations/**", "/messages/**","/user-status/**")
-                        .filters(f -> f.filter(filter))
-                        .uri("lb://chat-service"))
-                .route("notification-service", r -> r.path("/notifications/**")
+                .route("notification-service", r -> r.path("/user-status/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://notification-service"))
+                .route("chat-service", r -> r.path("/conversations/**", "/messages/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://chat-service"))
                 .build();
     }
 
