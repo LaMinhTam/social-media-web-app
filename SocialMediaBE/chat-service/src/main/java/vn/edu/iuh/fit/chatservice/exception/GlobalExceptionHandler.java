@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import vn.edu.iuh.fit.chatservice.config.videocall.one2One.One2OneCallHandler;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

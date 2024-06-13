@@ -11,7 +11,7 @@ import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
 import java.util.List;
 
 public interface MessageService {
-    Message saveMessage(Long userId, MessageFromClientDTO message) throws Exception;
+    Message saveMessage(Long userId, MessageFromClientDTO message);
 
     List<MessageDetailDTO> getMessagesByConversationId(Conversation conversationId, int page, int size);
 

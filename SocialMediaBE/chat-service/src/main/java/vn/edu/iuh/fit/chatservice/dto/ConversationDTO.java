@@ -9,6 +9,7 @@ import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +18,8 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ConversationDTO {
+public class ConversationDTO implements Serializable {
+    private static final long serialVersionUID = -6497321363058647683L;
     private String conversationId;
     private String name;
     private String image;

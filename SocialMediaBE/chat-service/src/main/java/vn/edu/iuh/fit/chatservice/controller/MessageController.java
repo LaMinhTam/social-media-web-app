@@ -3,10 +3,10 @@ package vn.edu.iuh.fit.chatservice.controller;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
+import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
 
@@ -20,12 +20,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/messages")
 public class MessageController {
     private final MessageService messageService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
     private final ConversationService conversationService;
 
-    public MessageController(MessageService messageService, SimpMessagingTemplate simpMessagingTemplate, ConversationService conversationService) {
+    public MessageController(MessageService messageService, ConversationService conversationService) {
         this.messageService = messageService;
-        this.simpMessagingTemplate = simpMessagingTemplate;
         this.conversationService = conversationService;
     }
 
@@ -48,34 +46,27 @@ public class MessageController {
         return ResponseEntity.ok().eTag(eTag).body(messageMap);
     }
 
+    @PostMapping
+    public Message saveMessage(@RequestHeader("sub") Long id, @RequestBody MessageFromClientDTO message) {
+        return messageService.saveMessage(id, message);
+    }
+
     @PostMapping("/share")
     public ResponseEntity<List<MessageDTO>> shareMessage(@RequestHeader("sub") Long id, @RequestBody ShareMessageRequest request) {
         List<MessageDTO> message = messageService.shareMessage(id, request.messageId(), request.conversationIds());
-        for (MessageDTO sharedMessage : message) {
-            Conversation conversation = conversationService.getPlainConversation(id, sharedMessage.conversationId());
-            conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "message", sharedMessage));
-        }
         return ResponseEntity.ok(message);
     }
 
     @PatchMapping("/revoke/{messageId}")
     public ResponseEntity<MessageDTO> revokeMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
         MessageDTO message = messageService.revokeMessage(messageId);
-        Conversation conversation = conversationService.getPlainConversation(id, message.conversationId());
-        conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "revoke", message));
         return ResponseEntity.ok(message);
     }
 
     @PostMapping("/react")
     public ResponseEntity<MessageDTO> reactMessage(@RequestHeader("sub") Long id, @RequestBody ReactRequest request) {
         MessageDTO message = messageService.reactMessage(id, request.messageId(), request.reaction());
-        Conversation conversation = conversationService.getPlainConversation(id, message.conversationId());
-        conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "react", message));
         return ResponseEntity.ok(message);
-    }
-
-    public void sendMessageToUser(String userId, String destination, Object error) {
-        simpMessagingTemplate.convertAndSendToUser(userId, "/" + destination, error);
     }
 
     @PatchMapping("/{messageId}/read")

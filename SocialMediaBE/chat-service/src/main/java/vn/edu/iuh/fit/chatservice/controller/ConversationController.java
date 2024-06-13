@@ -22,6 +22,11 @@ public class ConversationController {
         this.conversationService = conversationService;
     }
 
+    @GetMapping({"/{conversationId}"})
+    public Conversation getPlainConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
+        return conversationService.getPlainConversation(id, conversationId);
+    }
+
     @GetMapping("/detail/{conversationId}")
     public ResponseEntity<ConversationDTO> getConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
         return ResponseEntity.ok(conversationService.getConversation(id, conversationId));

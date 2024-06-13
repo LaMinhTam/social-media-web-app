@@ -59,7 +59,7 @@ public class Conversation {
     @Column(name = "read-by")
     @JsonProperty("read-by")
 //    user id, last read message id
-    private Map<Long, ObjectId> readBy = new HashMap<>();
+    private Map<Long, String> readBy = new HashMap<>();
 
     public Conversation(Conversation conversation) {
         this.id = conversation.id;
