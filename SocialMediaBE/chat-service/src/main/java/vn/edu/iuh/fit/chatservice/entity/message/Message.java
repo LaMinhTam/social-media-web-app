@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ public class Message {
     private MessageType type;
     @Enumerated(EnumType.ORDINAL)
     private NotificationType notificationType;
-    private Map<ReactionType, List<Long>> reactions;
+    private EnumMap<ReactionType, List<Long>> reactions;
     @Column(name = "created_at")
     @JsonProperty("created_at")
     private Date createdAt;

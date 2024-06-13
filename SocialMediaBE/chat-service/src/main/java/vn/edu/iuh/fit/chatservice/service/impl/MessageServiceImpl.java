@@ -3,6 +3,8 @@ package vn.edu.iuh.fit.chatservice.service.impl;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.fit.chatservice.client.UserClient;
+import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
@@ -11,21 +13,26 @@ import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
 import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
 import vn.edu.iuh.fit.chatservice.exception.AppException;
+import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
 import vn.edu.iuh.fit.chatservice.repository.MessageRepository;
 import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
 
-    public MessageServiceImpl(MessageRepository messageRepository, ConversationRepository conversationRepository) {
+    private final UserClient userClient;
+
+    public MessageServiceImpl(MessageRepository messageRepository, ConversationRepository conversationRepository, UserClient userClient) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
+        this.userClient = userClient;
     }
 
     @Override
@@ -60,9 +67,23 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageDTO> getMessagesByConversationId(String conversationId, int page, int size) {
+    public List<MessageDetailDTO> getMessagesByConversationId(String conversationId, int page, int size) {
         List<Message> messages = messageRepository.findByConversationId(conversationId, page, size);
-        return messages.stream().map(MessageDTO::new).toList();
+
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(
+                messages.stream().flatMap(message -> Stream.concat(
+                        Stream.of(
+                                message.getSenderId()),
+                        message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
+                ).distinct().toList()
+        );
+
+        return messages.stream()
+                .map(message -> {
+                    List<UserDetail> targetUserDetails = UserDetail.getUserDetailsFromMap(message, userDetailMap);
+                    return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails);
+                })
+                .toList();
     }
 
     @Override
@@ -115,7 +136,7 @@ public class MessageServiceImpl implements MessageService {
     public MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction) {
         Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
         if (message.getReactions() == null) {
-            message.setReactions(new HashMap<>());
+            message.setReactions(new EnumMap<>(ReactionType.class));
         }
         message.getReactions().computeIfAbsent(reaction, k -> new ArrayList<>());
         message.getReactions().get(reaction).add(senderId);

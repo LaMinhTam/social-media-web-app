@@ -5,6 +5,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class UserClient {
@@ -21,5 +24,9 @@ public class UserClient {
                 .bodyToFlux(UserDetail.class)
                 .collectList()
                 .block();
+    }
+
+    public Map<Long, UserDetail> getUsersByIdsMap(List<Long> ids) {
+        return getUsersByIds(ids).stream().collect(Collectors.toMap(UserDetail::user_id, Function.identity()));
     }
 }

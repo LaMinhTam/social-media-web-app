@@ -1,12 +1,10 @@
 package vn.edu.iuh.fit.chatservice.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
-import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
-import vn.edu.iuh.fit.chatservice.dto.ReactRequest;
-import vn.edu.iuh.fit.chatservice.dto.ShareMessageRequest;
+import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
@@ -31,16 +29,27 @@ public class MessageController {
     }
 
     @RequestMapping("/{conversationId}")
-    public ResponseEntity<Map<String, MessageDTO>> getMessagesByConversationId(@PathVariable String conversationId, @RequestParam int page, @RequestParam int size) {
-        List<MessageDTO> messages = messageService.getMessagesByConversationId(conversationId, page, size);
+    public ResponseEntity<Map<String, MessageDetailDTO>> getMessagesByConversationId(@RequestHeader("sub") Long id,
+                                                                                     @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+                                                                                     @PathVariable String conversationId,
+                                                                                     @RequestParam int page,
+                                                                                     @RequestParam int size) {
 
-        Map<String, MessageDTO> messageMap = messages.stream()
-                .collect(Collectors.toMap(MessageDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-        return ResponseEntity.ok(messageMap);
+        Conversation conversation = conversationService.getPlainConversation(id, conversationId);
+
+        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversationId, page, size);
+
+        Map<String, MessageDetailDTO> messageMap = messages.stream()
+                .collect(Collectors.toMap(MessageDetailDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+        if (ifNoneMatch != null && ifNoneMatch.equals(String.valueOf(conversation.getUpdatedAt().getTime()))) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(String.valueOf(conversation.getUpdatedAt().getTime())).build();
+        } else {
+            return ResponseEntity.ok().eTag(String.valueOf(conversation.getUpdatedAt().getTime())).body(messageMap);
+        }
     }
 
     @PostMapping("/share")
-    public ResponseEntity<?> shareMessage(@RequestHeader("sub") Long id, @RequestBody ShareMessageRequest request) {
+    public ResponseEntity<List<MessageDTO>> shareMessage(@RequestHeader("sub") Long id, @RequestBody ShareMessageRequest request) {
         List<MessageDTO> message = messageService.shareMessage(id, request.messageId(), request.conversationIds());
         for (MessageDTO sharedMessage : message) {
             Conversation conversation = conversationService.getPlainConversation(id, sharedMessage.conversationId());
@@ -50,7 +59,7 @@ public class MessageController {
     }
 
     @PatchMapping("/revoke/{messageId}")
-    public ResponseEntity<?> revokeMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+    public ResponseEntity<MessageDTO> revokeMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
         MessageDTO message = messageService.revokeMessage(messageId);
         Conversation conversation = conversationService.getPlainConversation(id, message.conversationId());
         conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "revoke", message));
@@ -58,7 +67,7 @@ public class MessageController {
     }
 
     @PostMapping("/react")
-    public ResponseEntity<?> reactMessage(@RequestHeader("sub") Long id, @RequestBody ReactRequest request) {
+    public ResponseEntity<MessageDTO> reactMessage(@RequestHeader("sub") Long id, @RequestBody ReactRequest request) {
         MessageDTO message = messageService.reactMessage(id, request.messageId(), request.reaction());
         Conversation conversation = conversationService.getPlainConversation(id, message.conversationId());
         conversation.getMembers().forEach(member -> sendMessageToUser(member.toString(), "react", message));

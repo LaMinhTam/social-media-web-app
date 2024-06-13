@@ -2,19 +2,16 @@ package vn.edu.iuh.fit.chatservice.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.chatservice.client.UserClient;
 import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
-import vn.edu.iuh.fit.chatservice.dto.CreateConversationRequest;
 import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
+import vn.edu.iuh.fit.chatservice.dto.CreateConversationRequest;
+import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
+import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
-import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
@@ -26,12 +23,12 @@ public class ConversationController {
     }
 
     @GetMapping("/detail/{conversationId}")
-    public ResponseEntity<?> getConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
+    public ResponseEntity<ConversationDTO> getConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
         return ResponseEntity.ok(conversationService.getConversation(id, conversationId));
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> getConversations(@RequestHeader("sub") Long id) {
+    public ResponseEntity<List<ConversationDTO>> getConversations(@RequestHeader("sub") Long id) {
         return ResponseEntity.ok(conversationService.findConversationsByUserId(id));
     }
 
@@ -60,76 +57,76 @@ public class ConversationController {
     }
 
     @PatchMapping("/{conversationId}/add-member")
-    public ResponseEntity<?> addMember(@RequestHeader("sub") Long id,
+    public ResponseEntity<SimpleConversationDTO> addMember(@RequestHeader("sub") Long id,
                                        @PathVariable String conversationId,
                                        @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.addMember(id, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/leave")
-    public ResponseEntity<?> leaveConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
+    public ResponseEntity<String> leaveConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
         Conversation conversation = conversationService.leaveConversation(id, conversationId);
         return ResponseEntity.ok(conversation.getId().toHexString());
     }
 
     @PatchMapping("/{conversationId}/change-name")
-    public ResponseEntity<?> changeName(@RequestHeader("sub") Long id, @PathVariable String conversationId, @RequestParam String name) {
+    public ResponseEntity<Conversation> changeName(@RequestHeader("sub") Long id, @PathVariable String conversationId, @RequestParam String name) {
         return ResponseEntity.ok(conversationService.changeName(id, conversationId, name));
     }
 
     @PatchMapping("/{conversationId}/change-image")
-    public ResponseEntity<?> changeImage(@RequestHeader("sub") Long id, @PathVariable String conversationId, @RequestParam String image) {
+    public ResponseEntity<Conversation> changeImage(@RequestHeader("sub") Long id, @PathVariable String conversationId, @RequestParam String image) {
         return ResponseEntity.ok(conversationService.changeImage(id, conversationId, image));
     }
 
     @PatchMapping("/{conversationId}/grant-owner")
-    public ResponseEntity<?> grantOwner(@RequestHeader("sub") Long adminId,
+    public ResponseEntity<Conversation> grantOwner(@RequestHeader("sub") Long adminId,
                                         @PathVariable String conversationId,
                                         @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.grantOwner(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/disband/{conversationId}")
-    public ResponseEntity<?> disbandConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
+    public ResponseEntity<String> disbandConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
         Conversation conversation = conversationService.disbandConversation(id, conversationId);
         return ResponseEntity.ok(conversation.getId().toHexString());
     }
 
     @PatchMapping("/{conversationId}/kick")
-    public ResponseEntity<?> kickMember(@RequestHeader("sub") Long adminId,
+    public ResponseEntity<SimpleConversationDTO> kickMember(@RequestHeader("sub") Long adminId,
                                         @PathVariable String conversationId,
                                         @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.kickMember(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/grant-deputy")
-    public ResponseEntity<?> grantDeputy(@RequestHeader("sub") Long adminId,
+    public ResponseEntity<SimpleConversationDTO> grantDeputy(@RequestHeader("sub") Long adminId,
                                          @PathVariable String conversationId,
                                          @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.grantDeputy(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/revoke-deputy")
-    public ResponseEntity<?> revokeDeputy(@RequestHeader("sub") Long adminId,
-                                          @PathVariable String conversationId,
-                                          @RequestParam(name = "member-id") Long memberId) {
+    public ResponseEntity<SimpleConversationDTO> revokeDeputy(@RequestHeader("sub") Long adminId,
+                                                              @PathVariable String conversationId,
+                                                              @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.revokeDeputy(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/update-settings")
-    public ResponseEntity<?> updateConversationSettings(@RequestHeader("sub") Long adminId,
-                                                        @PathVariable String conversationId,
-                                                        @RequestBody ConversationSettingsRequest settings) {
+    public ResponseEntity<ConversationSettings> updateConversationSettings(@RequestHeader("sub") Long adminId,
+                                                                           @PathVariable String conversationId,
+                                                                           @RequestBody ConversationSettingsRequest settings) {
         return ResponseEntity.ok(conversationService.updateConversationSettings(adminId, conversationId, settings));
     }
 
     @GetMapping("/link/{link}")
-    public ResponseEntity<?> getConversationByLink(@RequestHeader("sub") Long id, @PathVariable String link) {
+    public ResponseEntity<ConversationDTO> getConversationByLink(@RequestHeader("sub") Long id, @PathVariable String link) {
         return ResponseEntity.ok(conversationService.findByLink(link));
     }
 
     @PatchMapping("/join/{link}")
-    public ResponseEntity<?> joinByLink(@RequestHeader("sub") Long id, @PathVariable String link) {
+    public ResponseEntity<ConversationDTO> joinByLink(@RequestHeader("sub") Long id, @PathVariable String link) {
         return ResponseEntity.ok(conversationService.joinByLink(id, link));
     }
 

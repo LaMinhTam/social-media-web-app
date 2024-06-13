@@ -10,9 +10,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Document(collection = "conversations")
 @Data
@@ -59,4 +57,23 @@ public class Conversation {
     @JsonProperty("updated_at")
     private Date updatedAt;
 
+    public Conversation(Conversation conversation) {
+        this.id = conversation.id;
+        this.ownerId = conversation.ownerId;
+        this.deputies = conversation.deputies != null ? new ArrayList<>(conversation.deputies) : null;
+        this.type = conversation.type;
+        this.name = conversation.name;
+        this.avatar = conversation.avatar;
+        this.members = conversation.members != null ? new ArrayList<>(conversation.members) : null;
+        this.lastMessageId = conversation.lastMessageId;
+        this.lastActivity = conversation.lastActivity;
+        this.settings = conversation.settings;
+        this.status = conversation.status;
+        this.views = conversation.views != null ? new HashMap<>(conversation.views) : null;
+        this.mutedStatus = conversation.mutedStatus != null ? new HashMap<>(conversation.mutedStatus) : null;
+        this.notificationSettings = conversation.notificationSettings != null ? new HashMap<>(conversation.notificationSettings) : null;
+        this.pinnedMessages = conversation.pinnedMessages != null ? new ArrayList<>(conversation.pinnedMessages) : null;
+        this.createdAt = conversation.createdAt;
+        this.updatedAt = conversation.updatedAt;
+    }
 }

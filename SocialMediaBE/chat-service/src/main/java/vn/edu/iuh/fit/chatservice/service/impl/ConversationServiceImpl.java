@@ -7,12 +7,14 @@ import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
 import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
 import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
+import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
 import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
+import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
 import vn.edu.iuh.fit.chatservice.entity.message.NotificationType;
 import vn.edu.iuh.fit.chatservice.exception.AppException;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
@@ -86,7 +88,7 @@ public class ConversationServiceImpl implements ConversationService {
                 }
             });
         }
-        
+
         if (conversationType.equals(ConversationType.PRIVATE)) {
             return createPrivateConversation(members);
         } else {
@@ -145,6 +147,7 @@ public class ConversationServiceImpl implements ConversationService {
                     .senderId(userId)
                     .createdAt(new Date())
                     .updatedAt(new Date())
+                    .type(MessageType.NOTIFICATION)
                     .notificationType(NotificationType.DISBAND_GROUP)
                     .build();
             notifyConversationMembers(conversation, message);
@@ -174,13 +177,11 @@ public class ConversationServiceImpl implements ConversationService {
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.ADD_MEMBER)
                 .build();
         notifyConversationMembers(conversation, message);
-        Conversation savedConversation = conversationRepository.save(conversation);
-        List<Long> members = Stream.concat(conversation.getMembers().stream(), Stream.of(memberId)).toList();
-        ConversationDTO conversationDTO = createConversationDTO(savedConversation, members);
-        notifyTargetUser(members, conversationDTO);
+
         return saveAndReturnDTO(conversation);
     }
 
@@ -197,9 +198,9 @@ public class ConversationServiceImpl implements ConversationService {
         Message message = Message.builder()
                 .conversationId(conversation.getId().toHexString())
                 .senderId(id)
-                .targetUserId(conversation.getMembers())
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.JOIN_BY_LINK)
                 .build();
         Conversation savedConversation = conversationRepository.save(conversation);
@@ -228,6 +229,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .senderId(id)
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.LEAVE_GROUP)
                 .build();
         notifyConversationMembers(conversation, message);
@@ -237,7 +239,9 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public Conversation changeName(Long id, String conversationId, String name) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
-        if (!conversation.getSettings().isAllowMemberToChangeGroupInfo() && !(conversation.getSettings().isAllowDeputyChangeGroupInfo() && conversation.getDeputies() != null && conversation.getDeputies().contains(id))) {
+        if (!conversation.getOwnerId().equals(id) &&
+                !conversation.getSettings().isAllowMemberToChangeGroupInfo() &&
+                !(conversation.getSettings().isAllowDeputyChangeGroupInfo() && conversation.getDeputies() != null && conversation.getDeputies().contains(id))) {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to change group info");
         }
 
@@ -248,6 +252,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .content(name)
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.CHANGE_GROUP_NAME)
                 .build();
         notifyConversationMembers(conversation, message);
@@ -257,7 +262,9 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public Conversation changeImage(Long id, String conversationId, String image) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), id).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
-        if (!conversation.getSettings().isAllowMemberToChangeGroupInfo() && !(conversation.getSettings().isAllowDeputyChangeGroupInfo() && conversation.getDeputies() != null && conversation.getDeputies().contains(id))) {
+        if (!conversation.getOwnerId().equals(id) &&
+                !conversation.getSettings().isAllowMemberToChangeGroupInfo() &&
+                !(conversation.getSettings().isAllowDeputyChangeGroupInfo() && conversation.getDeputies() != null && conversation.getDeputies().contains(id))) {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to change group info");
         }
         conversation.setAvatar(image);
@@ -267,6 +274,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .content(image)
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.CHANGE_GROUP_AVATAR)
                 .build();
         notifyConversationMembers(conversation, message);
@@ -286,6 +294,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.CHANGE_GROUP_OWNER)
                 .build();
         notifyConversationMembers(conversation, message);
@@ -317,11 +326,15 @@ public class ConversationServiceImpl implements ConversationService {
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.REMOVE_MEMBER)
                 .build();
-        notifyConversationMembers(conversation, message);
+        Conversation copyOfConversation = new Conversation(conversation);
+        notifyConversationMembers(copyOfConversation, message);
         conversation.getMembers().remove(memberId);
-        conversation.getDeputies().remove(memberId);
+        if (conversation.getDeputies() != null) {
+            conversation.getDeputies().remove(memberId);
+        }
         return saveAndReturnDTO(conversation);
     }
 
@@ -332,16 +345,15 @@ public class ConversationServiceImpl implements ConversationService {
         if (!conversation.getMembers().contains(memberId)) {
             throw new AppException(HttpStatus.NOT_FOUND.value(), "Member not found in this conversation");
         }
+        if (conversation.getDeputies() == null) {
+            conversation.setDeputies(new ArrayList<>());
+        }
         if (conversation.getDeputies().contains(memberId)) {
             throw new AppException(HttpStatus.BAD_REQUEST.value(), "Member is already a deputy");
         }
         if (!conversation.getOwnerId().equals(senderId) &&
                 !(conversation.getSettings().isAllowDeputyPromoteMember() && conversation.getDeputies() != null && conversation.getDeputies().contains(senderId))) {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to grant deputy");
-        }
-
-        if (conversation.getDeputies() == null) {
-            conversation.setDeputies(new ArrayList<>());
         }
         conversation.getDeputies().add(memberId);
         Message message = Message.builder()
@@ -350,6 +362,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.GRANT_DEPUTY)
                 .build();
         notifyConversationMembers(conversation, message);
@@ -374,6 +387,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .targetUserId(List.of(memberId))
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(NotificationType.REVOKE_DEPUTY)
                 .build();
         notifyConversationMembers(conversation, message);
@@ -471,6 +485,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .senderId(adminId)
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
                 .notificationType(type)
                 .content(content)
                 .notificationType(type)
@@ -489,8 +504,15 @@ public class ConversationServiceImpl implements ConversationService {
     private void notifyConversationMembers(Conversation conversation, Message message) {
         Thread thread = new Thread(() -> {
             messageRepository.save(message);
+            List<Long> userIds = Stream.concat(
+                            Stream.of(message.getSenderId()),
+                            message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
+                    .toList();
+            List<UserDetail> userDetails = userClient.getUsersByIds(userIds);
+            UserDetail senderUserDetail = userDetails.stream().filter(userDetail -> userDetail.user_id().equals(message.getSenderId())).findFirst().get();
+            List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromList(message, userDetails);
             for (Long memberId : conversation.getMembers()) {
-                messagingTemplate.convertAndSendToUser(memberId.toString(), "/message", message);
+                messagingTemplate.convertAndSendToUser(memberId.toString(), "/message", new MessageDetailDTO(message, senderUserDetail, targetUserDetail));
             }
         });
         thread.start();
