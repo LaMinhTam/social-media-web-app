@@ -10,12 +10,13 @@ public class ConversationSettings {
     private boolean isConfirmNewMember;
     private boolean isRestrictedMessaging;
     private boolean isAllowDeputySendMessages;
+    private boolean isJoinByLink;
     private String linkToJoinGroup;
     private boolean isAllowMemberToChangeGroupInfo;
+    private boolean isAllowDeputyChangeGroupInfo;
     private boolean isAllowDeputyToInviteMember;
     private boolean isAllowMemberToInviteMember;
     private boolean isAllowDeputyRemoveMember;
-    private boolean isAllowDeputyChangeGroupInfo;
     private boolean isAllowMemberToPinMessage;
     private boolean isAllowDeputyPromoteMember;
     private boolean isAllowDeputyDemoteMember;

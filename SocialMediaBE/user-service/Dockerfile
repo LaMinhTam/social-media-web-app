@@ -1,4 +1,4 @@
-FROM openjdk:17-oracle
-COPY ./target/user-service-0.0.1-SNAPSHOT.jar user-service-0.0.1-SNAPSHOT.jar
-EXPOSE 8082
-CMD ["java", "-jar", "user-service-0.0.1-SNAPSHOT.jar"]
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY ./target/*.jar app.jar
+CMD ["java", "-jar", "app.jar"]

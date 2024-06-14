@@ -6,20 +6,20 @@ import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
 import java.util.List;
 
 public interface FriendService {
-    FriendRelationship sendFriendRequest(Long senderId, Long receiverId) throws Exception;
+    FriendRelationship sendFriendRequest(Long senderId, Long receiverId);
 
-    FriendRelationship revokeFriendRequest(Long sender, Long receiverId, Long friendRequestId) throws Exception;
+    FriendRelationship revokeFriendRequest(Long sender, Long receiverId, Long friendRequestId);
 
-    FriendRelationship acceptFriendRequest(Long receiverId, Long senderId, Long friendRequestId) throws Exception;
+    FriendRelationship acceptFriendRequest(Long receiverId, Long senderId, Long friendRequestId);
 
-    FriendRelationship removeFriend(Long senderId, Long receiverId, Long friendRequestId) throws Exception;
+    FriendRelationship removeFriend(Long senderId, Long receiverId, Long friendRequestId);
 
-    FriendRelationship blockFriendRequest(Long senderId, Long receiverId) throws Exception;
+    FriendRelationship blockFriendRequest(Long senderId, Long receiverId);
 
-    FriendRelationship unblockFriendRequest(Long senderId, Long receiverId, Long friendRequestId) throws Exception;
+    FriendRelationship unblockFriendRequest(Long senderId, Long receiverId, Long friendRequestId);
 
-    UserDTO getFriendByType(Long userId, int type) throws Exception;
+    UserDTO getFriendByType(Long userId, int type);
 
-    List<FriendRelationship> recommendFriends(Long userId) throws Exception;
+    List<FriendRelationship> recommendFriends(Long userId);
 
 }

@@ -8,7 +8,7 @@ import java.util.List;
 public interface UserService {
     public User createUser(Long id, String name, String email, String imageUrl);
 
-    UserModel getUserById(Long userId) throws Exception;
+    UserModel getUserById(Long userId);
 
     List<UserModel> searchUser(String keyword);
 

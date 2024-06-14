@@ -16,4 +16,6 @@ public interface ConversationRepositoryCustom {
     Optional<Conversation> findConversationByMembersAndType(List<Long> members, ConversationType type);
 
     public Optional<Conversation> findById(ObjectId id, Long userId);
+
+    Optional<Conversation> findByLink(String link);
 }

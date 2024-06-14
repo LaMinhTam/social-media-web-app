@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.iuh.fit.authservice.exception.AppException;
 import vn.edu.iuh.fit.authservice.exception.ResourceNotFoundException;
 import vn.edu.iuh.fit.authservice.model.User;
 import vn.edu.iuh.fit.authservice.repository.UserRepository;
@@ -19,12 +20,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws AppException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found with email : " + email)
-        );
+                        new AppException(404, "User not found with email : " + email)
+                );
 
         return UserPrincipal.create(user);
     }
@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(
-            () -> new ResourceNotFoundException("User", "id", id)
+                () -> new ResourceNotFoundException("User", "id", id)
         );
 
         return UserPrincipal.create(user);

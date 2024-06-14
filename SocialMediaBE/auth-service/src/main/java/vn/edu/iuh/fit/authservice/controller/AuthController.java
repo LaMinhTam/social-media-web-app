@@ -2,8 +2,11 @@ package vn.edu.iuh.fit.authservice.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,25 +45,27 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        try{
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String accessToken = tokenProvider.createToken(authentication);
-        String refreshToken = tokenProvider.refreshToken((UserPrincipal) authentication.getPrincipal());
-        return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
+            String accessToken = tokenProvider.createToken(authentication);
+            String refreshToken = tokenProvider.refreshToken((UserPrincipal) authentication.getPrincipal());
+            return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
+        }catch (InternalAuthenticationServiceException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email or password is incorrect");
+        }
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new BadRequestException("Email address already in use.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email address already in use.");
         }
 
         // Creating user's account

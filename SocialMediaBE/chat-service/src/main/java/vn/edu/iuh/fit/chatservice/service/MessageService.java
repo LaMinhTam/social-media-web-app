@@ -1,20 +1,25 @@
 package vn.edu.iuh.fit.chatservice.service;
 
+import org.bson.types.ObjectId;
 import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
+import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
+import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
 
 import java.util.List;
 
 public interface MessageService {
-    Message saveMessage(Long userId, MessageFromClientDTO message) throws Exception;
+    Message saveMessage(Long userId, MessageFromClientDTO message);
 
-    List<MessageDTO> getMessagesByConversationId(String conversationId, int page, int size);
+    List<MessageDetailDTO> getMessagesByConversationId(Conversation conversationId, String messageId, int size);
 
-    MessageDTO revokeMessage(String messageId) throws Exception;
+    MessageDTO revokeMessage(String messageId) ;
 
-    List<MessageDTO> shareMessage(Long senderId, String messageId, List<String> conversationIds) throws Exception;
+    List<MessageDTO> shareMessage(Long senderId, String messageId, List<String> conversationIds);
 
-    MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction) throws Exception;
+    MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction);
+
+    void markMessageAsRead(Long id, ObjectId messageId);
 }

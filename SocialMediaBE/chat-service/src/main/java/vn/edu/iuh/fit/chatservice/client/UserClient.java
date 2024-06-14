@@ -5,6 +5,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class UserClient {
@@ -16,10 +19,17 @@ public class UserClient {
 
     public List<UserDetail> getUsersByIds(List<Long> ids) {
         return webClient.get()
-                .uri("/user?ids=" + String.join(",", ids.stream().map(String::valueOf).toList()))
+                .uri(uriBuilder -> uriBuilder.path("/user")
+                        .queryParam("ids", String.join(",", ids.stream().map(String::valueOf).toList()))
+                        .build())
                 .retrieve()
                 .bodyToFlux(UserDetail.class)
                 .collectList()
                 .block();
+    }
+
+
+    public Map<Long, UserDetail> getUsersByIdsMap(List<Long> ids) {
+        return getUsersByIds(ids).stream().collect(Collectors.toMap(UserDetail::user_id, Function.identity()));
     }
 }
