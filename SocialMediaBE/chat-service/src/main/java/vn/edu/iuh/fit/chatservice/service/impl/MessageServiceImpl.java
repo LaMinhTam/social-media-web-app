@@ -198,6 +198,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {
-        return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) > 0;
+        return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) <= 0;
     }
 }
