@@ -323,12 +323,29 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
             - SPRING_DATA_MONGODB_PORT=27017
             - SPRING_DATA_MONGODB_HOST=db-mongodb-con
             - SPRING_DATA_MONGODB_DATABASE=chat_db
             - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
             - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
+        depends_on:
+            service-registry:
+                condition: service_healthy
+        networks:
+            - backend
+            - db-mongodb-net
+            - db-redis-net
+    
+    notification-service:
+        image: laminhtam/social-media-notification-service:latest
+        container_name: notification-service-con
+        restart: always
+        ports:
+            - "8087:8087"
+        environment:
+            - CONFIG_SERVER_URL=http://config-server:8889
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+            - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
             - KURENTO_WS_URL=ws://kurento-con:8888/kurento
             - SPRING_DATA_REDIS_DATABASE=0
             - SPRING_DATA_REDIS_HOST=redis
@@ -340,7 +357,6 @@ services:
                 condition: service_healthy
         networks:
             - backend
-            - db-mongodb-net
             - db-redis-net
 
     nextjs14-social-media-fe: 

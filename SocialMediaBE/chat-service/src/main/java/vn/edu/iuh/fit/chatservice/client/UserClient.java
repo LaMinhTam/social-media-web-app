@@ -19,12 +19,15 @@ public class UserClient {
 
     public List<UserDetail> getUsersByIds(List<Long> ids) {
         return webClient.get()
-                .uri("/user?ids=" + String.join(",", ids.stream().map(String::valueOf).toList()))
+                .uri(uriBuilder -> uriBuilder.path("/user")
+                        .queryParam("ids", String.join(",", ids.stream().map(String::valueOf).toList()))
+                        .build())
                 .retrieve()
                 .bodyToFlux(UserDetail.class)
                 .collectList()
                 .block();
     }
+
 
     public Map<Long, UserDetail> getUsersByIdsMap(List<Long> ids) {
         return getUsersByIds(ids).stream().collect(Collectors.toMap(UserDetail::user_id, Function.identity()));
