@@ -31,7 +31,7 @@ public class MessageController {
     public ResponseEntity<Map<String, MessageDetailDTO>> getMessagesByConversationId(@RequestHeader("sub") Long id,
                                                                                      @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
                                                                                      @PathVariable String conversationId,
-                                                                                     @RequestParam(name = "message_id") String messageId,
+                                                                                     @RequestParam(name = "message_id", required = false) String messageId,
                                                                                      @RequestParam int size) {
 
         Conversation conversation = conversationService.getPlainConversation(id, conversationId);
