@@ -23,7 +23,7 @@ public class MessageRepositoryCustomImpl implements MessageRepositoryCustom{
         ObjectId objectId = new ObjectId(messageId);
 
         Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("conversationId").is(conversationId).and("id").lt(objectId)),
+                Aggregation.match(Criteria.where("conversationId").is(conversationId).and("id").gt(objectId)),
                 Aggregation.sort(Sort.Direction.DESC, "createdAt"),
                 Aggregation.limit(size)
         );
