@@ -75,4 +75,10 @@ public class MessageController {
         messageService.markMessageAsRead(id, new ObjectId(messageId));
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{messageId}/delete")
+    public ResponseEntity<Void> deleteMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+        messageService.deleteMessage(id, messageId);
+        return ResponseEntity.ok().build();
+    }
 }

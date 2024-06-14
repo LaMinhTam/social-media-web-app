@@ -16,7 +16,8 @@ public record Message(
         NotificationType notificationType,
         EnumMap<ReactionType, List<Long>> reactions,
         Date createdAt,
-        Date updatedAt
+        Date updatedAt,
+        List<Long> deletedBy
 ) {
     public Message(MessageFromWebClient message) {
         this(
@@ -31,7 +32,8 @@ public record Message(
                 message.notification_type(),
                 message.reactions(),
                 message.created_at(),
-                message.updated_at()
+                message.updated_at(),
+                message.deleted_by()
         );
     }
 }

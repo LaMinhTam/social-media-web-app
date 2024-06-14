@@ -25,7 +25,8 @@ public record MessageModel(
         NotificationType notificationType,
         EnumMap<ReactionType, List<Long>> reactions,
         Date createdAt,
-        Date updatedAt
+        Date updatedAt,
+        List<Long> deletedBy
         ) {
     public MessageModel(Message message) {
         this(
@@ -40,7 +41,8 @@ public record MessageModel(
                 message.getNotificationType(),
                 message.getReactions(),
                 message.getCreatedAt(),
-                message.getUpdatedAt()
+                message.getUpdatedAt(),
+                message.getDeletedBy()
         );
     }
 }
