@@ -46,6 +46,27 @@ public class Conversation {
         this.readBy = readBy;
     }
 
+    public Conversation(ConversationFromWebClient plainConversation) {
+        this.id = plainConversation.id();
+        this.ownerId = plainConversation.owner_id();
+        this.deputies = plainConversation.deputies();
+        this.type = plainConversation.type();
+        this.name = plainConversation.name();
+        this.avatar = plainConversation.avatar();
+        this.members = plainConversation.members();
+        this.lastMessageId = plainConversation.last_message_id();
+        this.lastActivity = plainConversation.last_activity();
+        this.settings = plainConversation.settings();
+        this.status = plainConversation.status();
+        this.views = plainConversation.views();
+        this.mutedStatus = plainConversation.muted_status();
+        this.notificationSettings = plainConversation.notification_settings();
+        this.pinnedMessages = plainConversation.pinned_messages();
+        this.createdAt = plainConversation.created_at();
+        this.updatedAt = plainConversation.updated_at();
+        this.readBy = plainConversation.read_by();
+    }
+
     public String getId() {
         return id;
     }

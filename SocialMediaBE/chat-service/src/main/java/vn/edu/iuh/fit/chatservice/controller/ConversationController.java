@@ -2,10 +2,7 @@ package vn.edu.iuh.fit.chatservice.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
-import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
-import vn.edu.iuh.fit.chatservice.dto.CreateConversationRequest;
-import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
+import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
@@ -23,8 +20,8 @@ public class ConversationController {
     }
 
     @GetMapping({"/{conversationId}"})
-    public Conversation getPlainConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
-        return conversationService.getPlainConversation(id, conversationId);
+    public PlainConversationToWebClient getPlainConversation(@RequestHeader("sub") Long id, @PathVariable String conversationId) {
+        return new PlainConversationToWebClient(conversationService.getPlainConversation(id, conversationId));
     }
 
     @GetMapping("/detail/{conversationId}")

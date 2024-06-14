@@ -29,19 +29,22 @@ public class WebSocketController {
     public void processMessageFromClient(SimpMessageHeaderAccessor sha, @Payload MessageFromClientDTO message) {
         String userId = sha.getNativeHeader("sub").get(0);
         try {
-            Message savedMessage = chatClient.saveMessage(Long.parseLong(userId), message);
-            Conversation conversation = chatClient.getPlainConversation(Long.parseLong(userId), savedMessage.conversationId());
-
+            Message savedMessage = new Message(chatClient.saveMessage(Long.parseLong(userId), message));
+            Conversation conversation = new Conversation(chatClient.getPlainConversation(Long.parseLong(userId), message.conversation_id()));
             List<Long> member = new ArrayList<>();
             member.add(savedMessage.senderId());
-            member.addAll(savedMessage.targetUserId());
+            if (savedMessage.targetUserId() != null) {
+                member.addAll(savedMessage.targetUserId());
+            }
 
             Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(member);
             UserDetail sender = userDetails.get(savedMessage.senderId());
             List<UserDetail> targetUsers = new ArrayList<>();
-            savedMessage.targetUserId().forEach(
-                    id -> targetUsers.add(userDetails.get(id))
-            );
+            if (savedMessage.targetUserId() != null) {
+                savedMessage.targetUserId().forEach(
+                        id -> targetUsers.add(userDetails.get(id))
+                );
+            }
 
             MessageDetailDTO response = new MessageDetailDTO(savedMessage, sender, targetUsers, null);
             conversation.getMembers().forEach(
@@ -49,7 +52,7 @@ public class WebSocketController {
             );
         } catch (Exception e) {
             MessageErrorDTO error = new MessageErrorDTO(
-                    Optional.of(message.conversationId()).orElse(null),
+                    Optional.of(message.conversation_id()).orElse(null),
                     message.content(),
                     e.getMessage(),
                     new Date());

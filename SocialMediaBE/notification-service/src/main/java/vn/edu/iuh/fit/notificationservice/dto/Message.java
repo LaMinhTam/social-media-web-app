@@ -18,4 +18,20 @@ public record Message(
         Date createdAt,
         Date updatedAt
 ) {
+    public Message(MessageFromWebClient message) {
+        this(
+                message.id(),
+                message.conversation_id(),
+                message.sender_id(),
+                message.target_user_id(),
+                message.content(),
+                message.media(),
+                message.status(),
+                message.type(),
+                message.notification_type(),
+                message.reactions(),
+                message.created_at(),
+                message.updated_at()
+        );
+    }
 }

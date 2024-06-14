@@ -31,7 +31,7 @@ public class MessageController {
     public ResponseEntity<Map<String, MessageDetailDTO>> getMessagesByConversationId(@RequestHeader("sub") Long id,
                                                                                      @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
                                                                                      @PathVariable String conversationId,
-                                                                                     @RequestParam int page,
+                                                                                     @RequestParam(name = "message_id") String messageId,
                                                                                      @RequestParam int size) {
 
         Conversation conversation = conversationService.getPlainConversation(id, conversationId);
@@ -39,7 +39,7 @@ public class MessageController {
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(eTag).build();
         }
-        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversation, page, size);
+        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversation, messageId, size);
 
         Map<String, MessageDetailDTO> messageMap = messages.stream()
                 .collect(Collectors.toMap(MessageDetailDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
@@ -47,8 +47,9 @@ public class MessageController {
     }
 
     @PostMapping
-    public Message saveMessage(@RequestHeader("sub") Long id, @RequestBody MessageFromClientDTO message) {
-        return messageService.saveMessage(id, message);
+    public MessageToWebClient saveMessage(@RequestHeader("sub") Long id, @RequestBody MessageFromClientDTO message) {
+        MessageToWebClient messageToWebClient = new MessageToWebClient(messageService.saveMessage(id, message));
+        return messageToWebClient;
     }
 
     @PostMapping("/share")

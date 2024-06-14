@@ -3,12 +3,12 @@ package vn.edu.iuh.fit.notificationservice.dto;
 import java.util.List;
 
 public record MessageFromClientDTO(
-        Long userId,
-        String conversationId,
+        Long user_id,
+        String conversation_id,
         String content,
         List<String> media,
         MessageType type,
-        String replyToMessageId,
-        List<Long> taggedUserIds
+        String reply_to_message_id,
+        List<Long> tagged_user_ids
 ) {
 }

@@ -13,7 +13,7 @@ import java.util.List;
 public interface MessageService {
     Message saveMessage(Long userId, MessageFromClientDTO message);
 
-    List<MessageDetailDTO> getMessagesByConversationId(Conversation conversationId, int page, int size);
+    List<MessageDetailDTO> getMessagesByConversationId(Conversation conversationId, String messageId, int size);
 
     MessageDTO revokeMessage(String messageId) ;
 

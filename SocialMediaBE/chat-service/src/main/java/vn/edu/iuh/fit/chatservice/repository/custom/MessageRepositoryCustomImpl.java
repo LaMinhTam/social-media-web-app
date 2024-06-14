@@ -1,5 +1,6 @@
 package vn.edu.iuh.fit.chatservice.repository.custom;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -18,14 +19,12 @@ public class MessageRepositoryCustomImpl implements MessageRepositoryCustom{
         this.mongoTemplate = mongoTemplate;
     }
 
-    @Override
-    public List<Message> findByConversationId(String conversationId, int page, int size) {
-        int skip = page > 0 ? (page - 1) * size : 0;
+    public List<Message> findMessagesAfterMessageId(String conversationId, String messageId, int size) {
+        ObjectId objectId = new ObjectId(messageId);
 
         Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("conversationId").is(conversationId)),
+                Aggregation.match(Criteria.where("conversationId").is(conversationId).and("id").lt(objectId)),
                 Aggregation.sort(Sort.Direction.DESC, "createdAt"),
-                Aggregation.skip(skip),
                 Aggregation.limit(size)
         );
 
