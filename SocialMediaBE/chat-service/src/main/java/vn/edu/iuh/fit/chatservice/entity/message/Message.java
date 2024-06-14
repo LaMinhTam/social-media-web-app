@@ -49,4 +49,7 @@ public class Message {
     @Column(name = "updated_at")
     @JsonProperty("updated_at")
     private Date updatedAt;
+    @Column(name = "deleted_by")
+    @JsonProperty("deleted_by")
+    private List<Long> deletedBy;
 }

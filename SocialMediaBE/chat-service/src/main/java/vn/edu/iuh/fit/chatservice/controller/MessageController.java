@@ -31,7 +31,7 @@ public class MessageController {
     public ResponseEntity<Map<String, MessageDetailDTO>> getMessagesByConversationId(@RequestHeader("sub") Long id,
                                                                                      @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
                                                                                      @PathVariable String conversationId,
-                                                                                     @RequestParam(name = "message_id") String messageId,
+                                                                                     @RequestParam(name = "message_id", required = false) String messageId,
                                                                                      @RequestParam int size) {
 
         Conversation conversation = conversationService.getPlainConversation(id, conversationId);
@@ -73,6 +73,12 @@ public class MessageController {
     @PatchMapping("/{messageId}/read")
     public ResponseEntity<Void> markMessageAsRead(@RequestHeader("sub") Long id, @PathVariable String messageId) {
         messageService.markMessageAsRead(id, new ObjectId(messageId));
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{messageId}/delete")
+    public ResponseEntity<Void> deleteMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+        messageService.deleteMessage(id, messageId);
         return ResponseEntity.ok().build();
     }
 }

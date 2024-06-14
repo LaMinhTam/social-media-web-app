@@ -16,6 +16,7 @@ public record MessageFromWebClient(
         NotificationType notification_type,
         EnumMap<ReactionType, List<Long>> reactions,
         Date created_at,
-        Date updated_at
+        Date updated_at,
+        List<Long> deleted_by
 ) {
 }

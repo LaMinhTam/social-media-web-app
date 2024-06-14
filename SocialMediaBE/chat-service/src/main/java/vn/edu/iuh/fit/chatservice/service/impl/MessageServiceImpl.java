@@ -113,7 +113,7 @@ public class MessageServiceImpl implements MessageService {
         message.setReactions(null);
         message.setMedia(null);
         message.setUpdatedAt(new Date());
-        notificationClient.notifyConversationMembers(conversation, message);
+        notificationClient.notifyConversationMembers(conversation, message, "revoke");
         return new MessageDTO(messageRepository.save(message));
     }
 
@@ -153,7 +153,7 @@ public class MessageServiceImpl implements MessageService {
         List<Message> savedMessages = messageRepository.saveAll(messages);
         conversations.forEach(conversation -> {
             Message messageByConversationId = savedMessages.stream().filter(message -> message.getConversationId().equals(conversation.getId().toHexString())).findFirst().get();
-            notificationClient.notifyConversationMembers(conversation, messageByConversationId);
+            notificationClient.notifyConversationMembers(conversation, messageByConversationId, "message");
         });
 
         return savedMessages.stream().map(MessageDTO::new).toList();
@@ -169,7 +169,7 @@ public class MessageServiceImpl implements MessageService {
         }
         message.getReactions().computeIfAbsent(reaction, k -> new ArrayList<>());
         message.getReactions().get(reaction).add(senderId);
-        notificationClient.notifyConversationMembers(conversation, message);
+        notificationClient.notifyConversationMembers(conversation, message, "react");
         return new MessageDTO(messageRepository.save(message));
     }
 
@@ -185,6 +185,16 @@ public class MessageServiceImpl implements MessageService {
             conversationRepository.save(conversation);
         }
         notificationClient.notifyRead(id, conversation, message);
+    }
+
+    @Override
+    public void deleteMessage(Long id, String messageId) {
+        Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        if (message.getDeletedBy() == null) {
+            message.setDeletedBy(new ArrayList<>());
+        }
+        message.getDeletedBy().add(id);
+        messageRepository.save(message);
     }
 
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {

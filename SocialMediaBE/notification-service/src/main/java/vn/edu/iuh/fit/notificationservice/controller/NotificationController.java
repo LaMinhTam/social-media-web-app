@@ -26,28 +26,51 @@ public class NotificationController {
         this.userClient = userClient;
     }
 
-    @PostMapping("/notify/message")
-    public void notifyMessage(@RequestBody MessageNotificationRequest request) {
+    @PostMapping("/notify/{destination}")
+    public void notifyMessage(@PathVariable String destination, @RequestBody MessageNotificationRequest request) {
+        Set<Long> userIds = populateUserIds(request);
+        List<Long> notifyMembers = prepareNotifyMembers(request);
+
+        sendMessageToMembers(request, userIds, notifyMembers, destination);
+    }
+
+    private void sendMessageToMembers(MessageNotificationRequest request, Set<Long> userIds, List<Long> notifyMembers, String destination) {
+        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
+        UserDetail senderUserDetail = userDetails.get(request.message().senderId());
+        List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromMap(request.message(), userDetails);
+        Map<Long, UserDetail> readByUserDetail = UserDetail.getReadByUserDetailMap(request.conversation().getReadBy(), userDetails);
+
+        if (request.message().deletedBy() != null) {
+            notifyMembers.removeAll(request.message().deletedBy());
+        }
+
+        for (Long memberId : notifyMembers) {
+            simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/" + destination,
+                    new MessageDetailDTO(request.message(), senderUserDetail, targetUserDetail, readByUserDetail));
+        }
+    }
+
+    private static Set<Long> populateUserIds(MessageNotificationRequest request) {
         Set<Long> userIds = new HashSet<>();
         userIds.add(request.message().senderId());
         if (request.message().targetUserId() != null) {
             userIds.addAll(request.message().targetUserId());
         }
-        userIds.addAll(request.conversation().getReadBy().keySet());
-        if (request.message().reactions() != null) {
-            request.message().reactions().values().forEach(userIds::addAll);
-        }
         if (request.conversation().getReadBy() != null) {
             userIds.addAll(request.conversation().getReadBy().keySet());
         }
-
-        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
-        UserDetail senderUserDetail = userDetails.get(request.message().senderId());
-        List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromMap(request.message(), userDetails);
-        Map<Long, UserDetail> readByUserDetail = UserDetail.getReadByUserDetailMap(request.conversation().getReadBy(), userDetails);
-        for (Long memberId : request.conversation().getMembers()) {
-            simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/message", new MessageDetailDTO(request.message(), senderUserDetail, targetUserDetail, readByUserDetail));
+        if (request.message().reactions() != null) {
+            request.message().reactions().values().forEach(userIds::addAll);
         }
+        return userIds;
+    }
+
+    private static List<Long> prepareNotifyMembers(MessageNotificationRequest request) {
+        List<Long> notifyMembers = request.conversation().getMembers();
+        if (request.message().deletedBy() != null) {
+            notifyMembers.removeAll(request.message().deletedBy());
+        }
+        return notifyMembers;
     }
 
     @PostMapping("/notify/conversation")
@@ -60,28 +83,4 @@ public class NotificationController {
         }
     }
 
-    @PostMapping("/notify/read")
-    public void notifyRead(@RequestHeader("sub") Long id, @RequestBody MessageNotificationRequest request) {
-        Set<Long> userIds = new HashSet<>();
-        userIds.add(request.message().senderId());
-        if (request.message().targetUserId() != null) {
-            userIds.addAll(request.message().targetUserId());
-        }
-        userIds.addAll(request.conversation().getReadBy().keySet());
-        if (request.message().reactions() != null) {
-            request.message().reactions().values().forEach(userIds::addAll);
-        }
-        if (request.conversation().getReadBy() != null) {
-            userIds.addAll(request.conversation().getReadBy().keySet());
-        }
-
-        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
-        UserDetail senderUserDetail = userDetails.get(request.message().senderId());
-        List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromMap(request.message(), userDetails);
-        Map<Long, UserDetail> readByUserDetail = UserDetail.getReadByUserDetailMap(request.conversation().getReadBy(), userDetails);
-
-        for (Long memberId : request.conversation().getMembers()) {
-            simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/message", new MessageDetailDTO(request.message(), senderUserDetail, targetUserDetail, readByUserDetail));
-        }
-    }
 }

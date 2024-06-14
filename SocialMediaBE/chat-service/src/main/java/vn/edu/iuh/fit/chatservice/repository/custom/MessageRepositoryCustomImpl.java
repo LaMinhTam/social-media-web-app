@@ -20,14 +20,20 @@ public class MessageRepositoryCustomImpl implements MessageRepositoryCustom{
     }
 
     public List<Message> findMessagesAfterMessageId(String conversationId, String messageId, int size) {
-        ObjectId objectId = new ObjectId(messageId);
+        Criteria criteria = Criteria.where("conversationId").is(conversationId);
+
+        if (messageId != null) {
+            ObjectId objectId = new ObjectId(messageId);
+            criteria = criteria.and("id").gt(objectId);
+        }
 
         Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("conversationId").is(conversationId).and("id").lt(objectId)),
+                Aggregation.match(criteria),
                 Aggregation.sort(Sort.Direction.DESC, "createdAt"),
                 Aggregation.limit(size)
         );
 
         return mongoTemplate.aggregate(aggregation, Message.class, Message.class).getMappedResults();
     }
+
 }

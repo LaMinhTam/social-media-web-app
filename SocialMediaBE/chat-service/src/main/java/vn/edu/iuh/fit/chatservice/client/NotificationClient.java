@@ -17,10 +17,10 @@ public class NotificationClient {
         this.webClient = notificationWebClient;
     }
 
-    public void notifyConversationMembers(Conversation conversation, Message message) {
+    public void notifyConversationMembers(Conversation conversation, Message message, String destination) {
         MessageNotificationRequest request = new MessageNotificationRequest(new ConversationModel(conversation), new MessageModel(message));
         webClient.post()
-                .uri("/notifications/notify/message")
+                .uri("/notifications/notify/" + destination)
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(MessageNotificationRequest.class)
