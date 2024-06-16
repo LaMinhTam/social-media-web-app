@@ -16,7 +16,7 @@ import {
 } from "@/services/conversation.service";
 import {
     setCurrentConversation,
-    setCurrentPage,
+    setCurrentSize,
 } from "@/store/actions/conversationSlice";
 import { useSocket } from "@/contexts/socket-context";
 import handleReverseMessages from "@/utils/conversation/messages/handleReverseMessages";
@@ -29,8 +29,8 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
-    const currentPage = useSelector(
-        (state: RootState) => state.conversation.currentPage
+    const currentSize = useSelector(
+        (state: RootState) => state.conversation.currentSize
     );
     const dispatch = useDispatch();
 
@@ -39,13 +39,12 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     ) => {
         const data = await handleGetListMessage(
             conversation.conversation_id,
-            1,
-            10
+            currentSize
         );
         if (data) {
             dispatch(setShowChatModal(true));
             dispatch(setCurrentConversation(conversation));
-            dispatch(setCurrentPage(1));
+            dispatch(setCurrentSize(10));
             const messages = handleReverseMessages(data);
             setMessages(messages);
             popupState.close();

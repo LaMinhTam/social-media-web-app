@@ -22,10 +22,11 @@ const conversation = {
     detail: (id: string) => `/conversations/detail/${id}`,
     disband: (id: string) => `/conversations/disband/${id}`,
     getUserStatus: (id: string) => `/user-status/online?user_ids=${id}`,
-    getListMessageByPage: (id: string, page: number, size: number) =>
-        `/messages/${id}?page=${page}&size=${size}`,
+    getListMessageByPage: (id: string, size: number) =>
+        `/messages/${id}?size=${size}`,
     shareMessage: "/messages/share",
     revokeMessage: (id: string) => `/messages/revoke/${id}`,
+    deleteMessage: (id: string) => `/messages/${id}/delete`,
     reactMessage: "/messages/react",
 };
 

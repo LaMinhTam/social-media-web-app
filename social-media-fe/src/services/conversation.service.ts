@@ -45,15 +45,10 @@ export const handleGetListConversation = async () => {
     }
 };
 
-export const handleGetListMessage = async (
-    id: string,
-    page: number,
-    size: number
-) => {
+export const handleGetListMessage = async (id: string, size: number) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.getListMessage(
             id,
-            page,
             size
         );
         if (response?.status === 200) {
@@ -78,6 +73,19 @@ export const handleGetUserStatus = async (id: string) => {
 export const handleRevokeMessage = async (messageId: string) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.revokeMessage(
+            messageId
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleDeleteMessage = async (messageId: string) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.deleteMessage(
             messageId
         );
         if (response?.status === 200) {

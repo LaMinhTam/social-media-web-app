@@ -7,10 +7,14 @@ const MessageFeature = ({
     messageId,
     setIsOpen,
     handleReplyMessage,
+    openReactionPicker,
+    setOpenReactionPicker,
 }: {
     messageId: string;
     setIsOpen: (value: boolean) => void;
     handleReplyMessage: () => void;
+    openReactionPicker: boolean;
+    setOpenReactionPicker: (value: boolean) => void;
 }) => {
     return (
         <Stack
@@ -42,7 +46,7 @@ const MessageFeature = ({
                     aria-controls="long-menu"
                     aria-haspopup="true"
                     color="inherit"
-                    className="w-7 h-7"
+                    className="w-7 h-7 btn-chat-action"
                     onClick={handleReplyMessage}
                 >
                     <ReplyIcon />
@@ -55,7 +59,8 @@ const MessageFeature = ({
                     aria-controls="long-menu"
                     aria-haspopup="true"
                     color="inherit"
-                    className="w-7 h-7"
+                    className="w-7 h-7 btn-chat-action"
+                    onClick={() => setOpenReactionPicker(!openReactionPicker)}
                 >
                     <SentimentSatisfiedAltIcon />
                 </IconButton>

@@ -5,7 +5,7 @@ import { handleGetListMessage } from "@/services/conversation.service";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import handleReverseMessages from "@/utils/conversation/messages/handleReverseMessages";
-import { setCurrentPage } from "@/store/actions/conversationSlice";
+import { setCurrentSize } from "@/store/actions/conversationSlice";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useSocket } from "@/contexts/socket-context";
 import { groupMessages } from "@/utils/conversation/messages/handleGroupMessage";
@@ -23,8 +23,8 @@ const ModalChatContent = ({
 }) => {
     const { triggerScrollChat } = useSocket();
     const dispatch = useDispatch();
-    const currentPage = useSelector(
-        (state: RootState) => state.conversation.currentPage
+    const currentSize = useSelector(
+        (state: RootState) => state.conversation.currentSize
     );
     const chatContentRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = React.useState(false);
@@ -41,14 +41,16 @@ const ModalChatContent = ({
             setLoading(true);
             const data = await handleGetListMessage(
                 conversationId,
-                currentPage + 1,
-                10
+                currentSize + 10
             );
-            if (Object.values(data || {}).length > 0) {
+            if (
+                Object.values(data || {}).length !==
+                Object.values(messages).length
+            ) {
                 const newData = handleReverseMessages(data || {});
                 const newMessages = { ...newData, ...messages };
                 setMessages(newMessages);
-                dispatch(setCurrentPage(currentPage + 1));
+                dispatch(setCurrentSize(currentSize + 10));
                 setIsEnd(false);
             } else {
                 setIsEnd(true);

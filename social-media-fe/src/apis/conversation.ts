@@ -5,6 +5,7 @@ import { OnlineResponse } from "@/types/commonType";
 import {
     ConversationResponse,
     MessageResponse,
+    ReactionResponse,
 } from "@/types/conversationType";
 
 const createConversation = async (
@@ -51,9 +52,9 @@ const getUserStatus = async (id: string) => {
     return response;
 };
 
-const getListMessage = async (id: string, page: number, size: number) => {
+const getListMessage = async (id: string, size: number) => {
     const response: AxiosResponse<MessageResponse> = await axiosPrivate.get(
-        apiRoutes.conversation.getListMessageByPage(id, page, size)
+        apiRoutes.conversation.getListMessageByPage(id, size)
     );
     return response;
 };
@@ -76,8 +77,15 @@ const revokeMessage = async (messageId: string) => {
     return response;
 };
 
+const deleteMessage = async (messageId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.deleteMessage(messageId)
+    );
+    return response;
+};
+
 const reactionMessage = async (messageId: string, reaction: string) => {
-    const response: AxiosResponse<string> = await axiosPrivate.post(
+    const response: AxiosResponse<ReactionResponse> = await axiosPrivate.post(
         apiRoutes.conversation.reactMessage,
         {
             message_id: messageId,
@@ -96,5 +104,6 @@ export const CONVERSATION = {
     getListMessage,
     shareMessage,
     revokeMessage,
+    deleteMessage,
     reactionMessage,
 };

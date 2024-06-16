@@ -41,9 +41,7 @@ export function SocketProvider(
                             [payloadData.message_id]: {
                                 message_id: payloadData.message_id,
                                 conversation_id: payloadData.conversation_id,
-                                user_detail: {
-                                    user_id: payloadData.sender_id,
-                                },
+                                user_detail: payloadData.user_detail,
                                 content: payloadData.content,
                                 type: payloadData.type,
                                 created_at: payloadData.created_at,
@@ -56,7 +54,27 @@ export function SocketProvider(
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/revoke`,
                     function (payload) {
-                        console.log("Revoke", JSON.parse(payload.body));
+                        const payloadData = JSON.parse(payload.body);
+                        const newMessages = { ...messages };
+                        newMessages[payloadData.message_id] = payloadData;
+                        setMessages(newMessages);
+                        setTriggerScrollChat(!triggerScrollChat);
+                    }
+                );
+                client.subscribe(
+                    `/user/${decryptedData.user_id}/react`,
+                    function (payload) {
+                        const payloadData = JSON.parse(payload.body);
+                        const newMessages = { ...messages };
+                        newMessages[payloadData.message_id] = payloadData;
+                        setMessages(newMessages);
+                    }
+                );
+
+                client.subscribe(
+                    `/user/${decryptedData.user_id}/conversation`,
+                    function (payload) {
+                        console.log("conversation", JSON.parse(payload.body));
                     }
                 );
             },
