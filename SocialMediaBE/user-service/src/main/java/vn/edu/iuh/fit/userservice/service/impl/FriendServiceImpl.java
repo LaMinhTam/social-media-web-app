@@ -8,6 +8,7 @@ import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
 import vn.edu.iuh.fit.userservice.entity.FriendType;
 import vn.edu.iuh.fit.userservice.entity.User;
 import vn.edu.iuh.fit.userservice.exception.AppException;
+import vn.edu.iuh.fit.userservice.model.UserModel;
 import vn.edu.iuh.fit.userservice.model.UserRelationship;
 import vn.edu.iuh.fit.userservice.repository.FriendRepository;
 import vn.edu.iuh.fit.userservice.repository.UserRepository;
@@ -202,5 +203,10 @@ public class FriendServiceImpl implements FriendService {
 
 //        return recommendedFriendRelationships;
         return null;
+    }
+
+    @Override
+    public List<UserModel> getFriend(Long userId) {
+        return friendRepository.getFriend(userId);
     }
 }

@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.userservice.service;
 
 import vn.edu.iuh.fit.userservice.dto.UserDTO;
 import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
+import vn.edu.iuh.fit.userservice.model.UserModel;
 
 import java.util.List;
 
@@ -22,4 +23,5 @@ public interface FriendService {
 
     List<FriendRelationship> recommendFriends(Long userId);
 
+    List<UserModel> getFriend(Long userId);
 }
