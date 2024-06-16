@@ -10,6 +10,9 @@ export default function handleFormatMessage(message: MessageData) {
         case MESSAGE_TYPE.REVOKED:
             formattedMessage = "Tin nhắn đã bị thu hồi";
             break;
+        case MESSAGE_TYPE.EMOJI:
+            formattedMessage = message.content;
+            break;
         default:
             formattedMessage = "Unsupported message type";
             break;

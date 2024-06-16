@@ -363,17 +363,6 @@ services:
             - backend
             - db-redis-net
 
-    nextjs14-social-media-fe:
-        image: dinhthong17/nextjs14-social-media-fe:latest
-        container_name: nextjs14-social-media-fe-con
-        restart: always
-        ports:
-            - "3000:3000"
-        networks:
-            - backend
-            - db-mongodb-net
-            - db-redis-net
-
     # nextjs14-social-media-fe:
     #     image: dinhthong17/nextjs14-social-media-fe:latest
     #     container_name: nextjs14-social-media-fe-con
@@ -394,4 +383,4 @@ networks:
     backend:
     db-redis-net:
     rabbitmq-net:
-    # frontend:
+    frontend:

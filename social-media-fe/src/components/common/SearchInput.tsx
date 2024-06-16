@@ -47,7 +47,7 @@ export default function SearchInput({
 }: {
     placeholder: string;
     inputProps: any;
-    onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     value: string;
     className: string;

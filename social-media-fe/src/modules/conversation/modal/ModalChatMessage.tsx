@@ -97,7 +97,11 @@ const ModalChatMessage = ({
                     <div
                         className={`relative rounded-lg w-fit max-w-[212px] px-3 py-2 my-2 ${
                             type === "send"
-                                ? "bg-secondary text-lite ml-auto"
+                                ? message.type === MESSAGE_TYPE.EMOJI
+                                    ? "ml-auto text-2xl"
+                                    : "bg-secondary text-lite ml-auto"
+                                : message.type === MESSAGE_TYPE.EMOJI
+                                ? "mr-auto text-2xl"
                                 : "bg-strock text-text1 mr-auto"
                         }`}
                         style={{

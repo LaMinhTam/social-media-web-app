@@ -16,6 +16,14 @@ export const GITHUB_AUTH_URL =
     "http://localhost:9004/oauth2/authorize/github?redirect_uri=" +
     OAUTH2_REDIRECT_URI;
 
+export const GIF_URL_TRENDING_ENDPOINT =
+    "https://api.giphy.com/v1/gifs/trending";
+export const STICKER_URL_TRENDING_ENDPOINT =
+    "https://api.giphy.com/v1/stickers/trending";
+export const GIF_URL_SEARCH_ENDPOINT = "https://api.giphy.com/v1/gifs/search";
+export const STICKER_URL_SEARCH_ENDPOINT =
+    "https://api.giphy.com/v1/stickers/search";
+
 export const MESSAGE_TYPE = {
     TEXT: "TEXT",
     IMAGE: "IMAGE",

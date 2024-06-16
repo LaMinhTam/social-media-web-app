@@ -18,7 +18,14 @@ import {
     setIsReplying,
     setMessageReply,
 } from "@/store/actions/conversationSlice";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import MessageReply from "@/components/common/MessageReply";
+import { GIF_URL_TRENDING_ENDPOINT, MESSAGE_TYPE } from "@/constants/global";
+import useClickOutSide from "@/hooks/useClickOutSide";
+import GIFPicker from "@/components/common/GIFPicker";
+import axios from "@/apis/axios";
+import { getTrendingGIFs } from "@/services/search.service";
 
 const ModalChatFooter = ({
     isActive,
@@ -38,11 +45,22 @@ const ModalChatFooter = ({
     conversationId: string;
 }) => {
     const dispatch = useDispatch();
+    const {
+        show: showEmojiPicker,
+        setShow: setShowEmojiPicker,
+        nodeRef: emojiPickerRef,
+    } = useClickOutSide();
+    const {
+        show: showGIFPicker,
+        setShow: setShowGIFPicker,
+        nodeRef: gifPickerRef,
+    } = useClickOutSide();
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
     const accessToken = getAccessToken();
     const [message, setMessage] = React.useState<string>("");
+    const [GIFData, setGIFData] = React.useState<any>([]);
     const isReplying = useSelector(
         (state: RootState) => state.conversation.isReplying
     );
@@ -54,9 +72,24 @@ const ModalChatFooter = ({
         const chatMessage = {
             conversation_id: conversationId,
             content: message,
-            type: "TEXT",
+            type: message.length > 2 ? MESSAGE_TYPE.TEXT : MESSAGE_TYPE.EMOJI,
         };
         setMessage("");
+        stompClient.send(
+            "/app/message",
+            {
+                Authorization: accessToken,
+            },
+            JSON.stringify(chatMessage)
+        );
+    };
+
+    const handleSendLikeMessage = () => {
+        const chatMessage = {
+            conversation_id: conversationId,
+            content: "👍",
+            type: MESSAGE_TYPE.EMOJI,
+        };
         stompClient.send(
             "/app/message",
             {
@@ -70,6 +103,22 @@ const ModalChatFooter = ({
         if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             handleSendMessage();
+        }
+    };
+
+    const handleChooseEmoji = (emoji: any) => {
+        setMessage((prev) => prev + emoji.native);
+        setShowEmojiPicker(false);
+        setShowFullInput(true);
+    };
+
+    const handleShowGIFPicker = async () => {
+        const trendingData = await getTrendingGIFs(100);
+        if (trendingData) {
+            setGIFData(trendingData.data);
+            setShowGIFPicker(true);
+        } else {
+            console.log("No GIF found");
         }
     };
 
@@ -138,6 +187,7 @@ const ModalChatFooter = ({
                                 color={isActive ? "info" : "inherit"}
                                 aria-label="Chọn file GIF"
                                 className="btn-chat-action"
+                                onClick={handleShowGIFPicker}
                             >
                                 <GifIcon />
                             </IconButton>
@@ -166,6 +216,7 @@ const ModalChatFooter = ({
                             size="small"
                             color={isActive ? "info" : "inherit"}
                             className="absolute right-0 transform -translate-y-1/2 top-1/2 btn-chat-action w-7 h-7"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         >
                             <SentimentVerySatisfiedIcon />
                         </IconButton>
@@ -190,11 +241,27 @@ const ModalChatFooter = ({
                             color={isActive ? "info" : "inherit"}
                             aria-label="Thích"
                             className="btn-chat-action"
-                            onClick={() => {}}
+                            onClick={handleSendLikeMessage}
                         >
                             <ThumbUpRoundedIcon />
                         </IconButton>
                     </Tooltip>
+                )}
+                {showEmojiPicker && (
+                    <div
+                        className="absolute right-0 z-50 bottom-12"
+                        ref={emojiPickerRef}
+                    >
+                        <Picker data={data} onEmojiSelect={handleChooseEmoji} />
+                    </div>
+                )}
+                {showGIFPicker && (
+                    <div
+                        className="absolute z-50 left-2 bottom-12"
+                        ref={gifPickerRef}
+                    >
+                        <GIFPicker trendingData={GIFData}></GIFPicker>
+                    </div>
                 )}
             </div>
         </div>
