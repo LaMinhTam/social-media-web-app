@@ -13,7 +13,7 @@ import {
 import { MessageData } from "@/types/conversationType";
 import handleFormatMessage from "@/utils/conversation/messages/handleFormatMessage";
 import formatTime from "@/utils/conversation/messages/handleGroupMessage";
-import { Button, IconButton, Tooltip } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,7 +23,10 @@ import { MESSAGE_TYPE } from "@/constants/global";
 import ReactionPicker from "@/components/common/ReactionPicker";
 import { RootState } from "@/store/configureStore";
 import handleRenderReactionMessage from "@/utils/conversation/messages/handleRenderReactionMessage";
-import ForwardMessageDialog from "./ForwardMessageDialog";
+import ForwardMessageDialog from "../ForwardMessageDialog";
+import { v4 as uuidv4 } from "uuid";
+import MessageText from "./MessageText";
+import MessageMultimedia from "./MessageMultimedia";
 const ModalChatMessage = ({
     type,
     message,
@@ -94,41 +97,21 @@ const ModalChatMessage = ({
                     )}
                 </div>
                 <Tooltip title={formatTime(message.created_at)}>
-                    <div
-                        className={`relative rounded-lg w-fit max-w-[212px] px-3 py-2 my-2 ${
-                            type === "send"
-                                ? message.type === MESSAGE_TYPE.EMOJI
-                                    ? "ml-auto text-2xl"
-                                    : "bg-secondary text-lite ml-auto"
-                                : message.type === MESSAGE_TYPE.EMOJI
-                                ? "mr-auto text-2xl"
-                                : "bg-strock text-text1 mr-auto"
-                        }`}
-                        style={{
-                            wordWrap: "break-word",
-                            overflowWrap: "break-word",
-                        }}
-                    >
-                        <p className="text-wrap">
-                            {handleFormatMessage(message)}
-                        </p>
-                        {message.type !== MESSAGE_TYPE.REVOKED &&
-                            Object.keys(message.reactions ?? {}).length > 0 && (
-                                <div className="flex items-center gap-x-1">
-                                    {Object.keys(message.reactions ?? {}).map(
-                                        (reaction) => (
-                                            <Button
-                                                className={`absolute bottom-[-20px] right-[-15px]`}
-                                            >
-                                                {handleRenderReactionMessage(
-                                                    reaction
-                                                )}
-                                            </Button>
-                                        )
-                                    )}
-                                </div>
-                            )}
-                    </div>
+                    {[
+                        MESSAGE_TYPE.GIF,
+                        MESSAGE_TYPE.STICKER,
+                        MESSAGE_TYPE.EMOJI,
+                    ].includes(message.type) ? (
+                        <MessageMultimedia
+                            type={type}
+                            message={message}
+                        ></MessageMultimedia>
+                    ) : (
+                        <MessageText
+                            type={type}
+                            message={message}
+                        ></MessageText>
+                    )}
                 </Tooltip>
                 {isHovered && message.type !== MESSAGE_TYPE.REVOKED && (
                     <div

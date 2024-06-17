@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import ModalChatMessage from "./ModalChatMessage";
+import ModalChatMessage from "./messsage/ModalChatMessage";
 import { MessageResponse } from "@/types/conversationType";
 import { handleGetListMessage } from "@/services/conversation.service";
 import { useDispatch, useSelector } from "react-redux";

@@ -1,8 +1,4 @@
 import { IconButton, TextareaAutosize, Tooltip } from "@mui/material";
-import MicIcon from "@mui/icons-material/Mic";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
-import GifIcon from "@mui/icons-material/Gif";
-import LabelIcon from "@mui/icons-material/Label";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 import ThumbUpRoundedIcon from "@mui/icons-material/ThumbUpRounded";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
@@ -21,11 +17,15 @@ import {
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import MessageReply from "@/components/common/MessageReply";
-import { GIF_URL_TRENDING_ENDPOINT, MESSAGE_TYPE } from "@/constants/global";
+import { MESSAGE_TYPE } from "@/constants/global";
 import useClickOutSide from "@/hooks/useClickOutSide";
 import GIFPicker from "@/components/common/GIFPicker";
-import axios from "@/apis/axios";
-import { getTrendingGIFs } from "@/services/search.service";
+import {
+    getTrendingGIFs,
+    getTrendingStickers,
+} from "@/services/search.service";
+import StickerPicker from "@/components/common/StickerPicker";
+import ChatFeature from "@/components/common/ChatFeature";
 
 const ModalChatFooter = ({
     isActive,
@@ -55,12 +55,18 @@ const ModalChatFooter = ({
         setShow: setShowGIFPicker,
         nodeRef: gifPickerRef,
     } = useClickOutSide();
+    const {
+        show: showStickerPicker,
+        setShow: setShowStickerPicker,
+        nodeRef: stickerPickerRef,
+    } = useClickOutSide();
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
     const accessToken = getAccessToken();
     const [message, setMessage] = React.useState<string>("");
     const [GIFData, setGIFData] = React.useState<any>([]);
+    const [stickerData, setStickerData] = React.useState<any>([]);
     const isReplying = useSelector(
         (state: RootState) => state.conversation.isReplying
     );
@@ -114,11 +120,21 @@ const ModalChatFooter = ({
 
     const handleShowGIFPicker = async () => {
         const trendingData = await getTrendingGIFs(100);
-        if (trendingData) {
+        if (trendingData && trendingData.data.length > 0) {
             setGIFData(trendingData.data);
             setShowGIFPicker(true);
         } else {
             console.log("No GIF found");
+        }
+    };
+
+    const handleShowStickerPicker = async () => {
+        const trendingData = await getTrendingStickers(100);
+        if (trendingData && trendingData.data.length > 0) {
+            setStickerData(trendingData.data);
+            setShowStickerPicker(true);
+        } else {
+            console.log("No Sticker found");
         }
     };
 
@@ -150,49 +166,11 @@ const ModalChatFooter = ({
                         </IconButton>
                     </Tooltip>
                 ) : (
-                    <div className="flex items-center justify-start">
-                        <Tooltip title="Send audio clip">
-                            <IconButton
-                                size="small"
-                                color={isActive ? "info" : "inherit"}
-                                aria-label="Gửi clip âm thanh"
-                                className="btn-chat-action"
-                            >
-                                <MicIcon />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Send file">
-                            <IconButton
-                                size="small"
-                                color={isActive ? "info" : "inherit"}
-                                aria-label="Đính kèm file"
-                                className="btn-chat-action"
-                            >
-                                <PhotoLibraryIcon />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Send sticker">
-                            <IconButton
-                                size="small"
-                                color={isActive ? "info" : "inherit"}
-                                aria-label="Chọn nhãn dán"
-                                className="btn-chat-action"
-                            >
-                                <LabelIcon />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Send GIF">
-                            <IconButton
-                                size="small"
-                                color={isActive ? "info" : "inherit"}
-                                aria-label="Chọn file GIF"
-                                className="btn-chat-action"
-                                onClick={handleShowGIFPicker}
-                            >
-                                <GifIcon />
-                            </IconButton>
-                        </Tooltip>
-                    </div>
+                    <ChatFeature
+                        isActive={isActive}
+                        handleShowGIFPicker={handleShowGIFPicker}
+                        handleShowStickerPicker={handleShowStickerPicker}
+                    ></ChatFeature>
                 )}
                 <div
                     className="relative flex-1 w-full min-h-[36px] overflow-y-auto overflow-x-hidden pr-7 rounded-lg 
@@ -260,7 +238,25 @@ const ModalChatFooter = ({
                         className="absolute z-50 left-2 bottom-12"
                         ref={gifPickerRef}
                     >
-                        <GIFPicker trendingData={GIFData}></GIFPicker>
+                        <GIFPicker
+                            trendingData={GIFData}
+                            conversationId={conversationId}
+                            stompClient={stompClient}
+                            setShowGIFPicker={setShowGIFPicker}
+                        ></GIFPicker>
+                    </div>
+                )}
+                {showStickerPicker && (
+                    <div
+                        className="absolute z-50 left-2 bottom-12"
+                        ref={stickerPickerRef}
+                    >
+                        <StickerPicker
+                            trendingData={stickerData}
+                            conversationId={conversationId}
+                            stompClient={stompClient}
+                            setShowStickerPicker={setShowStickerPicker}
+                        ></StickerPicker>
                     </div>
                 )}
             </div>

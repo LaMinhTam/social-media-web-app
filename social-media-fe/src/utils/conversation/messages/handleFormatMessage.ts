@@ -13,6 +13,12 @@ export default function handleFormatMessage(message: MessageData) {
         case MESSAGE_TYPE.EMOJI:
             formattedMessage = message.content;
             break;
+        case MESSAGE_TYPE.GIF:
+            formattedMessage = message.content;
+            break;
+        case MESSAGE_TYPE.STICKER:
+            formattedMessage = message.content;
+            break;
         default:
             formattedMessage = "Unsupported message type";
             break;
