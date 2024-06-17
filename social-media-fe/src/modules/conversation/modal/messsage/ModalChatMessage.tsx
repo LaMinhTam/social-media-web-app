@@ -1,5 +1,5 @@
-import MessageFeature from "@/components/common/MessageFeature";
-import MessageFeatureDialog from "@/components/common/MessageFeatureDialog";
+import MessageFeature from "@/modules/conversation/modal/messsage/MessageFeature";
+import MessageFeatureDialog from "@/modules/conversation/modal/messsage/MessageFeatureDialog";
 import useClickOutSide from "@/hooks/useClickOutSide";
 import useHover from "@/hooks/useHover";
 import {
@@ -11,9 +11,8 @@ import {
     setMessageReply,
 } from "@/store/actions/conversationSlice";
 import { MessageData } from "@/types/conversationType";
-import handleFormatMessage from "@/utils/conversation/messages/handleFormatMessage";
 import formatTime from "@/utils/conversation/messages/handleGroupMessage";
-import { Button, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,9 +21,7 @@ import RemoveMessageDialog from "./RemoveMessageDialog";
 import { MESSAGE_TYPE } from "@/constants/global";
 import ReactionPicker from "@/components/common/ReactionPicker";
 import { RootState } from "@/store/configureStore";
-import handleRenderReactionMessage from "@/utils/conversation/messages/handleRenderReactionMessage";
 import ForwardMessageDialog from "../ForwardMessageDialog";
-import { v4 as uuidv4 } from "uuid";
 import MessageText from "./MessageText";
 import MessageMultimedia from "./MessageMultimedia";
 const ModalChatMessage = ({

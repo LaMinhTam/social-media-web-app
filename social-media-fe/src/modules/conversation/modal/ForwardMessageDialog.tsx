@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
@@ -11,6 +12,8 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
 import SearchInput from "@/components/common/SearchInput";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -31,6 +34,16 @@ const ForwardMessageDialog = ({
     const handleClose = () => {
         setOpenForwardDialog(false);
     };
+    const listConversation = useSelector(
+        (state: RootState) => state.conversation.listConversation
+    );
+    const listPrivateConversation = listConversation.filter(
+        (conversation) => conversation.type === "PRIVATE"
+    );
+    const listGroupConversation = listConversation.filter(
+        (conversation) => conversation.type === "GROUP"
+    );
+    if (!listConversation) return null;
     return (
         <BootstrapDialog
             onClose={handleClose}
@@ -61,7 +74,10 @@ const ForwardMessageDialog = ({
             >
                 <CloseIcon />
             </IconButton>
-            <DialogContent dividers className="w-[548px]">
+            <DialogContent
+                dividers
+                className="py-4 overflow-x-hidden overflow-y-auto"
+            >
                 <SearchInput
                     placeholder="Search for people and groups"
                     inputProps={{
@@ -70,21 +86,70 @@ const ForwardMessageDialog = ({
                     onClick={() => {}}
                     onChange={() => {}}
                     value=""
-                    className="w-full"
+                    className="w-full h-full"
                 ></SearchInput>
-                {Array.from({ length: 10 }).map((_, index) => (
-                    <div key={index} className="flex items-center py-2 gap-x-2">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                        <div>
-                            <Typography className="font-semibold">
-                                User Name
-                            </Typography>
-                            <Typography className="text-sm text-gray-500">
-                                User email
-                            </Typography>
+                <Box className="px-2 pt-5 pb-1">
+                    <Typography className="text-lg font-bold">
+                        Friends
+                    </Typography>
+                </Box>
+                <Box>
+                    {listPrivateConversation.map((item, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between px-2 gap-x-2 w-[468px] h-[56px]"
+                        >
+                            <div className="flex items-center justify-center gap-x-2">
+                                <img
+                                    src={item.image}
+                                    alt="avatar"
+                                    className="object-cover w-10 h-10 rounded-full"
+                                />
+                                <span>{item.name}</span>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="contained"
+                                color="inherit"
+                                size="medium"
+                                className="shadow-none bg-tertiary bg-opacity-10 text-tertiary hover:bg-opacity-30 hover:bg-tertiary hover:shadow-none"
+                            >
+                                <Typography>Send</Typography>
+                            </Button>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </Box>
+                <Box className="px-2 pt-5 pb-1">
+                    <Typography className="text-lg font-bold">
+                        Groups
+                    </Typography>
+                </Box>
+                <Box>
+                    {listGroupConversation.map((item, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between px-2 gap-x-2 w-[468px] h-[56px]"
+                        >
+                            <div className="flex items-center justify-center gap-x-2">
+                                <img
+                                    src={item.image}
+                                    alt="avatar"
+                                    className="object-cover w-10 h-10 rounded-full"
+                                />
+                                <span>{item.name}</span>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="contained"
+                                color="inherit"
+                                size="medium"
+                                className="shadow-none bg-tertiary bg-opacity-10 text-tertiary hover:bg-opacity-30 hover:bg-tertiary hover:shadow-none"
+                            >
+                                <Typography>Send</Typography>
+                            </Button>
+                        </div>
+                    ))}
+                </Box>
             </DialogContent>
         </BootstrapDialog>
     );

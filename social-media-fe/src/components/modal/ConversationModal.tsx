@@ -17,15 +17,18 @@ import {
 import {
     setCurrentConversation,
     setCurrentSize,
+    setListConversation,
 } from "@/store/actions/conversationSlice";
 import { useSocket } from "@/contexts/socket-context";
 import handleReverseMessages from "@/utils/conversation/messages/handleReverseMessages";
+import LoadingSpinner from "../loading/LoadingSpinner";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
+    const [loading, setLoading] = useState<boolean>(false);
     const { setMessages } = useSocket();
-    const [listConversation, setListConversation] = useState<
-        ConversationResponse[]
-    >([]);
+    const listConversation = useSelector(
+        (state: RootState) => state.conversation.listConversation
+    );
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
@@ -53,10 +56,12 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
 
     useEffect(() => {
         async function fetchData() {
+            setLoading(true);
             const response = await handleGetListConversation();
             if (response) {
-                setListConversation(response);
+                dispatch(setListConversation(response));
             }
+            setLoading(false);
         }
         fetchData();
     }, []);
@@ -97,14 +102,15 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                     <SearchInput
                         placeholder="Tìm kiếm trên Messenger"
                         inputProps={{ "aria-label": "Tìm kiếm trên Messenger" }}
-                        onClick={() => {}}
                         onChange={() => {}}
                         value=""
                         className=""
                     ></SearchInput>
                 </Box>
                 <Box className="w-full h-full max-h-[500px] overflow-x-hidden overflow-y-auto custom-scrollbar">
-                    {listConversation &&
+                    {loading && <LoadingSpinner />}
+                    {!loading &&
+                        listConversation &&
                         listConversation.map((conversation) => {
                             const user = conversation.members.find(
                                 (member) =>
