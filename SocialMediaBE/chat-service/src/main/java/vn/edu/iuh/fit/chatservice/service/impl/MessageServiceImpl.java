@@ -72,8 +72,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageDetailDTO> getMessagesByConversationId(Conversation conversation, String messageId, int size) {
-        List<Message> messages = messageRepository.findMessagesAfterMessageId(conversation.getId().toHexString(), messageId, size);
+    public List<MessageDetailDTO> getMessagesByConversationId(Long userId, Conversation conversation, String messageId, int size) {
+        List<Message> messages = messageRepository.findMessagesAfterMessageId(userId, conversation.getId().toHexString(), messageId, size);
 
         Set<Long> userIds = messages.stream().flatMap(message -> Stream.concat(
                 Stream.of(

@@ -5,5 +5,5 @@ import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import java.util.List;
 
 public interface MessageRepositoryCustom  {
-    List<Message> findMessagesAfterMessageId(String conversationId, String messageId,  int size);
+    List<Message> findMessagesAfterMessageId(Long userId, String conversationId, String messageId,  int size);
 }

@@ -14,7 +14,7 @@ import java.util.List;
 public interface MessageService {
     Message saveMessage(Long userId, MessageFromClientDTO message);
 
-    List<MessageDetailDTO> getMessagesByConversationId(Conversation conversationId, String messageId, int size);
+    List<MessageDetailDTO> getMessagesByConversationId(Long userId, Conversation conversationId, String messageId, int size);
 
     MessageDTO revokeMessage(Long senderId, String messageId) ;
 

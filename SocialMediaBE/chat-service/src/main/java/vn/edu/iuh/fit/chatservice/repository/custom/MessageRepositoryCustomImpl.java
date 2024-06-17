@@ -19,8 +19,8 @@ public class MessageRepositoryCustomImpl implements MessageRepositoryCustom{
         this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Message> findMessagesAfterMessageId(String conversationId, String messageId, int size) {
-        Criteria criteria = Criteria.where("conversationId").is(conversationId);
+    public List<Message> findMessagesAfterMessageId(Long userId, String conversationId, String messageId, int size) {
+        Criteria criteria = Criteria.where("conversationId").is(conversationId).and("deletedBy").nin(userId);
 
         if (messageId != null) {
             ObjectId objectId = new ObjectId(messageId);

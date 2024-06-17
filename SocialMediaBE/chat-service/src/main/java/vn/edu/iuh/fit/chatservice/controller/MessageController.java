@@ -39,7 +39,7 @@ public class MessageController {
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(eTag).build();
         }
-        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversation, messageId, size);
+        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(id, conversation, messageId, size);
 
         Map<String, MessageDetailDTO> messageMap = messages.stream()
                 .collect(Collectors.toMap(MessageDetailDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
