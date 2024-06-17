@@ -7,3 +7,10 @@ export interface OnlineStatus {
 export type OnlineResponse = {
     [key: string]: OnlineStatus;
 };
+
+export type UploadFileQueue = {
+    fileName: string;
+    size: number;
+    progress: number;
+    isSuccessful: boolean;
+};

@@ -1,3 +1,4 @@
+import { UploadFileQueue } from "@/types/commonType";
 import { ConversationResponse, MessageData } from "@/types/conversationType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
@@ -11,6 +12,7 @@ type ConversationType = {
         name: string;
         emoji: string;
     };
+    uploadQueue: UploadFileQueue[];
 };
 
 const initialState: ConversationType = {
@@ -23,6 +25,7 @@ const initialState: ConversationType = {
         name: "",
         emoji: "",
     },
+    uploadQueue: [],
 };
 
 const conversationSlice = createSlice({
@@ -56,6 +59,9 @@ const conversationSlice = createSlice({
         ) {
             state.reactionSelected = action.payload;
         },
+        setUploadQueue(state, action: PayloadAction<UploadFileQueue[]>) {
+            state.uploadQueue = action.payload;
+        },
     },
 });
 
@@ -66,5 +72,6 @@ export const {
     setIsReplying,
     setMessageReply,
     setReactionSelected,
+    setUploadQueue,
 } = conversationSlice.actions;
 export default conversationSlice.reducer;

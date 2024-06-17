@@ -36,6 +36,7 @@ export function SocketProvider(
                     `/user/${decryptedData.user_id || ""}/message`,
                     (payload) => {
                         const payloadData = JSON.parse(payload.body);
+                        console.log("useEffect ~ payloadData:", payloadData);
                         setMessages((prev) => ({
                             ...prev,
                             [payloadData.message_id]: {

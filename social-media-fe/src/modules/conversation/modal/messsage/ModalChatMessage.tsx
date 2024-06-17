@@ -98,6 +98,10 @@ const ModalChatMessage = ({
                         MESSAGE_TYPE.GIF,
                         MESSAGE_TYPE.STICKER,
                         MESSAGE_TYPE.EMOJI,
+                        MESSAGE_TYPE.FILE,
+                        MESSAGE_TYPE.IMAGE,
+                        MESSAGE_TYPE.VIDEO,
+                        MESSAGE_TYPE.VOICE,
                     ].includes(message.type) ? (
                         <MessageMultimedia
                             type={type}

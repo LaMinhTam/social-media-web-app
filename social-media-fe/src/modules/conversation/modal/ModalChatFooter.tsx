@@ -170,6 +170,8 @@ const ModalChatFooter = ({
                         isActive={isActive}
                         handleShowGIFPicker={handleShowGIFPicker}
                         handleShowStickerPicker={handleShowStickerPicker}
+                        conversationId={conversationId}
+                        stompClient={stompClient}
                     ></ChatFeature>
                 )}
                 <div
