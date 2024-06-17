@@ -23,7 +23,7 @@ public class ConversationDTO implements Serializable {
     private String conversationId;
     private String name;
     private String image;
-    private List<UserDetail> members;
+    private Map<Long, UserDetail> members;
     private ConversationType type;
     private Long ownerId;
     private ConversationSettings settings;
@@ -32,7 +32,7 @@ public class ConversationDTO implements Serializable {
     public ConversationDTO(Conversation conversation, Map<Long, UserDetail> userModels, Long id) {
         ConversationDTO conversationDTO = ConversationDTO.builder()
                 .conversationId(conversation.getId().toHexString())
-                .members(conversation.getMembers().stream().map(userModels::get).toList())
+                .members(userModels)
                 .type(conversation.getType())
                 .build();
         if (conversation.getType().equals(ConversationType.PRIVATE)) {
@@ -57,9 +57,6 @@ public class ConversationDTO implements Serializable {
     }
 
     public UserDetail getOtherMember(Long id) {
-        return members.stream()
-                .filter(member -> !member.user_id().equals(id))
-                .findFirst()
-                .orElse(null);
+        return members.get(members.keySet().stream().filter(memberId -> !memberId.equals(id)).findFirst().orElse(null));
     }
 }

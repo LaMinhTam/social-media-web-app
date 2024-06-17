@@ -11,6 +11,7 @@ public class ChatClient {
 
     private final WebClient webClient;
     Logger log = LoggerFactory.getLogger(ChatClient.class);
+
     public ChatClient(WebClient chatWebClient) {
         this.webClient = chatWebClient;
     }
@@ -35,6 +36,15 @@ public class ChatClient {
                 .header("sub", String.valueOf(id))
                 .retrieve()
                 .bodyToMono(ConversationFromWebClient.class)
+                .block();
+    }
+
+    public ReplyMessageDTO getPlainMessage(long id, String s) {
+        return webClient.get()
+                .uri("/messages/plain/" + s)
+                .header("sub", String.valueOf(id))
+                .retrieve()
+                .bodyToMono(ReplyMessageDTO.class)
                 .block();
     }
 }

@@ -29,6 +29,10 @@ public class WebSocketController {
     public void processMessageFromClient(SimpMessageHeaderAccessor sha, @Payload MessageFromClientDTO message) {
         String userId = sha.getNativeHeader("sub").get(0);
         try {
+            ReplyMessageDTO replyToMessage = null;
+            if (message.reply_to_message_id() != null) {
+                replyToMessage = chatClient.getPlainMessage(Long.parseLong(userId), message.reply_to_message_id());
+            }
             Message savedMessage = new Message(chatClient.saveMessage(Long.parseLong(userId), message));
             Conversation conversation = new Conversation(chatClient.getPlainConversation(Long.parseLong(userId), message.conversation_id()));
             List<Long> member = new ArrayList<>();
@@ -46,7 +50,7 @@ public class WebSocketController {
                 );
             }
 
-            MessageDetailDTO response = new MessageDetailDTO(savedMessage, sender, targetUsers, null);
+            MessageDetailDTO response = new MessageDetailDTO(savedMessage, sender, targetUsers, null, replyToMessage);
             conversation.getMembers().forEach(
                     memberId -> sendMessageToUser(memberId.toString(), "message", response)
             );

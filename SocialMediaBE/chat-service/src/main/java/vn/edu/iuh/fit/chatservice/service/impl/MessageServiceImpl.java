@@ -8,6 +8,7 @@ import vn.edu.iuh.fit.chatservice.client.UserClient;
 import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
 import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
+import vn.edu.iuh.fit.chatservice.dto.ReplyMessageDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
@@ -64,7 +65,8 @@ public class MessageServiceImpl implements MessageService {
         Optional.of(timestamp).ifPresent(messageBuilder::createdAt);
         Optional.of(timestamp).ifPresent(messageBuilder::updatedAt);
         Optional.ofNullable(messageDTO.taggedUserIds()).ifPresent(messageBuilder::targetUserId);
-        Optional.ofNullable(messageDTO.type()).ifPresent(messageBuilder::type);
+        Optional.of(messageDTO.type()).ifPresent(messageBuilder::type);
+        Optional.ofNullable(messageDTO.replyToMessageId()).ifPresent(messageBuilder::replyToMessageId);
 
         return messageRepository.save(messageBuilder.build());
     }
@@ -81,12 +83,22 @@ public class MessageServiceImpl implements MessageService {
         userIds.addAll(conversation.getReadBy().keySet().stream().toList());
 
         Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
-
+        List<ObjectId> replyToMessageIds = messages.stream()
+                .map(message -> {
+                    if (message.getReplyToMessageId() != null) {
+                        return new ObjectId(message.getReplyToMessageId());
+                    }
+                    return null;
+                })
+                .collect(Collectors.toSet())
+                .stream().toList();
+        Map<String, ReplyMessageDTO> replyMessage = messageRepository.findMessagesByIdIn(replyToMessageIds)
+                .stream().collect(Collectors.toMap(message -> message.getId().toHexString(), message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId())));
         return messages.stream()
                 .map(message -> {
                     List<UserDetail> targetUserDetails = UserDetail.getUserDetailsFromMap(message, userDetailMap);
                     Map<Long, UserDetail> readBy = getReadByUserDetails(conversation, message, userDetailMap);
-                    return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails, readBy);
+                    return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails, readBy, replyMessage.get(message.getReplyToMessageId()));
                 })
                 .toList();
     }
@@ -105,8 +117,11 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public MessageDTO revokeMessage(String messageId) {
+    public MessageDTO revokeMessage(Long senderId, String messageId) {
         Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        if (!message.getSenderId().equals(senderId)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You can't revoke this message");
+        }
         Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId())).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
         message.setType(MessageType.REVOKED);
         message.setContent("This message has been revoked");
@@ -114,6 +129,13 @@ public class MessageServiceImpl implements MessageService {
         message.setMedia(null);
         message.setUpdatedAt(new Date());
         notificationClient.notifyConversationMembers(conversation, message, "revoke");
+        Thread thread = new Thread(() -> {
+            List<Message> messages = messageRepository.findMessagesByReplyToMessageId(message.getId().toHexString());
+            messages.forEach(currentMessage ->
+                    notificationClient.notifyRevokeReplyMessage(conversation, currentMessage)
+            );
+        });
+        thread.start();
         return new MessageDTO(messageRepository.save(message));
     }
 
@@ -195,6 +217,17 @@ public class MessageServiceImpl implements MessageService {
         }
         message.getDeletedBy().add(id);
         messageRepository.save(message);
+    }
+
+    @Override
+    public ReplyMessageDTO getPlainMessage(Long id, String messageId) {
+        Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId())).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+        if (!conversation.getMembers().contains(id)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
+        }
+        return new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId());
+
     }
 
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {

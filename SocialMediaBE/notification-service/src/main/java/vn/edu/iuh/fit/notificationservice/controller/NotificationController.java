@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.notificationservice.client.UserClient;
-import vn.edu.iuh.fit.notificationservice.dto.ConversationDTO;
-import vn.edu.iuh.fit.notificationservice.dto.MessageDetailDTO;
-import vn.edu.iuh.fit.notificationservice.dto.MessageNotificationRequest;
-import vn.edu.iuh.fit.notificationservice.dto.UserDetail;
+import vn.edu.iuh.fit.notificationservice.dto.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,7 +43,7 @@ public class NotificationController {
 
         for (Long memberId : notifyMembers) {
             simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/" + destination,
-                    new MessageDetailDTO(request.message(), senderUserDetail, targetUserDetail, readByUserDetail));
+                    new MessageDetailDTO(request.message(), senderUserDetail, targetUserDetail, readByUserDetail, null));
         }
     }
 
@@ -71,6 +68,28 @@ public class NotificationController {
             notifyMembers.removeAll(request.message().deletedBy());
         }
         return notifyMembers;
+    }
+
+    @PostMapping("/notify/revoke-reply")
+    public void notifyRevokeReplyMessage(@RequestBody MessageNotificationRequest request) {
+        Set<Long> userIds = populateUserIds(request);
+        List<Long> notifyMembers = prepareNotifyMembers(request);
+
+        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
+        UserDetail senderUserDetail = userDetails.get(request.message().senderId());
+        List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromMap(request.message(), userDetails);
+        Map<Long, UserDetail> readByUserDetail = UserDetail.getReadByUserDetailMap(request.conversation().getReadBy(), userDetails);
+
+        if (request.message().deletedBy() != null) {
+            notifyMembers.removeAll(request.message().deletedBy());
+        }
+
+        ReplyMessageDTO replyMessage = new ReplyMessageDTO(request.message().replyToMessageId(), "This message has been revoked", null, senderUserDetail.user_id());
+
+        for (Long memberId : notifyMembers) {
+            simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/revoke",
+                    new MessageDetailDTO(request.message(), senderUserDetail, targetUserDetail, readByUserDetail, replyMessage));
+        }
     }
 
     @PostMapping("/notify/conversation")

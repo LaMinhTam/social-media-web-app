@@ -18,6 +18,7 @@ public record MessageModel(
         String conversationId,
         Long senderId,
         List<Long> targetUserId,
+        String replyToMessageId,
         String content,
         List<String> media,
         String status,
@@ -27,13 +28,14 @@ public record MessageModel(
         Date createdAt,
         Date updatedAt,
         List<Long> deletedBy
-        ) {
+) {
     public MessageModel(Message message) {
         this(
                 message.getId().toHexString(),
                 message.getConversationId(),
                 message.getSenderId(),
                 message.getTargetUserId(),
+                message.getReplyToMessageId(),
                 message.getContent(),
                 message.getMedia(),
                 message.getStatus(),
