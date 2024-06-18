@@ -1,5 +1,7 @@
 package vn.edu.iuh.fit.postservice.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.postservice.dto.PostDetail;
@@ -33,7 +35,12 @@ public class UserController {
     }
 
     @PostMapping("/follow/{followingId}")
-    public void followUser(@RequestHeader("sub") Long userId, @PathVariable Long followingId) {
-        userService.followUser(userId, followingId);
+    public ResponseEntity<?> followUser(@RequestHeader("sub") Long userId, @PathVariable Long followingId) {
+        boolean result = userService.followUser(userId, followingId);
+        if (result) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.GONE).build();
+        }
     }
 }

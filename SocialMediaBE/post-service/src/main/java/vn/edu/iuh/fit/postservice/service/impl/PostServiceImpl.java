@@ -123,6 +123,16 @@ public class PostServiceImpl implements PostService {
     @Override
     public Map<String, PostDetail> findNewFeed(Long userId, int page, int size) {
         List<PostDTO> postNodes = postNodeRepository.findNewFeed(userId, page, size);
+        Thread thread = new Thread(() -> {
+            List<String> postIds = postNodes.stream()
+                    .map(PostDTO::getPostId)
+                    .toList();
+            UserNode userNode = userNodeRepository.findById(userId).orElseThrow(() -> new AppException(404, "User not found"));
+            List<PostNode> reachPost = postNodeRepository.findAllById(postIds);
+            userNode.getReach().addAll(reachPost);
+            userNodeRepository.save(userNode);
+        });
+        thread.start();
         return bindPostDetail(postNodes);
     }
 

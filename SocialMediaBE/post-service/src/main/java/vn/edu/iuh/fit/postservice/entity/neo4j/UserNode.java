@@ -30,6 +30,8 @@ public class UserNode {
     private Set<UserNode> followers = new HashSet<>();
     @Relationship(type = "FOLLOW", direction = Relationship.Direction.OUTGOING)
     private Set<UserNode> following = new HashSet<>();
+    @Relationship(type = "REACH", direction = Relationship.Direction.OUTGOING)
+    private Set<PostNode> reach = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
