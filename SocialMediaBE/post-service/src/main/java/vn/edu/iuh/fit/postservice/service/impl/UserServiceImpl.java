@@ -17,4 +17,12 @@ public class UserServiceImpl implements UserService {
     public void saveUser(Long userId) {
         userNodeRepository.save(new UserNode(userId));
     }
+
+    @Override
+    public void followUser(Long userId, Long followingId) {
+        UserNode user = userNodeRepository.findById(userId).orElseThrow();
+        UserNode following = userNodeRepository.findById(followingId).orElseThrow();
+        user.getFollowing().add(following);
+        userNodeRepository.save(user);
+    }
 }
