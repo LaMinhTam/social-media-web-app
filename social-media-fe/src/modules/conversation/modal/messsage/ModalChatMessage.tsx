@@ -3,6 +3,7 @@ import MessageFeatureDialog from "@/modules/conversation/modal/messsage/MessageF
 import useClickOutSide from "@/hooks/useClickOutSide";
 import useHover from "@/hooks/useHover";
 import {
+    handleDeleteMessage,
     handleReactionMessage,
     handleRevokeMessage,
 } from "@/services/conversation.service";
@@ -24,6 +25,7 @@ import { RootState } from "@/store/configureStore";
 import ForwardMessageDialog from "../ForwardMessageDialog";
 import MessageText from "./MessageText";
 import MessageMultimedia from "./MessageMultimedia";
+import { useSocket } from "@/contexts/socket-context";
 const ModalChatMessage = ({
     type,
     message,
@@ -31,6 +33,7 @@ const ModalChatMessage = ({
     type: string;
     message: MessageData;
 }) => {
+    const { messages, setMessages } = useSocket();
     const dispatch = useDispatch();
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
@@ -53,11 +56,15 @@ const ModalChatMessage = ({
     const onRevokeMessage = async () => {
         const response = await handleRevokeMessage(message.message_id);
         if (response) {
-            console.log("Revoke message success");
+            setOpenDeleteDialog(false);
         }
     };
     const onRemoveMessage = async () => {
-        console.log("Remove message");
+        const response = await handleDeleteMessage(message.message_id);
+        const newMessages = { ...messages };
+        delete newMessages[message.message_id];
+        setMessages(newMessages);
+        setOpenDeleteDialog(false);
     };
     const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
     const [openForwardDialog, setOpenForwardDialog] = React.useState(false);
@@ -74,7 +81,7 @@ const ModalChatMessage = ({
         }
     };
     return (
-        <div className="relative">
+        <>
             <div
                 className="relative flex items-center justify-center gap-x-1"
                 ref={hoverRef}
@@ -93,27 +100,22 @@ const ModalChatMessage = ({
                         />
                     )}
                 </div>
-                <Tooltip title={formatTime(message.created_at)}>
-                    {[
-                        MESSAGE_TYPE.GIF,
-                        MESSAGE_TYPE.STICKER,
-                        MESSAGE_TYPE.EMOJI,
-                        MESSAGE_TYPE.FILE,
-                        MESSAGE_TYPE.IMAGE,
-                        MESSAGE_TYPE.VIDEO,
-                        MESSAGE_TYPE.VOICE,
-                    ].includes(message.type) ? (
-                        <MessageMultimedia
-                            type={type}
-                            message={message}
-                        ></MessageMultimedia>
-                    ) : (
-                        <MessageText
-                            type={type}
-                            message={message}
-                        ></MessageText>
-                    )}
-                </Tooltip>
+                {[
+                    MESSAGE_TYPE.GIF,
+                    MESSAGE_TYPE.STICKER,
+                    MESSAGE_TYPE.EMOJI,
+                    MESSAGE_TYPE.FILE,
+                    MESSAGE_TYPE.IMAGE,
+                    MESSAGE_TYPE.VIDEO,
+                    MESSAGE_TYPE.VOICE,
+                ].includes(message.type) ? (
+                    <MessageMultimedia
+                        type={type}
+                        message={message}
+                    ></MessageMultimedia>
+                ) : (
+                    <MessageText type={type} message={message}></MessageText>
+                )}
                 {isHovered && message.type !== MESSAGE_TYPE.REVOKED && (
                     <div
                         className={`absolute p-2 transform -translate-y-1/2 bg-lite top-1/2 z-40 ${
@@ -163,13 +165,13 @@ const ModalChatMessage = ({
                         openDeleteDialog={openDeleteDialog}
                         setOpenDeleteDialog={setOpenDeleteDialog}
                         onRevokeMessage={onRevokeMessage}
-                        onRemoveMessage={onRevokeMessage}
+                        onRemoveMessage={onRemoveMessage}
                     />
                 ) : (
                     <RemoveMessageDialog
                         openDeleteDialog={openDeleteDialog}
                         setOpenDeleteDialog={setOpenDeleteDialog}
-                        onRemoveMessage={onRevokeMessage}
+                        onRemoveMessage={onRemoveMessage}
                     />
                 ))}
             {openForwardDialog && (
@@ -179,7 +181,7 @@ const ModalChatMessage = ({
                     onForwardMessage={() => {}}
                 />
             )}
-        </div>
+        </>
     );
 };
 

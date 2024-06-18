@@ -2,12 +2,13 @@ import { MESSAGE_TYPE } from "@/constants/global";
 import { MessageData } from "@/types/conversationType";
 import handleFormatMessage from "@/utils/conversation/messages/handleFormatMessage";
 import handleRenderReactionMessage from "@/utils/conversation/messages/handleRenderReactionMessage";
-import { Button } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import React from "react";
 import MessageFile from "./MessageFile";
 import MessageImage from "./MessageImage";
 import MessageVideo from "./MessageVideo";
+import formatTime from "@/utils/conversation/messages/handleGroupMessage";
 
 const MessageMultimedia = ({
     message,
@@ -29,21 +30,27 @@ const MessageMultimedia = ({
                     }`}
                 >
                     {message.type === MESSAGE_TYPE.EMOJI && (
-                        <p>{handleFormatMessage(message)}</p>
+                        <Tooltip title={formatTime(message.created_at)}>
+                            <p>{handleFormatMessage(message)}</p>
+                        </Tooltip>
                     )}
                     {message.type === MESSAGE_TYPE.GIF && (
-                        <img
-                            src={handleFormatMessage(message)}
-                            alt="gif"
-                            className="object-cover w-full h-full rounded-lg"
-                        />
+                        <Tooltip title={formatTime(message.created_at)}>
+                            <img
+                                src={handleFormatMessage(message)}
+                                alt="gif"
+                                className="object-cover w-full h-full rounded-lg"
+                            />
+                        </Tooltip>
                     )}
                     {message.type === MESSAGE_TYPE.STICKER && (
-                        <img
-                            src={handleFormatMessage(message)}
-                            alt="sticker"
-                            className="object-cover w-full h-[64px] rounded-lg"
-                        />
+                        <Tooltip title={formatTime(message.created_at)}>
+                            <img
+                                src={handleFormatMessage(message)}
+                                alt="sticker"
+                                className="object-cover w-full h-[64px] rounded-lg"
+                            />
+                        </Tooltip>
                     )}
                     {message.type !== MESSAGE_TYPE.REVOKED &&
                         Object.keys(message.reactions ?? {}).length > 0 && (

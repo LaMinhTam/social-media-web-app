@@ -1,4 +1,11 @@
-import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
+import {
+    Badge,
+    Box,
+    Button,
+    IconButton,
+    Stack,
+    Typography,
+} from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import React, { useEffect, useState } from "react";
 import OpenWithOutlinedIcon from "@mui/icons-material/OpenWithOutlined";
@@ -22,9 +29,15 @@ import {
 import { useSocket } from "@/contexts/socket-context";
 import handleReverseMessages from "@/utils/conversation/messages/handleReverseMessages";
 import LoadingSpinner from "../loading/LoadingSpinner";
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/constants/firebaseConfig";
+import { handleRemoveUnreadMessage } from "@/utils/conversation/messages/handleRemoveUnreadMessage";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     const [loading, setLoading] = useState<boolean>(false);
+    const [unreadCounts, setUnreadCounts] = useState<{ [key: string]: number }>(
+        {}
+    );
     const { setMessages } = useSocket();
     const listConversation = useSelector(
         (state: RootState) => state.conversation.listConversation
@@ -50,6 +63,13 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
             dispatch(setCurrentSize(10));
             const messages = handleReverseMessages(data);
             setMessages(messages);
+            const count = unreadCounts[conversation.conversation_id] || 0;
+            if (count > 0) {
+                handleRemoveUnreadMessage(
+                    conversation.conversation_id,
+                    currentUserProfile.user_id
+                );
+            }
             popupState.close();
         }
     };
@@ -65,6 +85,40 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
         }
         fetchData();
     }, []);
+
+    useEffect(() => {
+        listConversation.forEach((conversation) => {
+            const unreadTrackRef = doc(
+                collection(db, "unreadTrack"),
+                conversation.conversation_id
+            );
+
+            const unsubscribe = onSnapshot(unreadTrackRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const isUserUnread = Object.keys(
+                        data.list_unread_message
+                    ).some(
+                        (key) => parseInt(key) === currentUserProfile.user_id
+                    );
+                    let unreadCount = 0;
+                    if (isUserUnread) {
+                        unreadCount =
+                            data.list_unread_message[currentUserProfile.user_id]
+                                .length;
+                    }
+                    // Update the state with the new count
+                    setUnreadCounts((prevCounts) => ({
+                        ...prevCounts,
+                        [conversation.conversation_id]: unreadCount,
+                    }));
+                }
+            });
+
+            // Clean up the listener when the component unmounts
+            return () => unsubscribe();
+        });
+    }, [listConversation]);
 
     return (
         <>
@@ -112,11 +166,15 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                     {!loading &&
                         listConversation &&
                         listConversation.map((conversation) => {
-                            const user = conversation.members.find(
+                            const user = Object.values(
+                                conversation.members
+                            ).find(
                                 (member) =>
                                     member.user_id !==
-                                    currentUserProfile.user_id
+                                    currentUserProfile?.user_id
                             );
+                            const unreadCount =
+                                unreadCounts[conversation.conversation_id] || 0;
                             return (
                                 <Box
                                     className="px-2"
@@ -142,17 +200,29 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                             className="object-cover rounded-full w-14 h-14"
                                             alt="avatar"
                                         ></Image>
-                                        <Box className="flex flex-col items-start justify-center flex-1 gap-y-2">
-                                            <Typography>
-                                                {user?.name}
-                                            </Typography>
-                                            <Box className="flex items-center justify-center gap-x-2">
+                                        <Box className="flex items-center justify-between flex-1">
+                                            <Box className="flex flex-col items-start justify-center flex-1 gap-y-2">
                                                 <Typography>
-                                                    Chao ban
+                                                    {user?.name}
                                                 </Typography>
-                                                <Typography>
-                                                    &sdot; 19 giờ
-                                                </Typography>
+                                                <Box className="flex items-center justify-center gap-x-2">
+                                                    <Typography>
+                                                        Chao ban
+                                                    </Typography>
+                                                    <Typography>
+                                                        &sdot; 19 giờ
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Box className="pr-3">
+                                                {unreadCount > 0 && (
+                                                    <Badge
+                                                        badgeContent={
+                                                            unreadCount
+                                                        }
+                                                        color="error"
+                                                    ></Badge>
+                                                )}
                                             </Box>
                                         </Box>
                                     </Button>

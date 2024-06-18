@@ -8,6 +8,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
 import { OnlineStatus } from "@/types/commonType";
 import Image from "next/image";
+import { setCurrentConversation } from "@/store/actions/conversationSlice";
+import { ConversationResponse } from "@/types/conversationType";
 
 const ModalChatHeader = ({
     username,
@@ -70,7 +72,14 @@ const ModalChatHeader = ({
                     <IconButton
                         size="small"
                         color="inherit"
-                        onClick={() => dispatch(setShowChatModal(false))}
+                        onClick={() => {
+                            dispatch(
+                                setCurrentConversation(
+                                    {} as ConversationResponse
+                                )
+                            );
+                            dispatch(setShowChatModal(false));
+                        }}
                     >
                         <CloseIcon />
                     </IconButton>

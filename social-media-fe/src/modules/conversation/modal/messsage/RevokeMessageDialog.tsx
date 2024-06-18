@@ -33,8 +33,19 @@ const RevokeMessageDialog = ({
     onRevokeMessage: () => void;
     onRemoveMessage: () => void;
 }) => {
+    const [value, setValue] = React.useState("REVOKE");
     const handleClose = () => {
         setOpenDeleteDialog(false);
+    };
+    const handleMessageAction = () => {
+        if (value === "REVOKE") {
+            onRevokeMessage();
+        } else if (value === "REMOVE") {
+            onRemoveMessage();
+        }
+    };
+    const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setValue((event.target as HTMLInputElement).value);
     };
     return (
         <BootstrapDialog
@@ -82,7 +93,7 @@ const RevokeMessageDialog = ({
                         <Grid item flex={"1"}>
                             <FormControlLabel
                                 value="REVOKE"
-                                control={<Radio />}
+                                control={<Radio onChange={handleRadioChange} />}
                                 label="Unsend for everyone"
                                 className="font-bold"
                             />
@@ -104,7 +115,7 @@ const RevokeMessageDialog = ({
                         <Grid item flex={"1"}>
                             <FormControlLabel
                                 value="REMOVE"
-                                control={<Radio />}
+                                control={<Radio onChange={handleRadioChange} />}
                                 label="Remove for you"
                                 className="font-bold"
                             />
@@ -122,7 +133,7 @@ const RevokeMessageDialog = ({
                 </Button>
                 <Button
                     autoFocus
-                    onClick={onRevokeMessage}
+                    onClick={handleMessageAction}
                     variant="contained"
                     color="info"
                 >

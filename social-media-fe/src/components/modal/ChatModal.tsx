@@ -28,9 +28,14 @@ const ChatModal = () => {
         (state: RootState) => state.profile.currentUserProfile
     );
 
-    const anotherUser = currentConversation.members.find(
-        (user) => user.user_id !== currentUserProfile.user_id
-    );
+    const anotherUser =
+        currentConversation?.members[
+            Object.keys(currentConversation.members).find(
+                (key) =>
+                    currentConversation.members[key].user_id !==
+                    currentUserProfile.user_id
+            ) as string
+        ];
 
     const { messages, stompClient, setMessages } = useSocket();
 

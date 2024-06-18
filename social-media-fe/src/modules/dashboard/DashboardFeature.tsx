@@ -1,10 +1,20 @@
 import { Badge, Box, IconButton, Popover } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import ConversationModal from "@/components/modal/ConversationModal";
+import {
+    collection,
+    getDocs,
+    onSnapshot,
+    query,
+    where,
+} from "firebase/firestore";
+import { db } from "@/constants/firebaseConfig";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 const DashboardFeature = ({
     handleProfileMenuOpen,
     menuId,
@@ -12,6 +22,43 @@ const DashboardFeature = ({
     handleProfileMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
     menuId: string;
 }) => {
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnreadCount = () => {
+            const unreadTrackCollection = collection(db, "unreadTrack");
+
+            const unsubscribe = onSnapshot(
+                unreadTrackCollection,
+                (querySnapshot) => {
+                    let totalUnread = 0;
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const isUserUnread = Object.keys(
+                            data.list_unread_message
+                        ).some(
+                            (key) =>
+                                parseInt(key) === currentUserProfile.user_id
+                        );
+                        if (isUserUnread)
+                            totalUnread +=
+                                data.list_unread_message[
+                                    currentUserProfile.user_id
+                                ].length;
+                    });
+                    setUnreadCount(totalUnread);
+                }
+            );
+
+            // Clean up the listener when the component unmounts
+            return () => unsubscribe();
+        };
+
+        fetchUnreadCount();
+    }, [currentUserProfile.user_id]);
     return (
         <>
             <Box
@@ -36,7 +83,7 @@ const DashboardFeature = ({
                                         : "bg-strock"
                                 }`}
                             >
-                                <Badge badgeContent={4} color="error">
+                                <Badge badgeContent={unreadCount} color="error">
                                     <MailIcon />
                                 </Badge>
                             </IconButton>

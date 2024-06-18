@@ -11,7 +11,9 @@ export type ConversationResponse = {
     conversation_id: string;
     name: string;
     image: string;
-    members: Member[];
+    members: {
+        [key: string]: Member;
+    };
     type: string;
 };
 
@@ -39,6 +41,12 @@ export interface MessageData {
     };
     created_at: number;
     updated_at: number;
+    reply_message?: {
+        message_id: string;
+        content: string;
+        sender_id: number;
+        type?: string;
+    };
     read_by?: {
         [key: string]: Member;
     };

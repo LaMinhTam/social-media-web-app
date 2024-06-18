@@ -6,6 +6,12 @@ import SocketType from "@/types/socketType";
 import { getAccessToken } from "@/utils/auth";
 import { MessageResponse } from "@/types/conversationType";
 import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
+import { collection, doc, getDoc } from "firebase/firestore";
+import { db } from "@/constants/firebaseConfig";
+import handleUpdateUnreadMessage from "@/utils/conversation/messages/handleUpdateUnreadMessage";
+import handleSaveUnreadMessage from "@/utils/conversation/messages/handleSaveUnreadMessage";
 
 const SocketContext = React.createContext<SocketType>({} as SocketType);
 
@@ -15,7 +21,14 @@ export function SocketProvider(
     const [messages, setMessages] = useState<MessageResponse>(
         {} as MessageResponse
     );
+    const showChatModal = useSelector(
+        (state: RootState) => state.common.showChatModal
+    );
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
+    );
     const [triggerScrollChat, setTriggerScrollChat] = useState<boolean>(false);
+    const [messageRefs, setMessageRefs] = useState<any>({});
     const [optimisticMessages, addOptimisticUpdate] =
         useOptimistic<MessageResponse>(messages);
     const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -34,19 +47,44 @@ export function SocketProvider(
 
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/message`,
-                    (payload) => {
+                    async (payload) => {
                         const payloadData = JSON.parse(payload.body);
-                        console.log("useEffect ~ payloadData:", payloadData);
+                        const isSavedUnreadMessage =
+                            !showChatModal ||
+                            currentConversation.conversation_id !==
+                                payloadData.conversation_id;
+                        if (isSavedUnreadMessage) {
+                            console.log("unread message");
+                            const docRef = doc(
+                                collection(db, "unreadTrack"),
+                                payloadData.conversation_id
+                            );
+                            const docSnap = await getDoc(docRef);
+                            if (docSnap.exists()) {
+                                handleUpdateUnreadMessage(
+                                    payloadData.conversation_id,
+                                    decryptedData.user_id,
+                                    payloadData.message_id
+                                );
+                            } else {
+                                handleSaveUnreadMessage(
+                                    payloadData.conversation_id,
+                                    {
+                                        [decryptedData.user_id]: [
+                                            {
+                                                user_id: decryptedData.user_id,
+                                                message_id:
+                                                    payloadData.message_id,
+                                            },
+                                        ],
+                                    }
+                                );
+                            }
+                        }
                         setMessages((prev) => ({
                             ...prev,
                             [payloadData.message_id]: {
-                                message_id: payloadData.message_id,
-                                conversation_id: payloadData.conversation_id,
-                                user_detail: payloadData.user_detail,
-                                content: payloadData.content,
-                                type: payloadData.type,
-                                created_at: payloadData.created_at,
-                                updated_at: payloadData.updated_at,
+                                ...payloadData,
                             },
                         }));
                         setTriggerScrollChat(!triggerScrollChat);
@@ -59,7 +97,6 @@ export function SocketProvider(
                         const newMessages = { ...messages };
                         newMessages[payloadData.message_id] = payloadData;
                         setMessages(newMessages);
-                        setTriggerScrollChat(!triggerScrollChat);
                     }
                 );
                 client.subscribe(
@@ -67,7 +104,10 @@ export function SocketProvider(
                     function (payload) {
                         const payloadData = JSON.parse(payload.body);
                         const newMessages = { ...messages };
-                        newMessages[payloadData.message_id] = payloadData;
+                        newMessages[payloadData.message_id] = {
+                            ...messages[payloadData.message_id],
+                            reactions: payloadData.reactions,
+                        };
                         setMessages(newMessages);
                     }
                 );
@@ -92,7 +132,7 @@ export function SocketProvider(
                 client.disconnect(() => {});
             }
         };
-    }, []);
+    }, [currentConversation]);
 
     const contextValues = {
         messages,
@@ -103,6 +143,8 @@ export function SocketProvider(
         addOptimisticUpdate,
         triggerScrollChat,
         setTriggerScrollChat,
+        messageRefs,
+        setMessageRefs,
     };
 
     return (

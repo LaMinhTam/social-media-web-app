@@ -78,9 +78,12 @@ const ModalChatFooter = ({
         const chatMessage = {
             conversation_id: conversationId,
             content: message,
-            type: message.length > 2 ? MESSAGE_TYPE.TEXT : MESSAGE_TYPE.EMOJI,
+            type: MESSAGE_TYPE.TEXT,
+            reply_to_message_id: isReplying ? replyMessage.message_id : null,
         };
         setMessage("");
+        dispatch(setIsReplying(false));
+        dispatch(setMessageReply({} as any));
         stompClient.send(
             "/app/message",
             {
@@ -150,6 +153,7 @@ const ModalChatFooter = ({
                     }
                     content={replyMessage.content}
                     dispatch={dispatch}
+                    messageType={replyMessage.type}
                 ></MessageReply>
             )}
 

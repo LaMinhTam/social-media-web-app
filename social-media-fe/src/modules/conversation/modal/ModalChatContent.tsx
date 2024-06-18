@@ -21,7 +21,7 @@ const ModalChatContent = ({
     currentUserId: number;
     setMessages: (messages: MessageResponse) => void;
 }) => {
-    const { triggerScrollChat } = useSocket();
+    const { triggerScrollChat, messageRefs, setMessageRefs } = useSocket();
     const dispatch = useDispatch();
     const currentSize = useSelector(
         (state: RootState) => state.conversation.currentSize
@@ -29,6 +29,12 @@ const ModalChatContent = ({
     const chatContentRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = React.useState(false);
     const [isEnd, setIsEnd] = React.useState(false);
+    useEffect(() => {
+        if (chatContentRef.current) {
+            chatContentRef.current.scrollTop =
+                chatContentRef.current.scrollHeight;
+        }
+    }, []);
     useEffect(() => {
         if (chatContentRef.current) {
             chatContentRef.current.scrollTop =
@@ -60,10 +66,23 @@ const ModalChatContent = ({
             setLoading(false);
         }
     };
+    useEffect(() => {
+        groupedMessages.forEach((group) => {
+            group?.data.forEach((msg) => {
+                if (!messageRefs[msg.message_id]) {
+                    setMessageRefs((refs: any) => ({
+                        ...refs,
+                        [msg.message_id]: React.createRef(),
+                    }));
+                }
+            });
+        });
+    }, [groupedMessages, messageRefs, setMessageRefs]);
     return (
         <div
             ref={chatContentRef}
             className="flex-1 p-2 overflow-x-hidden overflow-y-auto custom-scrollbar"
+            id="chat-content"
             onScroll={() => !isEnd && handleScroll()}
         >
             {loading && <LoadingSpinner></LoadingSpinner>}
@@ -73,15 +92,21 @@ const ModalChatContent = ({
                         {group.formattedTime}
                     </div>
                     {group.data.map((message) => (
-                        <ModalChatMessage
+                        <div
+                            className="relative"
+                            ref={messageRefs[message.message_id]}
                             key={uuidv4()}
-                            message={message}
-                            type={
-                                message.user_detail.user_id === currentUserId
-                                    ? "send"
-                                    : "receive"
-                            }
-                        />
+                        >
+                            <ModalChatMessage
+                                message={message}
+                                type={
+                                    message.user_detail.user_id ===
+                                    currentUserId
+                                        ? "send"
+                                        : "receive"
+                                }
+                            />
+                        </div>
                     ))}
                 </div>
             ))}

@@ -14,6 +14,8 @@ type SocketType = {
     ) => void;
     triggerScrollChat: boolean;
     setTriggerScrollChat: (isNewMessage: boolean) => void;
+    messageRefs: any;
+    setMessageRefs: (messageRefs: any) => void;
 };
 
 export default SocketType;
