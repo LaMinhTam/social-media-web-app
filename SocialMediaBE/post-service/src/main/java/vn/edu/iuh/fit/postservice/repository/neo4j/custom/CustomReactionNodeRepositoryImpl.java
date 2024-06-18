@@ -41,7 +41,7 @@ public class CustomReactionNodeRepositoryImpl implements CustomReactionNodeRepos
 
     @Override
     public Map<String, Map<ReactionType, Long>> getReactionsForComments(List<String> commentIds) {
-        String query = "MATCH (r:ReactionNode)-[:REACTED_ON_COMMENT]->(c:CommentNode) WHERE c.commentId IN $commentIds RETURN r, c";
+        String query = "MATCH (r:ReactionNode)-[:REACTION]->(c:CommentNode) WHERE c.commentId IN $commentIds RETURN r, c";
         return neo4jTemplate.findAll(query, Map.of("commentIds", commentIds), ReactionNode.class)
                 .stream()
                 .collect(Collectors.groupingBy(

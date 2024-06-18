@@ -33,27 +33,7 @@ public class ReactionServiceImpl implements ReactionService {
         UserNode userNode = userNodeRepository.findById(userId)
                 .orElseThrow(() -> new AppException(404, "User not found"));
 
-        Optional<ReactionNode> existingReactionOpt = userNode.getReactions().stream()
-                .filter(r -> r.getPost() != null && r.getPost().getPostId().equals(postId))
-                .findFirst();
-        if (existingReactionOpt.isPresent()) {
-            ReactionNode existingReaction = existingReactionOpt.get();
-            reactionNodeRepository.delete(existingReaction);
-            return false;
-        }
-
-        ReactionNode reaction = ReactionNode.builder()
-                .type(reactionType)
-                .user(userNode)
-                .targetId(postId)
-                .post(post)
-                .build();
-        post.getReactions().add(reaction);
-        userNode.getReactions().add(reaction);
-        reactionNodeRepository.save(reaction);
-        userNodeRepository.save(userNode);
-        postNodeRepository.save(post);
-        return true;
+        return handleReaction(postId, userId, reactionType, userNode, post, null);
     }
 
     @Override
@@ -63,11 +43,23 @@ public class ReactionServiceImpl implements ReactionService {
         UserNode userNode = userNodeRepository.findById(userId)
                 .orElseThrow(() -> new AppException(404, "User not found"));
 
+        return handleReaction(commentId, userId, reactionType, userNode, null, comment);
+    }
+
+    private boolean handleReaction(String targetId, Long userId, ReactionType reactionType,
+                                   UserNode userNode, PostNode post, CommentNode comment) {
         Optional<ReactionNode> existingReactionOpt = userNode.getReactions().stream()
-                .filter(r -> r.getComment() != null && r.getComment().getCommentId().equals(commentId))
+                .filter(r -> (r.getPost() != null && r.getPost().getPostId().equals(targetId)) ||
+                        (r.getComment() != null && r.getComment().getCommentId().equals(targetId)))
                 .findFirst();
+
         if (existingReactionOpt.isPresent()) {
             ReactionNode existingReaction = existingReactionOpt.get();
+            if (!existingReaction.getType().equals(reactionType)) {
+                existingReaction.setType(reactionType);
+                reactionNodeRepository.save(existingReaction);
+                return true;
+            }
             reactionNodeRepository.delete(existingReaction);
             return false;
         }
@@ -75,14 +67,23 @@ public class ReactionServiceImpl implements ReactionService {
         ReactionNode reaction = ReactionNode.builder()
                 .type(reactionType)
                 .user(userNode)
-                .targetId(commentId)
+                .targetId(targetId)
+                .post(post)
                 .comment(comment)
                 .build();
-        comment.getReactions().add(reaction);
+
+        if (post != null) {
+            post.getReactions().add(reaction);
+            postNodeRepository.save(post);
+        } else if (comment != null) {
+            comment.getReactions().add(reaction);
+            commentNodeRepository.save(comment);
+        }
+
         userNode.getReactions().add(reaction);
         reactionNodeRepository.save(reaction);
         userNodeRepository.save(userNode);
-        commentNodeRepository.save(comment);
+
         return true;
     }
 }
