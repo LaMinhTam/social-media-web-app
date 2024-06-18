@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 @Document(collection = "messages")
 @Data
@@ -35,6 +34,7 @@ public class Message {
     @Column(name = "target_user_id")
     @JsonProperty("target_user_id")
     private List<Long> targetUserId;
+    private String replyToMessageId;
     private String content;
     private List<String> media;
     private String status;

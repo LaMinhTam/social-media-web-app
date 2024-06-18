@@ -7,15 +7,16 @@ import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
+import vn.edu.iuh.fit.chatservice.dto.ReplyMessageDTO;
 
 import java.util.List;
 
 public interface MessageService {
     Message saveMessage(Long userId, MessageFromClientDTO message);
 
-    List<MessageDetailDTO> getMessagesByConversationId(Conversation conversationId, String messageId, int size);
+    List<MessageDetailDTO> getMessagesByConversationId(Long userId, Conversation conversationId, String messageId, int size);
 
-    MessageDTO revokeMessage(String messageId) ;
+    MessageDTO revokeMessage(Long senderId, String messageId) ;
 
     List<MessageDTO> shareMessage(Long senderId, String messageId, List<String> conversationIds);
 
@@ -24,4 +25,6 @@ public interface MessageService {
     void markMessageAsRead(Long id, ObjectId messageId);
 
     void deleteMessage(Long id, String messageId);
+
+    ReplyMessageDTO getPlainMessage(Long id, String messageId);
 }

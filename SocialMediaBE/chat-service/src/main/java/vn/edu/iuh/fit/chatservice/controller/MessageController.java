@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
-import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
+import vn.edu.iuh.fit.chatservice.dto.ReplyMessageDTO;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,17 +39,21 @@ public class MessageController {
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(eTag).build();
         }
-        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(conversation, messageId, size);
+        List<MessageDetailDTO> messages = messageService.getMessagesByConversationId(id, conversation, messageId, size);
 
         Map<String, MessageDetailDTO> messageMap = messages.stream()
                 .collect(Collectors.toMap(MessageDetailDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
         return ResponseEntity.ok().eTag(eTag).body(messageMap);
     }
 
+    @GetMapping("/plain/{messageId}")
+    public ReplyMessageDTO getPlainMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+        return messageService.getPlainMessage(id, messageId);
+    }
+
     @PostMapping
     public MessageToWebClient saveMessage(@RequestHeader("sub") Long id, @RequestBody MessageFromClientDTO message) {
-        MessageToWebClient messageToWebClient = new MessageToWebClient(messageService.saveMessage(id, message));
-        return messageToWebClient;
+        return new MessageToWebClient(messageService.saveMessage(id, message));
     }
 
     @PostMapping("/share")
@@ -60,7 +64,7 @@ public class MessageController {
 
     @PatchMapping("/revoke/{messageId}")
     public ResponseEntity<MessageDTO> revokeMessage(@RequestHeader("sub") Long id, @PathVariable String messageId) {
-        MessageDTO message = messageService.revokeMessage(messageId);
+        MessageDTO message = messageService.revokeMessage(id, messageId);
         return ResponseEntity.ok(message);
     }
 

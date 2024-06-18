@@ -22,9 +22,10 @@ public record MessageDetailDTO(String messageId,
                                EnumMap<ReactionType, List<Long>> reactions,
                                Date createdAt,
                                Date updatedAt,
-                               Map<Long, UserDetail> readBy) {
+                               Map<Long, UserDetail> readBy,
+                               ReplyMessageDTO replyMessage) {
 
-    public MessageDetailDTO(Message message, UserDetail senderUserDetail, List<UserDetail> targetUserDetails, Map<Long, UserDetail> readBy) {
+    public MessageDetailDTO(Message message, UserDetail senderUserDetail, List<UserDetail> targetUserDetails, Map<Long, UserDetail> readBy, ReplyMessageDTO replyMessage) {
         this(message.getId().toString(),
                 message.getConversationId(),
                 senderUserDetail,
@@ -36,6 +37,7 @@ public record MessageDetailDTO(String messageId,
                 message.getReactions(),
                 message.getCreatedAt(),
                 message.getUpdatedAt(),
-                readBy);
+                readBy,
+                replyMessage);
     }
 }

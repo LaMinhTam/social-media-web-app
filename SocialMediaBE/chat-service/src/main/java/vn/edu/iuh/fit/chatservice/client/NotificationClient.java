@@ -45,4 +45,13 @@ public class NotificationClient {
                 .bodyToMono(MessageNotificationRequest.class)
                 .subscribe();
     }
+
+    public void notifyRevokeReplyMessage(Conversation conversation, Message message) {
+        webClient.post()
+                .uri("/notifications/notify/revoke-reply")
+                .bodyValue(new MessageNotificationRequest(new ConversationModel(conversation), new MessageModel(message)))
+                .retrieve()
+                .bodyToMono(MessageNotificationRequest.class)
+                .subscribe();
+    }
 }

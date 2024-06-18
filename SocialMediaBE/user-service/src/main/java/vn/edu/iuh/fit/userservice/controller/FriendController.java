@@ -6,7 +6,10 @@ import vn.edu.iuh.fit.userservice.dto.FriendRequest;
 import vn.edu.iuh.fit.userservice.dto.FriendRequestCreate;
 import vn.edu.iuh.fit.userservice.dto.UserDTO;
 import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
+import vn.edu.iuh.fit.userservice.model.UserModel;
 import vn.edu.iuh.fit.userservice.service.FriendService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/friends")
@@ -20,6 +23,11 @@ public class FriendController {
     @GetMapping
     public ResponseEntity<UserDTO> getFriends(@RequestHeader("sub") Long userId, @RequestParam("type") int type) throws Exception {
         return ResponseEntity.ok(friendService.getFriendByType(userId, type));
+    }
+
+    @GetMapping("/friend")
+    public List<UserModel> getFriends(@RequestHeader("sub") Long userId) throws Exception {
+        return friendService.getFriend(userId);
     }
 
     @PostMapping("/send")

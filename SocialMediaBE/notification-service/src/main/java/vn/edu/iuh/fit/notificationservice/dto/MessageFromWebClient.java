@@ -9,6 +9,7 @@ public record MessageFromWebClient(
         String conversation_id,
         Long sender_id,
         List<Long> target_user_id,
+        String reply_to_message_id,
         String content,
         List<String> media,
         String status,
