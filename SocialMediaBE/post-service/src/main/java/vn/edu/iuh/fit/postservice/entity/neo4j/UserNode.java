@@ -26,6 +26,8 @@ public class UserNode {
     private Set<PostNode> taggedPosts = new HashSet<>();
     @Relationship(type = "REACTION", direction = Relationship.Direction.OUTGOING)
     private Set<ReactionNode> reactions = new HashSet<>();
+    @Relationship(type = "FOLLOW", direction = Relationship.Direction.INCOMING)
+    private Set<UserNode> followers = new HashSet<>();
     @Relationship(type = "FOLLOW", direction = Relationship.Direction.OUTGOING)
     private Set<UserNode> following = new HashSet<>();
 

@@ -17,24 +17,14 @@ import java.util.Map;
 @RequestMapping("/posts")
 public class PostController {
     private final PostService postService;
-    private final CommentService commentService;
 
-    public PostController(PostService postService, CommentService commentService) {
+    public PostController(PostService postService) {
         this.postService = postService;
-        this.commentService = commentService;
     }
 
     @GetMapping
     public ResponseEntity<List<PostDetail>> getPosts(@RequestHeader("sub") Long id) {
         return ResponseEntity.ok(postService.findPostsByUserId(id));
-    }
-
-    @GetMapping("/wall/{id}")
-    public ResponseEntity<Map<String, PostDetail>> getUserWall(
-            @PathVariable Long id,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size) {
-        return ResponseEntity.ok().body(postService.findUserWall(id, --page, size));
     }
 
     @GetMapping("/new-feed")

@@ -27,63 +27,76 @@ public class CustomPostNodeRepositoryImpl implements CustomPostNodeRepository {
         int limit = size;
 
         Collection<Map<String, Object>> results = neo4jClient.query((
-                        "MATCH (u:UserNode)-[:AUTHORED_BY]->(p:PostNode) " +
-                                "OPTIONAL MATCH (p)<-[:REACTION]-(r:ReactionNode) " +
-                                "OPTIONAL MATCH (p)-[:SHARE_OF]->(original:PostNode) " +
-                                "OPTIONAL MATCH (p)<-[:AUTHORED_BY]-(author:UserNode) " +
-                                "OPTIONAL MATCH (original)<-[:AUTHORED_BY]-(originalAuthor:UserNode) " +
-                                " " +
-                                "WITH p, u.userId AS userId, COUNT(r) AS reactionCount,  " +
-                                "     COLLECT(DISTINCT author.userId) AS authors,  " +
-                                "     original,  " +
-                                "     COLLECT(DISTINCT originalAuthor.userId) AS originalAuthors, " +
-                                "     duration.inDays(datetime(p.createdAt), datetime()).days AS daysSinceCreation " +
-                                " " +
-                                "WITH p, userId, reactionCount, authors, original, originalAuthors, daysSinceCreation, " +
-                                "     CASE " +
-                                "       WHEN reactionCount > 0 THEN 1.0 * reactionCount " +
-                                "       ELSE 0 " +
-                                "     END AS baseScore, " +
-                                "     CASE " +
-                                "       WHEN daysSinceCreation <= 7 THEN 1.5 " +
-                                "       WHEN daysSinceCreation <= 14 THEN 1.2 " +
-                                "       WHEN daysSinceCreation <= 21 THEN 1.0 " +
-                                "       ELSE 0.8 " +
-                                "     END AS recencyMultiplier " +
-                                " " +
-                                "WITH p, userId, reactionCount, authors, original, originalAuthors, daysSinceCreation,  " +
-                                "     baseScore, recencyMultiplier, " +
-                                "     (baseScore * recencyMultiplier - (daysSinceCreation / 7) * 1.0) AS finalScore " +
-                                " " +
-                                "ORDER BY finalScore DESC " +
-                                "SKIP $skip " +
-                                "LIMIT $limit " +
-                                " " +
-                                "RETURN COLLECT(DISTINCT p { " +
-                                "  .*,  " +
-                                "  authors: authors, " +
-                                "  originalPost: CASE  " +
-                                "    WHEN original IS NOT NULL  " +
-                                "    THEN original { " +
-                                "      .*,  " +
-                                "      authors: originalAuthors, " +
-                                "      createdAt: original.createdAt,  " +
-                                "      postId: original.postId,  " +
-                                "      updatedAt: original.updatedAt  " +
-                                "    }  " +
-                                "    ELSE NULL  " +
-                                "  END " +
-                                "}) AS posts; "
+                        """
+                                MATCH (currentUser:UserNode {userId: $userId})
+                                                                
+                                // Match posts authored by any user
+                                MATCH (u:UserNode)-[:AUTHORED_BY]->(p:PostNode)
+                                                                
+                                // Determine if the post is authored by a user whom the current user follows
+                                OPTIONAL MATCH (currentUser)-[:FOLLOW]->(following:UserNode)-[:AUTHORED_BY]->(p)
+                                WITH p, u, following
+                                                                
+                                // Match details about the post, reactions, shared posts, and authors
+                                OPTIONAL MATCH (p)<-[:REACTION]-(r:ReactionNode)
+                                OPTIONAL MATCH (p)-[:SHARE_OF]->(original:PostNode)
+                                OPTIONAL MATCH (p)<-[:AUTHORED_BY]-(author:UserNode)
+                                OPTIONAL MATCH (original)<-[:AUTHORED_BY]-(originalAuthor:UserNode)
+                                                                
+                                WITH p, u.userId AS userId, COUNT(r) AS reactionCount,\s
+                                     COLLECT(DISTINCT author.userId) AS authors,\s
+                                     original,\s
+                                     COLLECT(DISTINCT originalAuthor.userId) AS originalAuthors,
+                                     CASE WHEN following IS NOT NULL THEN true ELSE false END AS isFollowed,
+                                     duration.inDays(datetime(p.createdAt), datetime()).days AS daysSinceCreation
+                                                                
+                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, daysSinceCreation,
+                                     CASE
+                                       WHEN reactionCount > 0 THEN 1.0 * reactionCount
+                                       ELSE 0
+                                     END AS baseScore,
+                                     CASE
+                                       WHEN daysSinceCreation <= 7 THEN 1.5
+                                       WHEN daysSinceCreation <= 14 THEN 1.2
+                                       WHEN daysSinceCreation <= 21 THEN 1.0
+                                       ELSE 0.8
+                                     END AS recencyMultiplier
+                                                                
+                                // Adjust the score based on whether the post is from a followed user
+                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, daysSinceCreation,\s
+                                     baseScore, recencyMultiplier,
+                                     (baseScore * recencyMultiplier - (daysSinceCreation / 7) * 1.0) AS baseFinalScore,
+                                     CASE WHEN isFollowed THEN (baseScore * recencyMultiplier * 2.0 - (daysSinceCreation / 7) * 1.0)
+                                          ELSE (baseScore * recencyMultiplier - (daysSinceCreation / 7) * 1.0)
+                                     END AS finalScore
+                                                                
+                                ORDER BY finalScore DESC
+                                                                
+                                SKIP $skip
+                                LIMIT $limit
+                                                                
+                                RETURN COLLECT(DISTINCT p {
+                                  .*,\s
+                                  authors: authors,
+                                  originalPost: CASE\s
+                                    WHEN original IS NOT NULL\s
+                                    THEN original {
+                                      .*,\s
+                                      authors: originalAuthors,
+                                      createdAt: original.createdAt,\s
+                                      postId: original.postId,\s
+                                      updatedAt: original.updatedAt\s
+                                    }\s
+                                    ELSE NULL\s
+                                  END
+                                }) AS posts;
+                        """
                 ))
-                .bindAll(Map.of("skip", skip, "limit", limit)).fetch().all();
+                .bindAll(Map.of("userId", userId, "skip", skip, "limit", limit)).fetch().all();
         List<PostDTO> postDTOS = new ArrayList<>();
         results.forEach(result -> {
             List<Map<String, Object>> nodes = (List<Map<String, Object>>) result.get("posts");
-            nodes.forEach(properties -> {
-                postDTOS.add(new PostDTO(
-                        PostDTO.convertFromObject(properties)
-                ));
-            });
+            nodes.forEach(properties -> postDTOS.add(new PostDTO(PostDTO.convertFromObject(properties))));
         });
         return postDTOS;
     }
