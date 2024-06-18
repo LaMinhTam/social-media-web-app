@@ -22,7 +22,7 @@ public class CommentNode {
     private String commentId;
     private Date createAt;
     private Date updateAt;
-    @Relationship(type = "COMMENTED_BY", direction = Relationship.Direction.INCOMING)
+    @Relationship(type = "COMMENTED_BY", direction = Relationship.Direction.OUTGOING)
     private UserNode author;
     @Relationship(type = "COMMENT_ON", direction = Relationship.Direction.OUTGOING)
     private PostNode postNode;

@@ -22,7 +22,7 @@ public class ReactionNode {
     private Long id;
     private String targetId;
     private ReactionType type;
-    @Relationship(type = "REACTED_BY", direction = Relationship.Direction.INCOMING)
+    @Relationship(type = "REACTED_BY", direction = Relationship.Direction.OUTGOING)
     private UserNode user;
     @Relationship(type = "REACTION", direction = Relationship.Direction.OUTGOING)
     private PostNode post;

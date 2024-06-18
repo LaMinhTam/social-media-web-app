@@ -20,11 +20,11 @@ public class UserNode {
     private Long userId;
     @Relationship(type = "POSTED", direction = Relationship.Direction.OUTGOING)
     private Set<PostNode> posts = new HashSet<>();
-    @Relationship(type = "COMMENTED_BY", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "COMMENTED_BY", direction = Relationship.Direction.INCOMING)
     private Set<CommentNode> comments = new HashSet<>();
     @Relationship(type = "TAGGED_IN", direction = Relationship.Direction.OUTGOING)
     private Set<PostNode> taggedPosts = new HashSet<>();
-    @Relationship(type = "REACTION", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "REACTED_BY", direction = Relationship.Direction.INCOMING)
     private Set<ReactionNode> reactions = new HashSet<>();
     @Relationship(type = "FOLLOW", direction = Relationship.Direction.INCOMING)
     private Set<UserNode> followers = new HashSet<>();

@@ -25,7 +25,7 @@ public class PostNode {
     private Set<UserNode> authors = new HashSet<>();
     @Relationship(type = "TAGGED", direction = Relationship.Direction.OUTGOING)
     private Set<UserNode> taggedUsers = new HashSet<>();
-    @Relationship(type = "COMMENT", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "COMMENT_ON", direction = Relationship.Direction.INCOMING)
     private Set<CommentNode> comments = new HashSet<>();
     @Relationship(type = "SHARE_OF", direction = Relationship.Direction.OUTGOING)
     private PostNode originalPost;
