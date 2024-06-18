@@ -18,6 +18,7 @@ import vn.edu.iuh.fit.postservice.service.PostService;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -42,6 +43,20 @@ public class PostServiceImpl implements PostService {
         List<String> postIds = postNodes.stream()
                 .map(PostNode::getPostId)
                 .toList();
+        List<String> postIdsToQuery = new ArrayList<>();
+        postNodes.forEach(postNode -> {
+            postIdsToQuery.add(postNode.getPostId());
+            if (postNode.getOriginalPost() != null) {
+                postIdsToQuery.add(postNode.getOriginalPost().getPostId());
+            }
+        });
+        List<String> missingId = postIdsToQuery.stream()
+                .filter(postId -> !postIds.contains(postId))
+                .toList();
+        if (!missingId.isEmpty()) {
+            postNodes.addAll(postNodeRepository.findByAuthorsUserId(userId));
+        }
+
         Set<Long> authorIds = postNodes.stream()
                 .map(PostNode::getAuthors)
                 .flatMap(Set::stream)
@@ -59,13 +74,18 @@ public class PostServiceImpl implements PostService {
                                 .toList()
                 ));
 
-        List<Post> posts = postRepository.findByIdIn(postIds);
-        Map<String, Map<ReactionType, Long>> reactionsMap = reactionNodeRepository.getReactionsForPosts(postIds);
+        List<Post> posts = postRepository.findByIdIn(postIdsToQuery);
+        Map<String, Map<ReactionType, Long>> reactionsMap = reactionNodeRepository.getReactionsForPosts(postIdsToQuery);
 
-        return posts.stream()
-                .map(post -> new PostDetail(post, postAuthorsMap.get(post.getId()), reactionsMap.get(post.getId())))
+        Map<String, PostDetail> postDetailMap = posts.stream()
+                .collect(Collectors.toMap(
+                        Post::getId,
+                        post -> new PostDetail(post, postAuthorsMap.get(post.getId()), reactionsMap.get(post.getId()))
+                ));
+
+        return postIds.stream()
+                .map(id -> postDetailMap.getOrDefault(id, null))
                 .toList();
-
     }
 
     @Override
@@ -106,24 +126,75 @@ public class PostServiceImpl implements PostService {
         return bindPostDetail(postNodes);
     }
 
+    @Override
+    public String sharePost(Long userId, String s, String content) {
+        Post post = Post.builder()
+                .content(content)
+                .createAt(new Date())
+                .updateAt(new Date())
+                .build();
+        post = postRepository.save(post);
+
+        PostNode postNode = new PostNode(post.getId());
+        Set<Long> userIds = Set.of(userId);
+
+        List<UserNode> userNodes = userNodeRepository.findAllById(userIds);
+        if (userNodes.isEmpty() || userNodes.stream().noneMatch(user -> user.getUserId().equals(userId))) {
+            throw new AppException(404, "User not found");
+        }
+        postNode.setAuthors(new HashSet<>(userNodes));
+        PostNode originalPostNode = postNodeRepository.findById(s).orElseThrow(() -> new AppException(404, "Post not found"));
+        if (originalPostNode.getOriginalPost() != null) {
+            postNode.setOriginalPost(originalPostNode.getOriginalPost());
+        } else {
+            postNode.setOriginalPost(originalPostNode);
+        }
+        return postNodeRepository.save(postNode).getPostId();
+    }
+
     public Map<String, PostDetail> bindPostDetail(List<PostDTO> postNodes) {
-        List<String> postIds = postNodes.stream()
-                .map(PostDTO::getPostId)
-                .toList();
+        List<String> postIds = new ArrayList<>();
+        postNodes.forEach(postNode -> {
+            postIds.add(postNode.getPostId());
+            if (postNode.getOriginalPost() != null) {
+                postIds.add(postNode.getOriginalPost().getPostId());
+            }
+        });
+
         Map<String, Post> posts = postRepository.findByIdIn(postIds).stream()
                 .collect(Collectors.toMap(Post::getId, post -> post));
-        List<Long> authorIds = postNodes.stream()
-                .map(PostDTO::getAuthorId)
-                .toList();
-        Map<Long, UserDetail> authorsMap = userClient.getUsersByIdsMap(authorIds);
+        Set<Long> authorIds = postNodes.stream()
+                .flatMap(postNode -> Stream.concat(
+                        postNode.getAuthorId().stream(),
+                        Optional.ofNullable(postNode.getOriginalPost())
+                                .map(PostDTO::getAuthorId)
+                                .stream()
+                                .flatMap(List::stream)
+                ))
+                .collect(Collectors.toSet());
+
+        Map<Long, UserDetail> authorsMap = userClient.getUsersByIdsMap(new ArrayList<>(authorIds));
         Map<String, Map<ReactionType, Long>> reactionsMap = reactionNodeRepository.getReactionsForPosts(postIds);
         return postNodes.stream()
                 .collect(Collectors.toMap(
                         PostDTO::getPostId,
-                        postNode -> new PostDetail(
-                                posts.get(postNode.getPostId()),
-                                List.of(authorsMap.get(postNode.getAuthorId())),
-                                reactionsMap.get(postNode.getPostId())),
+                        postNode -> {
+                            List<UserDetail> authors = postNode.getAuthorId().stream()
+                                    .map(authorsMap::get)
+                                    .toList();
+                            return new PostDetail(
+                                    posts.get(postNode.getPostId()),
+                                    authors,
+                                    reactionsMap.get(postNode.getPostId()),
+                                    Optional.ofNullable(postNode.getOriginalPost()).map(originalPost ->
+                                            new PostDetail(
+                                                    posts.get(originalPost.getPostId()),
+                                                    authors,
+                                                    reactionsMap.get(originalPost.getPostId())
+                                            )
+                                    ).orElse(null)
+                            );
+                        },
                         (oldValue, newValue) -> oldValue,
                         LinkedHashMap::new
                 ));

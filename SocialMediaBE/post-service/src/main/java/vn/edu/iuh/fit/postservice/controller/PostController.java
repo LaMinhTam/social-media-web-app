@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.postservice.dto.PostDetail;
 import vn.edu.iuh.fit.postservice.dto.PostRequest;
+import vn.edu.iuh.fit.postservice.dto.ShareRequest;
 import vn.edu.iuh.fit.postservice.entity.neo4j.PostNode;
 import vn.edu.iuh.fit.postservice.service.CommentService;
 import vn.edu.iuh.fit.postservice.service.PostService;
@@ -47,5 +48,10 @@ public class PostController {
     @PostMapping
     public ResponseEntity<String> savePost(@RequestHeader("sub") Long id, @RequestBody PostRequest request) {
         return ResponseEntity.ok(postService.savePost(id, request.coAuthor(), request.content(), request.media()));
+    }
+
+    @PostMapping("/share")
+    public ResponseEntity<String> sharePost(@RequestHeader("sub") Long id, @RequestBody ShareRequest request) {
+        return ResponseEntity.ok(postService.sharePost(id, request.postId(),  request.content()));
     }
 }

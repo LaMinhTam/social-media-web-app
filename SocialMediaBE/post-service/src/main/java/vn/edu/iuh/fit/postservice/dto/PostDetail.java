@@ -14,7 +14,8 @@ public record PostDetail(
         List<String> media,
         Date createAt,
         Date updateAt,
-        Map<ReactionType, Long> reactions
+        Map<ReactionType, Long> reactions,
+        PostDetail sharePost
 ) {
     public PostDetail(Post post, List<UserDetail> authors, Map<ReactionType, Long> reactions) {
         this(post.getId(),
@@ -23,6 +24,17 @@ public record PostDetail(
                 post.getMedia(),
                 post.getCreateAt(),
                 post.getUpdateAt(),
-                reactions);
+                reactions,
+                null);
+    }
+    public PostDetail(Post post, List<UserDetail> authors, Map<ReactionType, Long> reactions, PostDetail sharePost) {
+        this(post.getId(),
+                authors,
+                post.getContent(),
+                post.getMedia(),
+                post.getCreateAt(),
+                post.getUpdateAt(),
+                reactions,
+                sharePost);
     }
 }

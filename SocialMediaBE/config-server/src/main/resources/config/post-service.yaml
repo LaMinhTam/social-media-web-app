@@ -18,6 +18,9 @@ spring:
       database: post_db
       authentication-database: admin
       uri: mongodb://root:123456@localhost:27017/test?authSource=admin&authMechanism=SCRAM-SHA-1
+    elasticsearch:
+      cluster-name: elasticsearch
+      cluster-nodes: localhost:9200
   neo4j:
     uri: bolt://localhost:7687/friend_db
     authentication:
