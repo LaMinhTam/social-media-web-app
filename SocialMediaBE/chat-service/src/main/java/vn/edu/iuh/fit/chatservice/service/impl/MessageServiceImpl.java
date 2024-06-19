@@ -202,8 +202,8 @@ public class MessageServiceImpl implements MessageService {
         if (lastReadMessageId == null || isLaterMessage(lastReadMessageId, messageId)) {
             conversation.getReadBy().put(id, messageId.toHexString());
             conversationRepository.save(conversation);
+            notificationClient.notifyRead(id, conversation, message);
         }
-        notificationClient.notifyRead(id, conversation, message);
     }
 
     @Override
