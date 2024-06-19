@@ -61,8 +61,12 @@ const ChatModal = () => {
                 username={currentConversation.name}
                 dispatch={dispatch}
                 avatar={currentConversation.image}
+                isAdmin={
+                    currentConversation.owner_id === currentUserProfile.user_id
+                }
             ></ModalChatHeader>
             <ModalChatContent
+                isGroup={currentConversation.type === "GROUP" ? true : false}
                 conversationId={currentConversation.conversation_id}
                 messages={messages}
                 currentUserId={currentUserProfile.user_id}

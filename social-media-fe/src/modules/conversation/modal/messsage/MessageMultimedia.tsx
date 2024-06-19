@@ -13,9 +13,11 @@ import formatTime from "@/utils/conversation/messages/handleGroupMessage";
 const MessageMultimedia = ({
     message,
     type,
+    isGroup,
 }: {
     message: MessageData;
     type: string;
+    isGroup: boolean;
 }) => {
     return (
         <>
@@ -29,6 +31,13 @@ const MessageMultimedia = ({
                         type === "send" ? "ml-auto" : "mr-auto"
                     }`}
                 >
+                    {isGroup && type === "receive" && (
+                        <div className="absolute left-0 -top-5">
+                            <p className="text-xs text-gray-500">
+                                {message.user_detail.name}
+                            </p>
+                        </div>
+                    )}
                     {message.type === MESSAGE_TYPE.EMOJI && (
                         <Tooltip title={formatTime(message.created_at)}>
                             <p>{handleFormatMessage(message)}</p>

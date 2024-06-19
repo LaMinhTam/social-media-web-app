@@ -5,13 +5,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import ConversationModal from "@/components/modal/ConversationModal";
-import {
-    collection,
-    getDocs,
-    onSnapshot,
-    query,
-    where,
-} from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/constants/firebaseConfig";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";

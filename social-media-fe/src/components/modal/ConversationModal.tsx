@@ -4,6 +4,7 @@ import {
     Button,
     IconButton,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -32,11 +33,17 @@ import LoadingSpinner from "../loading/LoadingSpinner";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/constants/firebaseConfig";
 import { handleRemoveUnreadMessage } from "@/utils/conversation/messages/handleRemoveUnreadMessage";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import CreateGroupDialog from "@/modules/conversation/modal/group/CreateGroupDialog";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     const [loading, setLoading] = useState<boolean>(false);
+    const [openCreateGroupDialog, setOpenCreateGroupDialog] = useState(false);
     const [unreadCounts, setUnreadCounts] = useState<{ [key: string]: number }>(
         {}
+    );
+    const triggerFetchingConversation = useSelector(
+        (state: RootState) => state.conversation.triggerFetchingConversation
     );
     const { setMessages } = useSocket();
     const listConversation = useSelector(
@@ -84,7 +91,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
             setLoading(false);
         }
         fetchData();
-    }, []);
+    }, [triggerFetchingConversation]);
 
     useEffect(() => {
         listConversation.forEach((conversation) => {
@@ -143,12 +150,22 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                             useFlexGap
                             flexWrap="wrap"
                         >
-                            <IconButton size="medium" color="inherit">
-                                <MoreHorizIcon />
-                            </IconButton>
-                            <IconButton size="medium" color="inherit">
-                                <OpenWithOutlinedIcon />
-                            </IconButton>
+                            <Tooltip title="create group">
+                                <IconButton
+                                    size="medium"
+                                    color="inherit"
+                                    onClick={() => {
+                                        setOpenCreateGroupDialog(true);
+                                    }}
+                                >
+                                    <GroupAddIcon></GroupAddIcon>
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Open messenger">
+                                <IconButton size="medium" color="inherit">
+                                    <OpenWithOutlinedIcon />
+                                </IconButton>
+                            </Tooltip>
                         </Stack>
                     </Stack>
                 </Box>
@@ -192,8 +209,10 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                     >
                                         <Image
                                             src={
-                                                user?.image_url ||
-                                                "https://source.unsplash.com/random"
+                                                conversation.type === "GROUP"
+                                                    ? conversation.image
+                                                    : user?.image_url ||
+                                                      "https://source.unsplash.com/random"
                                             }
                                             width={56}
                                             height={56}
@@ -203,7 +222,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                         <Box className="flex items-center justify-between flex-1">
                                             <Box className="flex flex-col items-start justify-center flex-1 gap-y-2">
                                                 <Typography>
-                                                    {user?.name}
+                                                    {conversation?.name}
                                                 </Typography>
                                                 <Box className="flex items-center justify-center gap-x-2">
                                                     <Typography>
@@ -239,6 +258,12 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                     </Link>
                 </Box>
             </div>
+            {openCreateGroupDialog && (
+                <CreateGroupDialog
+                    openCreateGroupDialog={openCreateGroupDialog}
+                    setOpenCreateGroupDialog={setOpenCreateGroupDialog}
+                ></CreateGroupDialog>
+            )}
         </>
     );
 };

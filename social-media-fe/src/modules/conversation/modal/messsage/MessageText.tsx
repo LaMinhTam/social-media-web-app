@@ -13,9 +13,11 @@ import MessageReaction from "./MessageReaction";
 const MessageText = ({
     message,
     type,
+    isGroup,
 }: {
     message: MessageData;
     type: string;
+    isGroup: boolean;
 }) => {
     const { messageRefs } = useSocket();
     let renderContent = "";
@@ -42,6 +44,9 @@ const MessageText = ({
                 overflowWrap: "break-word",
             }}
         >
+            {isGroup && type === "receive" && (
+                <p className="text-xs text-text7">{message.user_detail.name}</p>
+            )}
             {message.type !== MESSAGE_TYPE.REVOKED &&
                 message.reply_message &&
                 message.reply_message.message_id && (

@@ -22,16 +22,18 @@ import RemoveMessageDialog from "./RemoveMessageDialog";
 import { MESSAGE_TYPE } from "@/constants/global";
 import ReactionPicker from "@/components/common/ReactionPicker";
 import { RootState } from "@/store/configureStore";
-import ForwardMessageDialog from "../ForwardMessageDialog";
+import ForwardMessageDialog from "./ForwardMessageDialog";
 import MessageText from "./MessageText";
 import MessageMultimedia from "./MessageMultimedia";
 import { useSocket } from "@/contexts/socket-context";
 const ModalChatMessage = ({
     type,
     message,
+    isGroup,
 }: {
     type: string;
     message: MessageData;
+    isGroup: boolean;
 }) => {
     const { messages, setMessages } = useSocket();
     const dispatch = useDispatch();
@@ -110,11 +112,16 @@ const ModalChatMessage = ({
                     MESSAGE_TYPE.VOICE,
                 ].includes(message.type) ? (
                     <MessageMultimedia
+                        isGroup={isGroup}
                         type={type}
                         message={message}
                     ></MessageMultimedia>
                 ) : (
-                    <MessageText type={type} message={message}></MessageText>
+                    <MessageText
+                        type={type}
+                        message={message}
+                        isGroup={isGroup}
+                    ></MessageText>
                 )}
                 {isHovered && message.type !== MESSAGE_TYPE.REVOKED && (
                     <div

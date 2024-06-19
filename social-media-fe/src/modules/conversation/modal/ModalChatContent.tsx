@@ -15,16 +15,21 @@ const ModalChatContent = ({
     messages,
     currentUserId,
     setMessages,
+    isGroup,
 }: {
     conversationId: string;
     messages: MessageResponse;
     currentUserId: number;
     setMessages: (messages: MessageResponse) => void;
+    isGroup: boolean;
 }) => {
     const { triggerScrollChat, messageRefs, setMessageRefs } = useSocket();
     const dispatch = useDispatch();
     const currentSize = useSelector(
         (state: RootState) => state.conversation.currentSize
+    );
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
     );
     const chatContentRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = React.useState(false);
@@ -105,6 +110,7 @@ const ModalChatContent = ({
                                         ? "send"
                                         : "receive"
                                 }
+                                isGroup={isGroup}
                             />
                         </div>
                     ))}

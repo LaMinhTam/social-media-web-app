@@ -5,6 +5,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 type ConversationType = {
     currentConversation: ConversationResponse;
     listConversation: ConversationResponse[];
+    triggerFetchingConversation: boolean;
     currentSize: number;
     isReplying: boolean;
     messageReply: MessageData;
@@ -18,6 +19,7 @@ type ConversationType = {
 const initialState: ConversationType = {
     currentConversation: {} as ConversationResponse,
     listConversation: [],
+    triggerFetchingConversation: false,
     currentSize: 10,
     isReplying: false,
     messageReply: {} as MessageData,
@@ -43,6 +45,9 @@ const conversationSlice = createSlice({
             action: PayloadAction<ConversationResponse[]>
         ) {
             state.listConversation = action.payload;
+        },
+        setTriggerFetchingConversation(state, action: PayloadAction<boolean>) {
+            state.triggerFetchingConversation = action.payload;
         },
         setCurrentSize(state, action: PayloadAction<number>) {
             state.currentSize = action.payload;
@@ -73,5 +78,6 @@ export const {
     setMessageReply,
     setReactionSelected,
     setUploadQueue,
+    setTriggerFetchingConversation,
 } = conversationSlice.actions;
 export default conversationSlice.reducer;

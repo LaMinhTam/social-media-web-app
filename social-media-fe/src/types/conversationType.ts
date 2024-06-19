@@ -7,6 +7,22 @@ export interface Member {
     image_url: string;
 }
 
+export interface GroupSettings {
+    link_to_join_group: boolean;
+    confirm_new_member: boolean;
+    join_by_link: boolean;
+    allow_deputy_send_messages: boolean;
+    restricted_messaging: boolean;
+    allow_member_to_pin_message: boolean;
+    allow_deputy_change_group_info: boolean;
+    allow_member_to_invite_member: boolean;
+    allow_member_to_change_group_info: boolean;
+    allow_deputy_promote_member: boolean;
+    allow_deputy_demote_member: boolean;
+    allow_deputy_remove_member: boolean;
+    allow_deputy_to_invite_member: boolean;
+}
+
 export type ConversationResponse = {
     conversation_id: string;
     name: string;
@@ -15,6 +31,8 @@ export type ConversationResponse = {
         [key: string]: Member;
     };
     type: string;
+    owner_id?: number;
+    settings: GroupSettings;
 };
 
 export type ReactionResponse = {
