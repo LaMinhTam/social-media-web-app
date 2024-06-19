@@ -1,5 +1,7 @@
 package vn.edu.iuh.fit.postservice.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.postservice.dto.ReactRequest;
@@ -15,12 +17,20 @@ public class ReactionController {
     }
 
     @PostMapping("/post")
-    public ResponseEntity<Long> reactToPost(@RequestHeader("sub") Long id, @RequestBody ReactRequest reactRequest) {
-        return ResponseEntity.ok(reactionService.reactToPost(reactRequest.target(), id, reactRequest.type()));
+    public ResponseEntity<?> reactToPost(@RequestHeader("sub") Long id, @RequestBody ReactRequest reactRequest) {
+        if(reactionService.reactToPost(reactRequest.target(), id, reactRequest.type())){
+            return ResponseEntity.ok().build();
+        }else{
+            return ResponseEntity.status(HttpStatus.GONE).build();
+        }
     }
 
     @PostMapping("/comment")
     public ResponseEntity<Long> reactToComment(@RequestHeader("sub") Long id, @RequestBody ReactRequest reactRequest) {
-        return ResponseEntity.ok(reactionService.reactToComment(reactRequest.target(), id, reactRequest.type()));
+        if(reactionService.reactToComment(reactRequest.target(), id, reactRequest.type())){
+            return ResponseEntity.ok().build();
+        }else{
+            return ResponseEntity.status(HttpStatus.GONE).build();
+        }
     }
 }

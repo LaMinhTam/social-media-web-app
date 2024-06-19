@@ -113,7 +113,16 @@ public class ConversationServiceImpl implements ConversationService {
                 .distinct().toList();
         Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
         List<ConversationDTO> conversationDTOS = conversations.stream()
-                .map(conversation -> new ConversationDTO(conversation, userModels, id))
+                .map(conversation -> new ConversationDTO(
+                                conversation,
+                                conversation.getMembers().stream()
+                                        .collect(Collectors.toMap(
+                                                memberId -> memberId,
+                                                userModels::get
+                                        )),
+                                id
+                        )
+                )
                 .toList();
         conversationDTOS.forEach(currentConversation -> {
             if (currentConversation.getType().equals(ConversationType.PRIVATE)) {

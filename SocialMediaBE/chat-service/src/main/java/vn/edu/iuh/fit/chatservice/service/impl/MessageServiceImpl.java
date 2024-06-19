@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chatservice.client.NotificationClient;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
-import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
-import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
-import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
-import vn.edu.iuh.fit.chatservice.dto.ReplyMessageDTO;
+import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
@@ -76,40 +73,40 @@ public class MessageServiceImpl implements MessageService {
         List<Message> messages = messageRepository.findMessagesAfterMessageId(userId, conversation.getId().toHexString(), messageId, size);
 
         Set<Long> userIds = messages.stream().flatMap(message -> Stream.concat(
-                Stream.of(
-                        message.getSenderId()),
+                Stream.of(message.getSenderId()),
                 message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
         ).collect(Collectors.toSet());
-        userIds.addAll(conversation.getReadBy().keySet().stream().toList());
+        userIds.addAll(conversation.getReadBy().keySet());
 
         Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
         List<ObjectId> replyToMessageIds = messages.stream()
-                .map(message -> {
-                    if (message.getReplyToMessageId() != null) {
-                        return new ObjectId(message.getReplyToMessageId());
-                    }
-                    return null;
-                })
-                .collect(Collectors.toSet())
-                .stream().toList();
+                .map(message -> message.getReplyToMessageId() != null ? new ObjectId(message.getReplyToMessageId()) : null)
+                .filter(Objects::nonNull)
+                .toList();
+
         Map<String, ReplyMessageDTO> replyMessage = messageRepository.findMessagesByIdIn(replyToMessageIds)
-                .stream().collect(Collectors.toMap(message -> message.getId().toHexString(), message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId())));
+                .stream()
+                .collect(Collectors.toMap(
+                        message -> message.getId().toHexString(),
+                        message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId())
+                ));
+
         return messages.stream()
                 .map(message -> {
                     List<UserDetail> targetUserDetails = UserDetail.getUserDetailsFromMap(message, userDetailMap);
-                    Map<Long, UserDetail> readBy = getReadByUserDetails(conversation, message, userDetailMap);
+                    List<UserDetail> readBy = getReadByUserDetails(conversation, message, userDetailMap);
                     return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails, readBy, replyMessage.get(message.getReplyToMessageId()));
                 })
                 .toList();
     }
 
-    private Map<Long, UserDetail> getReadByUserDetails(Conversation conversation, Message message, Map<Long, UserDetail> userDetailMap) {
-        Map<Long, UserDetail> readBy = new HashMap<>();
+    private List<UserDetail> getReadByUserDetails(Conversation conversation, Message message, Map<Long, UserDetail> userDetailMap) {
+        List<UserDetail> readBy = new ArrayList<>();
         ObjectId messageId = message.getId();
 
         conversation.getReadBy().forEach((userId, lastReadMessageId) -> {
             if (isLaterMessage(lastReadMessageId, messageId)) {
-                readBy.put(userId, userDetailMap.get(userId));
+                readBy.add(userDetailMap.get(userId));
             }
         });
 
@@ -230,7 +227,43 @@ public class MessageServiceImpl implements MessageService {
 
     }
 
+    @Override
+    public Map<String, List<ReactionDetail>> getReactions(Long id, String messageId) {
+        Message message = messageRepository.findById(new ObjectId(messageId))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId()))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+
+        if (!conversation.getMembers().contains(id)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
+        }
+
+        Map<ReactionType, List<Long>> reactions = message.getReactions();
+        Set<Long> userIds = reactions.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
+        Map<String, List<ReactionDetail>> reactionMap = new HashMap<>();
+
+        reactions.forEach((reactionType, userIdList) -> {
+            Map<Long, Long> userReactionCounts = userIdList.stream()
+                    .collect(Collectors.groupingBy(userId -> userId, Collectors.counting()));
+
+            List<ReactionDetail> reactionDetails = userReactionCounts.entrySet().stream()
+                    .map(entry -> {
+                        UserDetail userDetail = userDetailMap.get(entry.getKey());
+                        return new ReactionDetail(userDetail, entry.getValue());
+                    })
+                    .toList();
+
+            reactionMap.put(reactionType.name(), reactionDetails);
+        });
+
+        return reactionMap;
+    }
+
+
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {
-        return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) <= 0;
+        return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) >= 0;
     }
 }

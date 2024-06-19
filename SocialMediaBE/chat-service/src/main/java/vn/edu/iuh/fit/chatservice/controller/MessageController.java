@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
+import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 import vn.edu.iuh.fit.chatservice.service.MessageService;
 import vn.edu.iuh.fit.chatservice.dto.ReplyMessageDTO;
@@ -44,6 +45,12 @@ public class MessageController {
         Map<String, MessageDetailDTO> messageMap = messages.stream()
                 .collect(Collectors.toMap(MessageDetailDTO::messageId, Function.identity(), (oldValue, newValue) -> oldValue, LinkedHashMap::new));
         return ResponseEntity.ok().eTag(eTag).body(messageMap);
+    }
+
+    @GetMapping("/detail/reaction/{messageId}")
+    public ResponseEntity<?> getReactions(@RequestHeader("sub") Long id, @PathVariable String messageId) {
+        Map<String, List<ReactionDetail>> reactions = messageService.getReactions(id, messageId);
+        return ResponseEntity.ok(reactions);
     }
 
     @GetMapping("/plain/{messageId}")

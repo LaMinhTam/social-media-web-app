@@ -14,4 +14,6 @@ public interface PostService {
     Map<String, PostDetail> findUserWall(Long userId, int page, int size);
 
     Map<String, PostDetail> findNewFeed(Long userId, int page, int size);
+
+    String sharePost(Long userId, String s, String content);
 }

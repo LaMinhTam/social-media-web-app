@@ -27,6 +27,7 @@ public class ConversationDTO implements Serializable {
     private ConversationType type;
     private Long ownerId;
     private ConversationSettings settings;
+    private List<Long> deputies;
     private List<String> pinnedMessages;
 
     public ConversationDTO(Conversation conversation, Map<Long, UserDetail> userModels, Long id) {
@@ -53,6 +54,7 @@ public class ConversationDTO implements Serializable {
         this.type = conversationDTO.getType();
         this.ownerId = conversationDTO.getOwnerId();
         this.settings = conversation.getSettings();
+        this.deputies = conversation.getDeputies();
         this.pinnedMessages = conversation.getPinnedMessages();
     }
 
