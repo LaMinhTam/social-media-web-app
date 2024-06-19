@@ -73,40 +73,40 @@ public class MessageServiceImpl implements MessageService {
         List<Message> messages = messageRepository.findMessagesAfterMessageId(userId, conversation.getId().toHexString(), messageId, size);
 
         Set<Long> userIds = messages.stream().flatMap(message -> Stream.concat(
-                Stream.of(
-                        message.getSenderId()),
+                Stream.of(message.getSenderId()),
                 message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
         ).collect(Collectors.toSet());
-        userIds.addAll(conversation.getReadBy().keySet().stream().toList());
+        userIds.addAll(conversation.getReadBy().keySet());
 
         Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
         List<ObjectId> replyToMessageIds = messages.stream()
-                .map(message -> {
-                    if (message.getReplyToMessageId() != null) {
-                        return new ObjectId(message.getReplyToMessageId());
-                    }
-                    return null;
-                })
-                .collect(Collectors.toSet())
-                .stream().toList();
+                .map(message -> message.getReplyToMessageId() != null ? new ObjectId(message.getReplyToMessageId()) : null)
+                .filter(Objects::nonNull)
+                .toList();
+
         Map<String, ReplyMessageDTO> replyMessage = messageRepository.findMessagesByIdIn(replyToMessageIds)
-                .stream().collect(Collectors.toMap(message -> message.getId().toHexString(), message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId())));
+                .stream()
+                .collect(Collectors.toMap(
+                        message -> message.getId().toHexString(),
+                        message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId())
+                ));
+
         return messages.stream()
                 .map(message -> {
                     List<UserDetail> targetUserDetails = UserDetail.getUserDetailsFromMap(message, userDetailMap);
-                    Map<Long, UserDetail> readBy = getReadByUserDetails(conversation, message, userDetailMap);
+                    List<UserDetail> readBy = getReadByUserDetails(conversation, message, userDetailMap);
                     return new MessageDetailDTO(message, userDetailMap.get(message.getSenderId()), targetUserDetails, readBy, replyMessage.get(message.getReplyToMessageId()));
                 })
                 .toList();
     }
 
-    private Map<Long, UserDetail> getReadByUserDetails(Conversation conversation, Message message, Map<Long, UserDetail> userDetailMap) {
-        Map<Long, UserDetail> readBy = new HashMap<>();
+    private List<UserDetail> getReadByUserDetails(Conversation conversation, Message message, Map<Long, UserDetail> userDetailMap) {
+        List<UserDetail> readBy = new ArrayList<>();
         ObjectId messageId = message.getId();
 
         conversation.getReadBy().forEach((userId, lastReadMessageId) -> {
             if (isLaterMessage(lastReadMessageId, messageId)) {
-                readBy.put(userId, userDetailMap.get(userId));
+                readBy.add(userDetailMap.get(userId));
             }
         });
 
@@ -264,6 +264,6 @@ public class MessageServiceImpl implements MessageService {
 
 
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {
-        return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) <= 0;
+        return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) >= 0;
     }
 }
