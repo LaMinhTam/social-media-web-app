@@ -133,9 +133,7 @@ public class ConversationServiceImpl implements ConversationService {
                 }
             }
         });
-        return conversations.stream()
-                .map(conversation -> new ConversationDTO(conversation, userModels, id))
-                .toList();
+        return conversationDTOS;
     }
 
     @Override
