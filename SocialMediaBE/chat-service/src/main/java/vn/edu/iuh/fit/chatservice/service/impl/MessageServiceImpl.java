@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chatservice.client.NotificationClient;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
-import vn.edu.iuh.fit.chatservice.dto.MessageDTO;
-import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
-import vn.edu.iuh.fit.chatservice.dto.MessageFromClientDTO;
-import vn.edu.iuh.fit.chatservice.dto.ReplyMessageDTO;
+import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationType;
@@ -229,6 +226,42 @@ public class MessageServiceImpl implements MessageService {
         return new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId());
 
     }
+
+    @Override
+    public Map<String, List<ReactionDetail>> getReactions(Long id, String messageId) {
+        Message message = messageRepository.findById(new ObjectId(messageId))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId()))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+
+        if (!conversation.getMembers().contains(id)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
+        }
+
+        Map<ReactionType, List<Long>> reactions = message.getReactions();
+        Set<Long> userIds = reactions.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
+        Map<String, List<ReactionDetail>> reactionMap = new HashMap<>();
+
+        reactions.forEach((reactionType, userIdList) -> {
+            Map<Long, Long> userReactionCounts = userIdList.stream()
+                    .collect(Collectors.groupingBy(userId -> userId, Collectors.counting()));
+
+            List<ReactionDetail> reactionDetails = userReactionCounts.entrySet().stream()
+                    .map(entry -> {
+                        UserDetail userDetail = userDetailMap.get(entry.getKey());
+                        return new ReactionDetail(userDetail, entry.getValue());
+                    })
+                    .toList();
+
+            reactionMap.put(reactionType.name(), reactionDetails);
+        });
+
+        return reactionMap;
+    }
+
 
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {
         return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) <= 0;
