@@ -1,6 +1,5 @@
 package vn.edu.iuh.fit.notificationservice.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -9,7 +8,6 @@ import vn.edu.iuh.fit.notificationservice.client.UserClient;
 import vn.edu.iuh.fit.notificationservice.dto.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/notifications")
@@ -99,6 +97,25 @@ public class NotificationController {
                 .toList();
         for (Long id : members) {
             simpMessagingTemplate.convertAndSendToUser(id.toString(), "/conversation", conversationDTO);
+        }
+    }
+
+    @PostMapping("/notify/read")
+    public void notifyRead(@RequestHeader("sub") Long newReadUser, @RequestBody MessageNotificationRequest request) {
+        List<Long> notifyMembers = prepareNotifyMembers(request);
+
+        List<UserDetail> userDetails = userClient.getUsersByIds(List.of(newReadUser));
+
+        for (Long memberId : notifyMembers) {
+            simpMessagingTemplate.convertAndSendToUser(
+                    memberId.toString(),
+                    "/read",
+                    new ReadMessageResponse(
+                            request.conversation().getId(),
+                            request.message().id(),
+                            userDetails.get(0)
+                    )
+            );
         }
     }
 
