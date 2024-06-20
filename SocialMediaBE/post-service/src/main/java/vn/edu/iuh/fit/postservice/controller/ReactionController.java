@@ -1,7 +1,6 @@
 package vn.edu.iuh.fit.postservice.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.iuh.fit.postservice.dto.ReactRequest;
@@ -32,5 +31,15 @@ public class ReactionController {
         }else{
             return ResponseEntity.status(HttpStatus.GONE).build();
         }
+    }
+
+    @GetMapping("/post/detail/{postId}")
+    public ResponseEntity<?> getReaction(@RequestHeader("sub") Long id, @PathVariable String postId) {
+        return ResponseEntity.ok(reactionService.getPostReaction(id, postId));
+    }
+
+    @GetMapping("/comment/detail/{commentId}")
+    public ResponseEntity<?> getCommentReaction(@RequestHeader("sub") Long id, @PathVariable String commentId) {
+        return ResponseEntity.ok(reactionService.getCommentReaction(id, commentId));
     }
 }

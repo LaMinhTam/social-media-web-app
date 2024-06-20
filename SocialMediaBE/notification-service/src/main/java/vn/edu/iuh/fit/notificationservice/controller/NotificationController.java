@@ -111,8 +111,8 @@ public class NotificationController {
                     memberId.toString(),
                     "/read",
                     new ReadMessageResponse(
-                            request.conversation().getId(),
                             request.message().id(),
+                            request.conversation().getId(),
                             userDetails.get(0)
                     )
             );
