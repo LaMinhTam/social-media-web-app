@@ -1,6 +1,8 @@
 package vn.edu.iuh.fit.postservice.service.impl;
 
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.fit.postservice.client.UserClient;
+import vn.edu.iuh.fit.postservice.dto.UserDetail;
 import vn.edu.iuh.fit.postservice.entity.neo4j.*;
 import vn.edu.iuh.fit.postservice.exception.AppException;
 import vn.edu.iuh.fit.postservice.repository.neo4j.CommentNodeRepository;
@@ -9,7 +11,7 @@ import vn.edu.iuh.fit.postservice.repository.neo4j.ReactionNodeRepository;
 import vn.edu.iuh.fit.postservice.repository.neo4j.UserNodeRepository;
 import vn.edu.iuh.fit.postservice.service.ReactionService;
 
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ReactionServiceImpl implements ReactionService {
@@ -17,13 +19,15 @@ public class ReactionServiceImpl implements ReactionService {
     private final PostNodeRepository postNodeRepository;
     private final CommentNodeRepository commentNodeRepository;
     private final UserNodeRepository userNodeRepository;
+    private final UserClient userClient;
 
     public ReactionServiceImpl(ReactionNodeRepository reactionNodeRepository, PostNodeRepository postNodeRepository,
-                               CommentNodeRepository commentNodeRepository, UserNodeRepository userNodeRepository) {
+                               CommentNodeRepository commentNodeRepository, UserNodeRepository userNodeRepository, UserClient userClient) {
         this.reactionNodeRepository = reactionNodeRepository;
         this.postNodeRepository = postNodeRepository;
         this.commentNodeRepository = commentNodeRepository;
         this.userNodeRepository = userNodeRepository;
+        this.userClient = userClient;
     }
 
     @Override
@@ -44,6 +48,42 @@ public class ReactionServiceImpl implements ReactionService {
                 .orElseThrow(() -> new AppException(404, "User not found"));
 
         return handleReaction(commentId, userId, reactionType, userNode, null, comment);
+    }
+
+    @Override
+    public Map<ReactionType, List<UserDetail>> getPostReaction(Long id, String postId) {
+        PostNode post = postNodeRepository.findById(postId)
+                .orElseThrow(() -> new AppException(404, "Post not found"));
+
+        return getReactionsMap(post.getReactions());
+    }
+
+    @Override
+    public Map<ReactionType, List<UserDetail>> getCommentReaction(Long id, String commentId) {
+        CommentNode comment = commentNodeRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(404, "Comment not found"));
+
+        return getReactionsMap(comment.getReactions());
+    }
+
+    private Map<ReactionType, List<UserDetail>> getReactionsMap(Set<ReactionNode> reactions) {
+        List<Long> userIds = reactions.stream()
+                .map(r -> r.getUser().getUserId())
+                .toList();
+
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(userIds);
+        EnumMap<ReactionType, List<UserDetail>> reactionTypeListMap = new EnumMap<>(ReactionType.class);
+
+        for (ReactionNode reaction : reactions) {
+            ReactionType reactionType = reaction.getType();
+            Long userId = reaction.getUser().getUserId();
+            UserDetail userDetail = userDetailMap.get(userId);
+
+            reactionTypeListMap
+                    .computeIfAbsent(reactionType, k -> new ArrayList<>())
+                    .add(userDetail);
+        }
+        return reactionTypeListMap;
     }
 
     private boolean handleReaction(String targetId, Long userId, ReactionType reactionType,
