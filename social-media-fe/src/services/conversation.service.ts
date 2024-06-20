@@ -129,3 +129,45 @@ export const handleReactionMessage = async (
         console.error(error);
     }
 };
+
+export const handleReadMessage = async (messageId: string) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.readMessage(
+            messageId
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleChangeGroupName = async (id: string, name: string) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.changeName(
+            id,
+            name
+        );
+        console.log("handleChangeGroupName ~ response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleChangeGroupAvatar = async (id: string, imageUrl: string) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.changeImage(
+            id,
+            imageUrl
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};

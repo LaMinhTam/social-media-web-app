@@ -38,9 +38,87 @@ const getConversationDetail = async (id: string) => {
     return response;
 };
 
+const addMember = async (id: string, userId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.addMember(id, userId)
+    );
+    return response;
+};
+
+const kickMember = async (id: string, userId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.kickMember(id, userId)
+    );
+    return response;
+};
+
+const leaveGroup = async (id: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.leaveGroup(id)
+    );
+    return response;
+};
+
 const disbandGroup = async (id: string) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.disband(id)
+    );
+    return response;
+};
+
+const changeName = async (id: string, name: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.changeName(id, name)
+    );
+    return response;
+};
+
+const changeImage = async (id: string, imageUrl: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.changeImage(id, imageUrl)
+    );
+    return response;
+};
+
+const changeGroupOwner = async (id: string, userId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.changeGroupOwner(id, userId)
+    );
+    return response;
+};
+
+const grantDeputy = async (id: string, userId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.grantDeputy(id, userId)
+    );
+    return response;
+};
+
+const revokeDeputy = async (id: string, userId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.revokeDeputy(id, userId)
+    );
+    return response;
+};
+
+const updateGroupSetting = async (id: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.updateGroupSetting(id)
+    );
+    return response;
+};
+
+const findConversationByLink = async (link: string) => {
+    const response: AxiosResponse<ConversationResponse> =
+        await axiosPrivate.get(
+            apiRoutes.conversation.findConversationByLink(link)
+        );
+    return response;
+};
+
+const joinConversationByLink = async (link: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.joinConversationByLink(link)
     );
     return response;
 };
@@ -95,15 +173,34 @@ const reactionMessage = async (messageId: string, reaction: string) => {
     return response;
 };
 
+const readMessage = async (messageId: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.readMessage(messageId)
+    );
+    return response;
+};
+
 export const CONVERSATION = {
     createConversation,
     getListConversation,
     getConversationDetail,
+    addMember,
+    kickMember,
+    leaveGroup,
     disbandGroup,
+    changeName,
+    changeImage,
+    changeGroupOwner,
+    grantDeputy,
+    revokeDeputy,
+    updateGroupSetting,
+    findConversationByLink,
+    joinConversationByLink,
     getUserStatus,
     getListMessage,
     shareMessage,
     revokeMessage,
     deleteMessage,
     reactionMessage,
+    readMessage,
 };

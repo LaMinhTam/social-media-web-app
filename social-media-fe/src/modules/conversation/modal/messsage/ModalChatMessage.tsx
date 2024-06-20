@@ -13,7 +13,7 @@ import {
 } from "@/store/actions/conversationSlice";
 import { MessageData } from "@/types/conversationType";
 import formatTime from "@/utils/conversation/messages/handleGroupMessage";
-import { Tooltip } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,14 +26,17 @@ import ForwardMessageDialog from "./ForwardMessageDialog";
 import MessageText from "./MessageText";
 import MessageMultimedia from "./MessageMultimedia";
 import { useSocket } from "@/contexts/socket-context";
+import handleFormatMessage from "@/utils/conversation/messages/handleFormatMessage";
 const ModalChatMessage = ({
     type,
     message,
     isGroup,
+    isLastMessage,
 }: {
     type: string;
     message: MessageData;
     isGroup: boolean;
+    isLastMessage: boolean;
 }) => {
     const { messages, setMessages } = useSocket();
     const dispatch = useDispatch();
@@ -188,6 +191,29 @@ const ModalChatMessage = ({
                     onForwardMessage={() => {}}
                 />
             )}
+            {isLastMessage &&
+                type === "send" &&
+                message.read_by &&
+                message.read_by?.length > 0 &&
+                message.read_by?.map((member) => {
+                    if (member.user_id === currentUserProfile.user_id) return;
+                    return (
+                        <Tooltip key={member.user_id} title={member.name}>
+                            <Box className="flex items-center justify-end mt-2 cursor-pointer">
+                                <Image
+                                    src={
+                                        member.image_url ??
+                                        "https://source.unsplash.com/random"
+                                    }
+                                    width={16}
+                                    height={16}
+                                    alt="avatar"
+                                    className="w-4 h-4 rounded-full"
+                                />
+                            </Box>
+                        </Tooltip>
+                    );
+                })}
         </>
     );
 };

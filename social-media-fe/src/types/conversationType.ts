@@ -54,6 +54,8 @@ export interface MessageData {
     user_detail: Member;
     content: string;
     type: string;
+    notification_type?: string;
+    target_user_id?: Member[];
     reactions?: {
         [key: string]: number[];
     };
@@ -65,9 +67,7 @@ export interface MessageData {
         sender_id: number;
         type?: string;
     };
-    read_by?: {
-        [key: string]: Member;
-    };
+    read_by?: Member[];
 }
 
 export type MessageResponse = {

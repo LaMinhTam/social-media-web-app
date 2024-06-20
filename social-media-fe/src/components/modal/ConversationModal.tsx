@@ -21,6 +21,7 @@ import { ConversationResponse } from "@/types/conversationType";
 import {
     handleGetListConversation,
     handleGetListMessage,
+    handleReadMessage,
 } from "@/services/conversation.service";
 import {
     setCurrentConversation,
@@ -35,6 +36,7 @@ import { db } from "@/constants/firebaseConfig";
 import { handleRemoveUnreadMessage } from "@/utils/conversation/messages/handleRemoveUnreadMessage";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import CreateGroupDialog from "@/modules/conversation/modal/group/CreateGroupDialog";
+import handleGetLastUnreadMessageOfUser from "@/utils/conversation/messages/handleGetLastUnreadMessageOfUser";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -72,6 +74,14 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
             setMessages(messages);
             const count = unreadCounts[conversation.conversation_id] || 0;
             if (count > 0) {
+                const last_unread_message_id =
+                    await handleGetLastUnreadMessageOfUser(
+                        conversation.conversation_id,
+                        currentUserProfile.user_id
+                    );
+                if (last_unread_message_id) {
+                    await handleReadMessage(last_unread_message_id);
+                }
                 handleRemoveUnreadMessage(
                     conversation.conversation_id,
                     currentUserProfile.user_id

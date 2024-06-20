@@ -10,6 +10,7 @@ import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useSocket } from "@/contexts/socket-context";
 import { groupMessages } from "@/utils/conversation/messages/handleGroupMessage";
 import { v4 as uuidv4 } from "uuid";
+import handleFormatNotificationMessage from "@/utils/conversation/messages/handleFormatNotificationMessage";
 const ModalChatContent = ({
     conversationId,
     messages,
@@ -102,16 +103,29 @@ const ModalChatContent = ({
                             ref={messageRefs[message.message_id]}
                             key={uuidv4()}
                         >
-                            <ModalChatMessage
-                                message={message}
-                                type={
-                                    message.user_detail.user_id ===
-                                    currentUserId
-                                        ? "send"
-                                        : "receive"
-                                }
-                                isGroup={isGroup}
-                            />
+                            {message.type !== "NOTIFICATION" ? (
+                                <ModalChatMessage
+                                    message={message}
+                                    type={
+                                        message.user_detail.user_id ===
+                                        currentUserId
+                                            ? "send"
+                                            : "receive"
+                                    }
+                                    isGroup={isGroup}
+                                    isLastMessage={
+                                        group.data.indexOf(message) ===
+                                        group.data.length - 1
+                                    }
+                                />
+                            ) : (
+                                <div className="text-sm text-center text-secondary">
+                                    {handleFormatNotificationMessage(
+                                        message,
+                                        currentUserId
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

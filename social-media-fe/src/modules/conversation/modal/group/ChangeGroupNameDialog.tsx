@@ -11,7 +11,9 @@ import {
     styled,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import React, { MutableRefObject } from "react";
+import React, { MutableRefObject, useState } from "react";
+import { handleChangeGroupName } from "@/services/conversation.service";
+import LoadingSpinner from "@/components/loading/LoadingSpinner";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -21,16 +23,33 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 const ChangeGroupNameDialog = ({
+    conversationId,
     openChangeGroupNameDialog,
     setOpenChangeGroupNameDialog,
     currentGroupName,
 }: {
+    conversationId: string;
     openChangeGroupNameDialog: boolean;
     setOpenChangeGroupNameDialog: (open: boolean) => void;
     currentGroupName: string;
 }) => {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [name, setName] = useState<string>(currentGroupName || "");
     const handleClose = () => {
         setOpenChangeGroupNameDialog(false);
+    };
+    const onChangeGroupName = async () => {
+        if (!name || name === currentGroupName) return;
+        try {
+            setLoading(true);
+            const response = await handleChangeGroupName(conversationId, name);
+            if (response) {
+                setOpenChangeGroupNameDialog(false);
+            }
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+        }
     };
     return (
         <BootstrapDialog
@@ -71,7 +90,8 @@ const ChangeGroupNameDialog = ({
                         <Box>
                             <input
                                 type="text"
-                                defaultValue={currentGroupName}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 className="w-full h-10 px-2 border border-gray-300 rounded-md"
                             />
                         </Box>
@@ -82,8 +102,14 @@ const ChangeGroupNameDialog = ({
                 <Button onClick={handleClose} color="info">
                     Cancel
                 </Button>
-                <Button autoFocus variant="contained" color="info">
-                    Save
+                <Button
+                    autoFocus
+                    variant="contained"
+                    color="info"
+                    disabled={loading}
+                    onClick={onChangeGroupName}
+                >
+                    {loading ? <LoadingSpinner /> : "Save"}
                 </Button>
             </DialogActions>
         </BootstrapDialog>

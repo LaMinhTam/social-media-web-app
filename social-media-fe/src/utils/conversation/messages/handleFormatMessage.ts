@@ -1,4 +1,4 @@
-import { MESSAGE_TYPE } from "@/constants/global";
+import { MESSAGE_TYPE, NOTIFICATION_TYPE } from "@/constants/global";
 import { MessageData } from "@/types/conversationType";
 
 export default function handleFormatMessage(message: MessageData) {
@@ -8,7 +8,7 @@ export default function handleFormatMessage(message: MessageData) {
             formattedMessage = message.content;
             break;
         case MESSAGE_TYPE.REVOKED:
-            formattedMessage = "Tin nhắn đã bị thu hồi";
+            formattedMessage = "This message was revoked";
             break;
         case MESSAGE_TYPE.EMOJI:
             formattedMessage = message.content;

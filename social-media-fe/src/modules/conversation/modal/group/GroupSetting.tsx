@@ -199,6 +199,7 @@ const GroupSetting = ({
             )}
             {openChangeGroupNameDialog && (
                 <ChangeGroupNameDialog
+                    conversationId={currentConversation.conversation_id}
                     currentGroupName={currentConversation?.name || ""}
                     openChangeGroupNameDialog={openChangeGroupNameDialog}
                     setOpenChangeGroupNameDialog={setOpenChangeGroupNameDialog}

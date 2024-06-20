@@ -4,7 +4,7 @@ import SockJS from "sockjs-client";
 import { SOCKET_URL } from "@/constants/global";
 import SocketType from "@/types/socketType";
 import { getAccessToken } from "@/utils/auth";
-import { MessageResponse } from "@/types/conversationType";
+import { Member, MessageResponse } from "@/types/conversationType";
 import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
@@ -81,12 +81,14 @@ export function SocketProvider(
                                 );
                             }
                         }
+                        console.log("message run");
                         setMessages((prev) => ({
                             ...prev,
                             [payloadData.message_id]: {
                                 ...payloadData,
                             },
                         }));
+                        console.log("message", messages);
                         setTriggerScrollChat(!triggerScrollChat);
                     }
                 );
@@ -118,6 +120,25 @@ export function SocketProvider(
                         console.log("conversation", JSON.parse(payload.body));
                     }
                 );
+
+                client.subscribe(
+                    `/user/${decryptedData.user_id}/read`,
+                    function (payload) {
+                        console.log("read", JSON.parse(payload.body));
+                        const payloadData = JSON.parse(payload.body);
+                        const newMessages = { ...messages };
+                        newMessages[payloadData.conversation_id] = {
+                            ...messages[payloadData.conversation_id],
+                            read_by: [
+                                ...(messages[payloadData.conversation_id]
+                                    ?.read_by || []),
+                                payloadData.user_detail,
+                            ],
+                        };
+                        setMessages(newMessages);
+                        setTriggerScrollChat(!triggerScrollChat);
+                    }
+                );
             },
             (error) => {
                 console.log("connection error", error);
@@ -132,7 +153,7 @@ export function SocketProvider(
                 client.disconnect(() => {});
             }
         };
-    }, [currentConversation]);
+    }, [currentConversation, triggerScrollChat]);
 
     const contextValues = {
         messages,

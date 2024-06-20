@@ -20,7 +20,25 @@ const conversation = {
     create: "/conversations/create",
     list: "/conversations/list",
     detail: (id: string) => `/conversations/detail/${id}`,
+    addMember: (id: string, userId: string) =>
+        `/conversations/${id}/add-member?member-id=${userId}`,
+    kickMember: (id: string, userId: string) =>
+        `/conversations/${id}/kick?member-id=${userId}`,
+    leaveGroup: (id: string) => `/conversations/${id}/leave`,
     disband: (id: string) => `/conversations/disband/${id}`,
+    changeName: (id: string, name: string) =>
+        `/conversations/${id}/change-name?name=${name}`,
+    changeImage: (id: string, imageUrl: string) =>
+        `/conversations/${id}/change-image?image=${imageUrl}`,
+    changeGroupOwner: (id: string, userId: string) =>
+        `/conversations/${id}/grant-owner?member-id=${userId}`,
+    grantDeputy: (id: string, userId: string) =>
+        `/conversations/${id}/grant-deputy?member-id=${userId}`,
+    revokeDeputy: (id: string, userId: string) =>
+        `/conversations/${id}/revoke-deputy?member-id=${userId}`,
+    updateGroupSetting: (id: string) => `/conversations/${id}/update-settings`,
+    findConversationByLink: (link: string) => `/conversations/link/${link}`,
+    joinConversationByLink: (link: string) => `/conversations/join/${link}`,
     getUserStatus: (id: string) => `/user-status/online?user_ids=${id}`,
     getListMessageByPage: (id: string, size: number) =>
         `/messages/${id}?size=${size}`,
@@ -28,6 +46,7 @@ const conversation = {
     revokeMessage: (id: string) => `/messages/revoke/${id}`,
     deleteMessage: (id: string) => `/messages/${id}/delete`,
     reactMessage: "/messages/react",
+    readMessage: (id: string) => `/messages/${id}/read`,
 };
 
 const apiRoutes = {
