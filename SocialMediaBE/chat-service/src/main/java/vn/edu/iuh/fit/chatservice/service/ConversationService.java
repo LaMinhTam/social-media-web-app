@@ -28,7 +28,7 @@ public interface ConversationService {
 
     ConversationSettings updateConversationSettings(Long adminId, String conversationId, ConversationSettingsRequest settings);
 
-    SimpleConversationDTO addMember(Long id, String conversationId, Long memberId);
+    SimpleConversationDTO addMember(Long id, String conversationId, List<Long> memberId);
 
     ConversationDTO joinByLink(Long id, String link);
 

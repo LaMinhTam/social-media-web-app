@@ -162,32 +162,43 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public SimpleConversationDTO addMember(Long userId, String conversationId, Long memberId) {
+    public SimpleConversationDTO addMember(Long userId, String conversationId, List<Long> members) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
-        if (conversation.getMembers().contains(memberId)) {
-            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Member already in this conversation");
-        }
-        //1. check if user is owner, if owner then could invite
-        //2. check if member have permission to invite
-        //3. check if deputy have permission to invite, and deputy is not null, and user is deputy
-        if (!conversation.getOwnerId().equals(userId) &&
-                !conversation.getSettings().isAllowMemberToInviteMember() &&
-                !(conversation.getSettings().isAllowDeputyToInviteMember() && conversation.getDeputies() != null && conversation.getDeputies().contains(userId))) {
-            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to invite member");
+        if (conversation.getType().equals(ConversationType.PRIVATE)) {
+            throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "You can not add member to a private conversation");
         }
 
-        conversation.getMembers().add(memberId);
-        Message message = Message.builder()
-                .conversationId(conversationId)
-                .senderId(userId)
-                .targetUserId(List.of(memberId))
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .type(MessageType.NOTIFICATION)
-                .notificationType(NotificationType.ADD_MEMBER)
-                .build();
-        messageRepository.save(message);
-        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
+        members = members.stream()
+                .filter(memberId -> !conversation.getMembers().contains(memberId))
+                .toList();
+
+        if (members.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "All members are already in this conversation");
+        }
+
+        members.forEach(memberId -> {
+            //1. check if user is owner, if owner then could invite
+            //2. check if member have permission to invite
+            //3. check if deputy have permission to invite, and deputy is not null, and user is deputy
+            if (!conversation.getOwnerId().equals(userId) &&
+                    !conversation.getSettings().isAllowMemberToInviteMember() &&
+                    !(conversation.getSettings().isAllowDeputyToInviteMember() && conversation.getDeputies() != null && conversation.getDeputies().contains(userId))) {
+                throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to invite member");
+            }
+
+            conversation.getMembers().add(memberId);
+            Message message = Message.builder()
+                    .conversationId(conversationId)
+                    .senderId(userId)
+                    .targetUserId(List.of(memberId))
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .type(MessageType.NOTIFICATION)
+                    .notificationType(NotificationType.ADD_MEMBER)
+                    .build();
+            messageRepository.save(message);
+            messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
+        });
 
         return saveAndReturnDTO(conversation);
     }
