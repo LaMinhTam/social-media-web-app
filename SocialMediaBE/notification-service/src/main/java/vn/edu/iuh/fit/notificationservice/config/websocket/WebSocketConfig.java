@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.notificationservice.config.websocket;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -15,10 +16,15 @@ import vn.edu.iuh.fit.notificationservice.util.JwtUtil;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    private final JwtUtil jwtUtil;
+    private final UserSessionService userSessionService;
+
+    @Lazy
     @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
-    private UserSessionService userSessionService;
+    public WebSocketConfig(JwtUtil jwtUtil, UserSessionService userSessionService) {
+        this.jwtUtil = jwtUtil;
+        this.userSessionService = userSessionService;
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {

@@ -29,31 +29,46 @@ public class Interceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> msg, MessageChannel mc) {
         StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(msg, StompHeaderAccessor.class);
 //        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(msg);
-        if (!StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())) {
-            try {
-                if (StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
-                    String token = headerAccessor.getNativeHeader("Authorization").get(0);
-                    Claims claims = jwtUtil.getAllClaimsFromToken(token);
-                    String userId = claims.getSubject();
-                    headerAccessor.addNativeHeader("sub", userId);
+        StompCommand command = headerAccessor.getCommand();
+        try {
+            if (StompCommand.CONNECT.equals(command)) {
+                String userId = extractUserIdAndSetInHeader(headerAccessor);
+                Thread thread = new Thread(() -> {
                     userSessionService.addUserSession(userId, headerAccessor.getSessionId());
-                }
-                if (StompCommand.SEND.equals(headerAccessor.getCommand())) {
-                    String token = headerAccessor.getNativeHeader("Authorization").get(0);
-                    Claims claims = jwtUtil.getAllClaimsFromToken(token);
-                    String userId = claims.getSubject();
-                    headerAccessor.addNativeHeader("sub", userId);
-
-//            return MessageBuilder.createMessage(msg.getPayload(), headerAccessor.getMessageHeaders());
-                }
-                if (StompCommand.DISCONNECT.equals(headerAccessor.getCommand())) {
-                    userSessionService.removeUserSession(headerAccessor.getSessionId());
-                }
-            } catch (NullPointerException e) {
-                throw new RuntimeException(e.getMessage());
+                    userSessionService.onlineNotification(userId);
+                });
+                thread.start();
             }
+            if(StompCommand.SUBSCRIBE.equals(command)){
+                String userIdFromJwt = extractUserIdAndSetInHeader(headerAccessor);
+                String subscribeUserId = msg.getHeaders().get("simpDestination").toString().split("/")[2];
+                if(!userIdFromJwt.equals(subscribeUserId)){
+                    throw new RuntimeException("Unauthorized");
+                }
+            }
+            if (StompCommand.SEND.equals(command)) {
+//            return MessageBuilder.createMessage(msg.getPayload(), headerAccessor.getMessageHeaders());
+            }
+            if (StompCommand.DISCONNECT.equals(command)) {
+                String userId = extractUserIdAndSetInHeader(headerAccessor);
+                Thread thread = new Thread(() -> {
+                    userSessionService.removeUserSession(headerAccessor.getSessionId());
+                    userSessionService.onlineNotification(userId);
+                });
+                thread.start();
+            }
+        } catch (NullPointerException e) {
+            throw new RuntimeException(e.getMessage());
         }
         return msg;
+    }
+
+    private String extractUserIdAndSetInHeader(StompHeaderAccessor headerAccessor) {
+        String token = headerAccessor.getNativeHeader("Authorization").get(0);
+        Claims claims = jwtUtil.getAllClaimsFromToken(token);
+        String userId = claims.getSubject();
+        headerAccessor.addNativeHeader("sub", userId);
+        return userId;
     }
 
     @Override

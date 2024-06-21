@@ -1,7 +1,9 @@
 package vn.edu.iuh.fit.notificationservice.service.impl;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import vn.edu.iuh.fit.notificationservice.client.UserClient;
 import vn.edu.iuh.fit.notificationservice.dto.OnlineStatus;
 import vn.edu.iuh.fit.notificationservice.dto.UserStatus;
 import vn.edu.iuh.fit.notificationservice.service.UserSessionService;
@@ -13,12 +15,16 @@ import java.util.stream.Collectors;
 @Service
 public class UserSessionServiceImpl implements UserSessionService {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final UserClient userClient;
 
-    public UserSessionServiceImpl(RedisTemplate<String, Object> redisTemplate) {
+    public UserSessionServiceImpl(RedisTemplate<String, Object> redisTemplate, SimpMessagingTemplate simpMessagingTemplate, UserClient userClient) {
         this.redisTemplate = redisTemplate;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        this.userClient = userClient;
     }
 
-//    opsForValue Map<Key, Object>
+    //    opsForValue Map<Key, Object>
 //    Map<Key, Object> map for store session user status, with key is session id, and user status have 2 field (online/offline) and timestamp
 //    opsForSet Map<Key, Set<String>>
 //    Map<Key, Set<String>> map for store user session, with key is user id, and value is list of session id
@@ -49,9 +55,9 @@ public class UserSessionServiceImpl implements UserSessionService {
         } else {
             // Remove session ID from the user's set of sessions
             Set<Object> sessionIds = redisTemplate.opsForSet().members(userStatus.userId());
-            if(sessionIds.size() == 1) {
+            if (sessionIds.size() == 1) {
                 redisTemplate.delete(userStatus.userId());
-            }else{
+            } else {
                 redisTemplate.opsForSet().remove(userStatus.userId(), sessionId);
             }
             // Remove the user status associated with the session ID
@@ -90,5 +96,17 @@ public class UserSessionServiceImpl implements UserSessionService {
         }
 
         return userStatuses;
+    }
+
+    @Override
+    public void onlineNotification(String userId) {
+        userClient.getFriendUserIds(Long.parseLong(userId)).forEach(userDetail ->
+                simpMessagingTemplate.convertAndSendToUser(userDetail.user_id().toString(), "/friend-status", new UserStatus(userId, OnlineStatus.ONLINE, System.currentTimeMillis())));
+    }
+
+    @Override
+    public void offlineNotification(String userId) {
+        userClient.getFriendUserIds(Long.parseLong(userId)).forEach(userDetail ->
+                simpMessagingTemplate.convertAndSendToUser(userDetail.user_id().toString(), "/friend-status", new UserStatus(userId, OnlineStatus.OFFLINE, System.currentTimeMillis())));
     }
 }

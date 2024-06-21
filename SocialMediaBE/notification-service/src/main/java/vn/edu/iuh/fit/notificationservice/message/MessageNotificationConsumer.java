@@ -1,14 +1,8 @@
 package vn.edu.iuh.fit.notificationservice.message;
 
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import vn.edu.iuh.fit.notificationservice.client.UserClient;
 import vn.edu.iuh.fit.notificationservice.dto.*;
 
