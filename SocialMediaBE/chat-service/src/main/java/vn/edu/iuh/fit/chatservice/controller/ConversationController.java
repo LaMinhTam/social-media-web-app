@@ -61,8 +61,8 @@ public class ConversationController {
     @PatchMapping("/{conversationId}/add-member")
     public ResponseEntity<SimpleConversationDTO> addMember(@RequestHeader("sub") Long id,
                                        @PathVariable String conversationId,
-                                       @RequestParam(name = "member-id") Long memberId) {
-        return ResponseEntity.ok(conversationService.addMember(id, conversationId, memberId));
+                                       @RequestParam(name = "members") List<Long> members) {
+        return ResponseEntity.ok(conversationService.addMember(id, conversationId, members));
     }
 
     @PatchMapping("/{conversationId}/leave")
