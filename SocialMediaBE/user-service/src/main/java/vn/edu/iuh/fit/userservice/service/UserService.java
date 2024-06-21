@@ -13,4 +13,6 @@ public interface UserService {
     List<UserModel> searchUser(String keyword);
 
     List<UserModel> getUsersByIds(List<Long> ids);
+
+    UserModel updateUser(Long userId, String name, String email, String s, String cover);
 }

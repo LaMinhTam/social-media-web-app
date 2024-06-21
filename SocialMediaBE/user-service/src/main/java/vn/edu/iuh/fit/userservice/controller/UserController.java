@@ -43,4 +43,9 @@ public class UserController {
     public List<UserModel> getUsersByIds(@RequestParam List<Long> ids) {
         return userService.getUsersByIds(ids);
     }
+
+    @PutMapping
+    public ResponseEntity<UserModel> updateUser(@RequestHeader("sub") Long id, @RequestBody RequestCreateUser request) {
+        return ResponseEntity.ok(userService.updateUser(id, request.name(), request.email(), request.imageUrl(), request.cover()));
+    }
 }

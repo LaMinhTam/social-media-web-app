@@ -39,4 +39,14 @@ public class UserServiceImpl implements UserService {
         List<User> users = userRepository.findByUserIdIn(ids);
         return UserModel.convertToUserModel(users);
     }
+
+    @Override
+    public UserModel updateUser(Long userId, String name, String email, String s, String cover) {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new AppException(404, "User not found"));
+        user.setName(name);
+        user.setImageUrl(s);
+        user.setCover(cover);
+        User savedUser = userRepository.save(user);
+        return new UserModel(savedUser);
+    }
 }
