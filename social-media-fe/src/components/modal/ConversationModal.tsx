@@ -226,7 +226,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                             }
                                             width={56}
                                             height={56}
-                                            className="object-cover rounded-full w-14 h-14"
+                                            className="object-cover rounded-full w-14 h-14 test"
                                             alt="avatar"
                                         ></Image>
                                         <Box className="flex items-center justify-between flex-1">

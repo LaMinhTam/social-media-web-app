@@ -38,14 +38,14 @@ const getConversationDetail = async (id: string) => {
     return response;
 };
 
-const addMember = async (id: string, userId: string) => {
+const addMember = async (id: string, userId: number) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.addMember(id, userId)
     );
     return response;
 };
 
-const kickMember = async (id: string, userId: string) => {
+const kickMember = async (id: string, userId: number) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.kickMember(id, userId)
     );
@@ -80,21 +80,21 @@ const changeImage = async (id: string, imageUrl: string) => {
     return response;
 };
 
-const changeGroupOwner = async (id: string, userId: string) => {
+const changeGroupOwner = async (id: string, userId: number) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.changeGroupOwner(id, userId)
     );
     return response;
 };
 
-const grantDeputy = async (id: string, userId: string) => {
+const grantDeputy = async (id: string, userId: number) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.grantDeputy(id, userId)
     );
     return response;
 };
 
-const revokeDeputy = async (id: string, userId: string) => {
+const revokeDeputy = async (id: string, userId: number) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.revokeDeputy(id, userId)
     );

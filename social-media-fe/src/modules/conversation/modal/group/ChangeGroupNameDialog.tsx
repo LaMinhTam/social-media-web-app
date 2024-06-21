@@ -14,6 +14,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import React, { MutableRefObject, useState } from "react";
 import { handleChangeGroupName } from "@/services/conversation.service";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
+import { PopupState } from "material-ui-popup-state/hooks";
+import { toast } from "react-toastify";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -23,11 +25,13 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 const ChangeGroupNameDialog = ({
+    popupState,
     conversationId,
     openChangeGroupNameDialog,
     setOpenChangeGroupNameDialog,
     currentGroupName,
 }: {
+    popupState: PopupState;
     conversationId: string;
     openChangeGroupNameDialog: boolean;
     setOpenChangeGroupNameDialog: (open: boolean) => void;
@@ -45,6 +49,8 @@ const ChangeGroupNameDialog = ({
             const response = await handleChangeGroupName(conversationId, name);
             if (response) {
                 setOpenChangeGroupNameDialog(false);
+                popupState.close();
+                toast.success("Change group name successfully");
             }
             setLoading(false);
         } catch (error) {

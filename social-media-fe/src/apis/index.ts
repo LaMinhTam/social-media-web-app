@@ -20,9 +20,9 @@ const conversation = {
     create: "/conversations/create",
     list: "/conversations/list",
     detail: (id: string) => `/conversations/detail/${id}`,
-    addMember: (id: string, userId: string) =>
+    addMember: (id: string, userId: number) =>
         `/conversations/${id}/add-member?member-id=${userId}`,
-    kickMember: (id: string, userId: string) =>
+    kickMember: (id: string, userId: number) =>
         `/conversations/${id}/kick?member-id=${userId}`,
     leaveGroup: (id: string) => `/conversations/${id}/leave`,
     disband: (id: string) => `/conversations/disband/${id}`,
@@ -30,11 +30,11 @@ const conversation = {
         `/conversations/${id}/change-name?name=${name}`,
     changeImage: (id: string, imageUrl: string) =>
         `/conversations/${id}/change-image?image=${imageUrl}`,
-    changeGroupOwner: (id: string, userId: string) =>
+    changeGroupOwner: (id: string, userId: number) =>
         `/conversations/${id}/grant-owner?member-id=${userId}`,
-    grantDeputy: (id: string, userId: string) =>
+    grantDeputy: (id: string, userId: number) =>
         `/conversations/${id}/grant-deputy?member-id=${userId}`,
-    revokeDeputy: (id: string, userId: string) =>
+    revokeDeputy: (id: string, userId: number) =>
         `/conversations/${id}/revoke-deputy?member-id=${userId}`,
     updateGroupSetting: (id: string) => `/conversations/${id}/update-settings`,
     findConversationByLink: (link: string) => `/conversations/link/${link}`,

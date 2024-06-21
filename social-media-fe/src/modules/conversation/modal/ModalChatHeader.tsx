@@ -16,13 +16,13 @@ import GroupSetting from "./group/GroupSetting";
 const ModalChatHeader = ({
     username,
     dispatch,
-    // userStatus,
+    userStatus,
     avatar,
     isAdmin,
 }: {
     username: string;
     dispatch: Dispatch<any>;
-    // userStatus: OnlineStatus;
+    userStatus: OnlineStatus;
     avatar: string;
     isAdmin: boolean;
 }) => {
@@ -60,11 +60,11 @@ const ModalChatHeader = ({
                                         color={"GrayText"}
                                         className="text-xs font-normal line-clamp-1"
                                     >
-                                        {/* {userStatus?.online === "ONLINE"
-                                ? "Đang hoạt động"
-                                : userStatus?.timestamp !== 0
-                                ? `Hoạt động ${userStatus?.timestamp} phút trước`
-                                : "Vừa truy cập"} */}
+                                        {userStatus?.online === "ONLINE"
+                                            ? "Đang hoạt động"
+                                            : userStatus?.timestamp !== 0
+                                            ? `Hoạt động ${userStatus?.timestamp} phút trước`
+                                            : "Vừa truy cập"}
                                         Vừa truy cập
                                     </Typography>
                                 </div>

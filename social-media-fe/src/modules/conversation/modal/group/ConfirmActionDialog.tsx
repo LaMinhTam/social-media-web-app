@@ -25,12 +25,14 @@ export default function ConfirmActionDialog({
     title,
     content,
     buttonContent,
+    onClick,
 }: {
     open: boolean;
     setOpen: (open: boolean) => void;
     title: string;
     content: string;
     buttonContent: string;
+    onClick: () => void;
 }) {
     const handleClickOpen = () => {
         setOpen(true);
@@ -61,7 +63,7 @@ export default function ConfirmActionDialog({
                     <Button autoFocus onClick={handleClose}>
                         Cancel
                     </Button>
-                    <Button onClick={handleClose}>{buttonContent}</Button>
+                    <Button onClick={onClick}>{buttonContent}</Button>
                 </DialogActions>
             </Dialog>
         </React.Fragment>

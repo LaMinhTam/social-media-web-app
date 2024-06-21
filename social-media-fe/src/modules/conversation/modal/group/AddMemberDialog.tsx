@@ -6,7 +6,6 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Grid,
     IconButton,
     Typography,
     styled,
@@ -14,6 +13,14 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import React, { MutableRefObject } from "react";
 import SearchInput from "@/components/common/SearchInput";
+import { ConversationResponse } from "@/types/conversationType";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
+import sortedPersonToAlphabet from "@/utils/conversation/messages/sortedPersonToAlphabet";
+import Image from "next/image";
+import { v4 as uuidv4 } from "uuid";
+import LoadingSpinner from "@/components/loading/LoadingSpinner";
+import { handleAddMember } from "@/services/conversation.service";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -23,14 +30,37 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 const AddMemberDialog = ({
+    currentConversation,
     openAddMemberDialog,
     setOpenAddMemberDialog,
 }: {
+    currentConversation: ConversationResponse;
     openAddMemberDialog: boolean;
     setOpenAddMemberDialog: (open: boolean) => void;
 }) => {
+    const [checkedValues, setCheckedValues] = React.useState<{
+        [key: string]: boolean;
+    }>({});
+    const [loading, setLoading] = React.useState(false);
+    const relationshipUser = useSelector(
+        (state: RootState) => state.user.relationshipUsers
+    );
+    const sortedUser = sortedPersonToAlphabet(
+        Object.values(relationshipUser.friends || {})
+    );
     const handleClose = () => {
         setOpenAddMemberDialog(false);
+    };
+    const onAddMember = async () => {
+        setLoading(true);
+        const selectedUser = Object.keys(checkedValues)
+            .filter((key) => checkedValues[key])
+            .map((key) => parseInt(key));
+        selectedUser.forEach(async (user_id) => {
+            await handleAddMember(currentConversation.conversation_id, user_id);
+        });
+        setLoading(false);
+        handleClose();
     };
     return (
         <BootstrapDialog
@@ -73,31 +103,40 @@ const AddMemberDialog = ({
                     ></SearchInput>
                 </Box>
                 <hr />
-                {Array.from({ length: 4 }).map((_, index) => (
+                {sortedUser?.map((group) => (
                     <Box
-                        key={index}
+                        key={uuidv4()}
                         className="flex flex-col w-full h-full gap-y-2"
                     >
-                        <Typography>{`Group ${index + 1}`}</Typography>
-                        {Array.from({ length: 2 }).map((_, subIndex) => (
+                        <Typography>{group.key.toUpperCase()}</Typography>
+                        {group.data.map((friend) => (
                             <Box
-                                key={subIndex}
+                                key={uuidv4()}
                                 className="flex items-center justify-between"
                             >
                                 <Box className="flex items-center justify-start gap-x-2">
-                                    <img
-                                        src={`https://source.unsplash.com/random`}
+                                    <Image
+                                        src={friend.image_url}
+                                        width={32}
+                                        height={32}
                                         alt="avatar"
                                         className="w-8 h-8 rounded-full"
                                     />
-                                    <Typography>{`Friend ${
-                                        subIndex + 1
-                                    }`}</Typography>
+                                    <Typography>{friend.name}</Typography>
                                 </Box>
                                 <Checkbox
                                     color="primary"
                                     inputProps={{
                                         "aria-label": "select all desserts",
+                                    }}
+                                    checked={
+                                        checkedValues[friend.user_id] || false
+                                    }
+                                    onChange={(e) => {
+                                        setCheckedValues({
+                                            ...checkedValues,
+                                            [friend.user_id]: e.target.checked,
+                                        });
                                     }}
                                 />
                             </Box>
@@ -109,8 +148,14 @@ const AddMemberDialog = ({
                 <Button onClick={handleClose} color="info">
                     Cancel
                 </Button>
-                <Button autoFocus variant="contained" color="info">
-                    Save
+                <Button
+                    autoFocus
+                    variant="contained"
+                    color="info"
+                    disabled={loading}
+                    onClick={onAddMember}
+                >
+                    {loading ? <LoadingSpinner /> : "Save"}
                 </Button>
             </DialogActions>
         </BootstrapDialog>

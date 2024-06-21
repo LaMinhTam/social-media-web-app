@@ -12,6 +12,13 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
+import {
+    handleChangeGroupAvatar,
+    handleUploadFile,
+} from "@/services/conversation.service";
+import LoadingSpinner from "@/components/loading/LoadingSpinner";
+import { PopupState } from "material-ui-popup-state/hooks";
+import { toast } from "react-toastify";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -21,16 +28,62 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 const ChangeAvatarDialog = ({
+    popupState,
     openChangeAvatarDialog,
     setOpenChangeAvatarDialog,
     currentAvatar,
+    conversationId,
 }: {
+    popupState: PopupState;
     openChangeAvatarDialog: boolean;
     setOpenChangeAvatarDialog: (open: boolean) => void;
     currentAvatar: string;
+    conversationId: string;
 }) => {
+    const [file, setFile] = React.useState<File>({} as File);
+    const [loading, setLoading] = React.useState<boolean>(false);
+    const [imageUrl, setImageUrl] = React.useState<string>("");
     const handleClose = () => {
         setOpenChangeAvatarDialog(false);
+    };
+    const onChangeAvatar = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            setFile(files[0]);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImageUrl(reader.result as string);
+            };
+            reader.readAsDataURL(files[0]);
+        }
+    };
+    const handleSave = async () => {
+        if (file) {
+            setLoading(true);
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append(
+                "upload_preset",
+                process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME || ""
+            );
+            formData.append("public_id", file.name);
+            formData.append("folder", `conversation/${conversationId}`);
+            const imageUrl = await handleUploadFile(formData);
+            if (imageUrl) {
+                const res = await handleChangeGroupAvatar(
+                    conversationId,
+                    imageUrl
+                );
+                if (res) {
+                    setOpenChangeAvatarDialog(false);
+                    popupState.close();
+                    toast.success("Change avatar successfully");
+                }
+            }
+            setLoading(false);
+        }
     };
     return (
         <BootstrapDialog
@@ -68,9 +121,9 @@ const ChangeAvatarDialog = ({
                         <Typography variant="body1" fontWeight={600}>
                             Current avatar
                         </Typography>
-                        <Box className="w-full h-[300px] rounded-lg">
+                        <Box className="w-full h-[300px] rounded-lg bg-strock">
                             <img
-                                src={currentAvatar}
+                                src={imageUrl ? imageUrl : currentAvatar}
                                 alt="current avatar"
                                 className="object-scale-down w-full h-full rounded-lg"
                             />
@@ -80,7 +133,13 @@ const ChangeAvatarDialog = ({
                         <Typography variant="body1" fontWeight={600}>
                             Change avatar
                         </Typography>
-                        <input type="file" className="w-full" />
+                        <input
+                            type="file"
+                            className="w-full"
+                            accept="image/*"
+                            multiple={false}
+                            onChange={onChangeAvatar}
+                        />
                     </Grid>
                 </Grid>
             </DialogContent>
@@ -88,8 +147,14 @@ const ChangeAvatarDialog = ({
                 <Button onClick={handleClose} color="info">
                     Cancel
                 </Button>
-                <Button autoFocus variant="contained" color="info">
-                    Save
+                <Button
+                    autoFocus
+                    variant="contained"
+                    color="info"
+                    disabled={loading}
+                    onClick={handleSave}
+                >
+                    {loading ? <LoadingSpinner /> : "Save"}
                 </Button>
             </DialogActions>
         </BootstrapDialog>

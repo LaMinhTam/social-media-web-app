@@ -27,6 +27,7 @@ import {
     setTriggerFetchingConversation,
 } from "@/store/actions/conversationSlice";
 import { setTriggerReFetchingRelationship } from "@/store/actions/commonSlice";
+import Image from "next/image";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -156,9 +157,11 @@ const CreateGroupDialog = ({
                 <Box className="w-full h-[56px] flex items-center justify-start gap-x-2">
                     {loading && !imageUrl && <LoadingSpinner></LoadingSpinner>}
                     {!loading && imageUrl ? (
-                        <img
+                        <Image
                             src={imageUrl}
                             alt="avatar"
+                            width={32}
+                            height={32}
                             className="w-8 h-8 rounded-full"
                             onClick={handleFileInputClick}
                         />
@@ -212,8 +215,10 @@ const CreateGroupDialog = ({
                                 className="flex items-center justify-between"
                             >
                                 <Box className="flex items-center justify-start gap-x-2">
-                                    <img
+                                    <Image
                                         src={friend.image_url}
+                                        width={32}
+                                        height={32}
                                         alt="avatar"
                                         className="w-8 h-8 rounded-full"
                                     />

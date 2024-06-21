@@ -28,6 +28,7 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
             try {
                 const response =
                     await SOCIAL_MEDIA_API.USER.getCurrentUserFriends();
+                console.log("fetchRelationshipUsers ~ response:", response);
                 if (response?.status === 200) {
                     dispatch(setRelationshipUsers(response.data));
                 }

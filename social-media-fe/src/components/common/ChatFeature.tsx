@@ -9,6 +9,7 @@ import { Client } from "stompjs";
 import { useDispatch } from "react-redux";
 import { MESSAGE_TYPE } from "@/constants/global";
 import { getAccessToken } from "@/utils/auth";
+import { handleUploadFile } from "@/services/conversation.service";
 
 const ChatFeature = ({
     isActive,
@@ -38,21 +39,20 @@ const ChatFeature = ({
         const files = event.target.files ? Array.from(event.target.files) : [];
         if (!files.length) return;
         files.forEach(async (file) => {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append(
-                "upload_preset",
-                process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME || ""
-            );
-            formData.append("public_id", file.name); // Set the name of the file
-            formData.append("folder", `conversation/${conversationId}`); // Set the folder
-
-            try {
-                const response = await axios.post(
-                    `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
-                    formData
+            const size = file.size / 1024 / 1024;
+            if (size > 10) {
+                alert("File size must be less than 10MB");
+                return;
+            } else {
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append(
+                    "upload_preset",
+                    process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME || ""
                 );
-                const imageUrl = response.data.secure_url;
+                formData.append("public_id", file.name); // Set the name of the file
+                formData.append("folder", `conversation/${conversationId}`); // Set the folder
+                const imageUrl = await handleUploadFile(formData);
                 if (imageUrl) {
                     const messageType = file.type.includes("image")
                         ? MESSAGE_TYPE.IMAGE
@@ -72,8 +72,6 @@ const ChatFeature = ({
                         JSON.stringify(chatMessage)
                     );
                 }
-            } catch (error) {
-                console.error("Error uploading file:", error);
             }
         });
     };

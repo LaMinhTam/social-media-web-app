@@ -4,14 +4,11 @@ import SockJS from "sockjs-client";
 import { SOCKET_URL } from "@/constants/global";
 import SocketType from "@/types/socketType";
 import { getAccessToken } from "@/utils/auth";
-import { Member, MessageResponse } from "@/types/conversationType";
+import { MessageResponse } from "@/types/conversationType";
 import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
-import { collection, doc, getDoc } from "firebase/firestore";
-import { db } from "@/constants/firebaseConfig";
-import handleUpdateUnreadMessage from "@/utils/conversation/messages/handleUpdateUnreadMessage";
-import handleSaveUnreadMessage from "@/utils/conversation/messages/handleSaveUnreadMessage";
+import onMessageReceived from "@/utils/socket/onMessageReceived";
 
 const SocketContext = React.createContext<SocketType>({} as SocketType);
 
@@ -21,6 +18,7 @@ export function SocketProvider(
     const [messages, setMessages] = useState<MessageResponse>(
         {} as MessageResponse
     );
+    const dispatch = useDispatch();
     const showChatModal = useSelector(
         (state: RootState) => state.common.showChatModal
     );
@@ -47,49 +45,17 @@ export function SocketProvider(
 
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/message`,
-                    async (payload) => {
-                        const payloadData = JSON.parse(payload.body);
-                        const isSavedUnreadMessage =
-                            !showChatModal ||
-                            currentConversation.conversation_id !==
-                                payloadData.conversation_id;
-                        if (isSavedUnreadMessage) {
-                            console.log("unread message");
-                            const docRef = doc(
-                                collection(db, "unreadTrack"),
-                                payloadData.conversation_id
-                            );
-                            const docSnap = await getDoc(docRef);
-                            if (docSnap.exists()) {
-                                handleUpdateUnreadMessage(
-                                    payloadData.conversation_id,
-                                    decryptedData.user_id,
-                                    payloadData.message_id
-                                );
-                            } else {
-                                handleSaveUnreadMessage(
-                                    payloadData.conversation_id,
-                                    {
-                                        [decryptedData.user_id]: [
-                                            {
-                                                user_id: decryptedData.user_id,
-                                                message_id:
-                                                    payloadData.message_id,
-                                            },
-                                        ],
-                                    }
-                                );
-                            }
-                        }
-                        console.log("message run");
-                        setMessages((prev) => ({
-                            ...prev,
-                            [payloadData.message_id]: {
-                                ...payloadData,
-                            },
-                        }));
-                        console.log("message", messages);
-                        setTriggerScrollChat(!triggerScrollChat);
+                    async function (payload) {
+                        await onMessageReceived(
+                            payload,
+                            showChatModal,
+                            currentConversation,
+                            dispatch,
+                            decryptedData.user_id,
+                            setMessages,
+                            setTriggerScrollChat,
+                            triggerScrollChat
+                        );
                     }
                 );
                 client.subscribe(

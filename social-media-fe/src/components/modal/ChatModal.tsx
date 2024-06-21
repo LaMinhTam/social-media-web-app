@@ -17,9 +17,9 @@ const ChatModal = () => {
         nodeRef: activeRef,
     } = useClickOutSide();
     const [showFullInput, setShowFullInput] = React.useState(false);
-    // const [userStatus, setUserStatus] = React.useState<OnlineStatus>(
-    //     {} as OnlineStatus
-    // );
+    const [userStatus, setUserStatus] = React.useState<OnlineStatus>(
+        {} as OnlineStatus
+    );
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
     );
@@ -39,25 +39,25 @@ const ChatModal = () => {
 
     const { messages, stompClient, setMessages } = useSocket();
 
-    // useEffect(() => {
-    //     async function getStatus() {
-    //         if (anotherUser) {
-    //             const data = await handleGetUserStatus(
-    //                 anotherUser.user_id.toString()
-    //             );
-    //             if (data) {
-    //                 setUserStatus(data[anotherUser.user_id.toString()]);
-    //             }
-    //         }
-    //     }
-    //     getStatus();
-    // }, []);
+    useEffect(() => {
+        async function getStatus() {
+            if (anotherUser) {
+                const data = await handleGetUserStatus(
+                    anotherUser.user_id.toString()
+                );
+                if (data) {
+                    setUserStatus(data[anotherUser.user_id.toString()]);
+                }
+            }
+        }
+        getStatus();
+    }, []);
 
     if (!anotherUser || !currentConversation || !stompClient) return null;
     return (
         <div className="w-[382px] h-[467px] rounded-lg flex flex-col">
             <ModalChatHeader
-                // userStatus={userStatus}
+                userStatus={userStatus}
                 username={currentConversation.name}
                 dispatch={dispatch}
                 avatar={currentConversation.image}

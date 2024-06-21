@@ -13,12 +13,17 @@ import { PopupState } from "material-ui-popup-state/hooks";
 import SettingDialog from "./SettingDialog";
 import ChangeGroupNameDialog from "./ChangeGroupNameDialog";
 import ChangeAvatarDialog from "./ChangeGroupAvatarDialog";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import GroupMemberDialog from "./GroupMemberDialog";
 import AddMemberDialog from "./AddMemberDialog";
 import ConfirmActionDialog from "./ConfirmActionDialog";
 import { toast } from "react-toastify";
+import {
+    handleDisbandGroup,
+    handleLeaveGroup,
+} from "@/services/conversation.service";
+import { setShowChatModal } from "@/store/actions/commonSlice";
 
 const GroupSetting = ({
     popupState,
@@ -27,6 +32,10 @@ const GroupSetting = ({
     popupState: PopupState;
     isAdmin: boolean;
 }) => {
+    const dispatch = useDispatch();
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
     );
@@ -44,6 +53,33 @@ const GroupSetting = ({
         React.useState(false);
     const [openDisbandGroupConfirm, setOpenDisbandGroupConfirm] =
         React.useState(false);
+    const onDisbandGroup = async () => {
+        const response = await handleDisbandGroup(
+            currentConversation.conversation_id
+        );
+        if (response) {
+            toast.success("Disband group successfully");
+            dispatch(setShowChatModal(false));
+            popupState.close();
+        }
+    };
+    const onLeaveGroup = async () => {
+        if (currentUserProfile.user_id === currentConversation.owner_id) {
+            toast.error(
+                "You must transfer the ownership to another member before leaving the group"
+            );
+            return;
+        } else {
+            const response = await handleLeaveGroup(
+                currentConversation.conversation_id
+            );
+            if (response) {
+                toast.success("You are leaving the group");
+                dispatch(setShowChatModal(false));
+                popupState.close();
+            }
+        }
+    };
 
     return (
         <>
@@ -199,6 +235,7 @@ const GroupSetting = ({
             )}
             {openChangeGroupNameDialog && (
                 <ChangeGroupNameDialog
+                    popupState={popupState}
                     conversationId={currentConversation.conversation_id}
                     currentGroupName={currentConversation?.name || ""}
                     openChangeGroupNameDialog={openChangeGroupNameDialog}
@@ -207,6 +244,8 @@ const GroupSetting = ({
             )}
             {openChangeAvatarDialog && (
                 <ChangeAvatarDialog
+                    popupState={popupState}
+                    conversationId={currentConversation.conversation_id}
                     openChangeAvatarDialog={openChangeAvatarDialog}
                     setOpenChangeAvatarDialog={setOpenChangeAvatarDialog}
                     currentAvatar={currentConversation?.image || ""}
@@ -214,12 +253,15 @@ const GroupSetting = ({
             )}
             {openGroupMemberDialog && (
                 <GroupMemberDialog
+                    currentUserId={currentUserProfile.user_id}
+                    currentConversation={currentConversation}
                     openGroupMemberDialog={openGroupMemberDialog}
                     setOpenGroupMemberDialog={setOpenGroupMemberDialog}
                 ></GroupMemberDialog>
             )}
             {openAddMemberDialog && (
                 <AddMemberDialog
+                    currentConversation={currentConversation}
                     openAddMemberDialog={openAddMemberDialog}
                     setOpenAddMemberDialog={setOpenAddMemberDialog}
                 ></AddMemberDialog>
@@ -232,6 +274,7 @@ const GroupSetting = ({
                     title="Leave group"
                     content="Are you sure you want to leave this group?"
                     buttonContent="Leave"
+                    onClick={onLeaveGroup}
                 ></ConfirmActionDialog>
             )}
             {openDisbandGroupConfirm && (
@@ -241,6 +284,7 @@ const GroupSetting = ({
                     title="Disband group"
                     content="Are you sure you want to disband this group?"
                     buttonContent="Disband"
+                    onClick={onDisbandGroup}
                 ></ConfirmActionDialog>
             )}
         </>

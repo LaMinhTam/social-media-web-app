@@ -119,7 +119,7 @@ const ModalChatContent = ({
                                     }
                                 />
                             ) : (
-                                <div className="text-sm text-center text-secondary">
+                                <div className="my-2 text-sm text-center text-text8">
                                     {handleFormatNotificationMessage(
                                         message,
                                         currentUserId
