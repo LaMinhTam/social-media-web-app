@@ -1,5 +1,6 @@
 import axios from "@/apis/axios";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import { GroupSettings } from "@/types/conversationType";
 export const handleCreateConversation = async (
     type: string,
     members: number[],
@@ -191,7 +192,6 @@ export const handleKickMember = async (id: string, userId: number) => {
             id,
             userId
         );
-        console.log("handleKickMember ~ response:", response);
         if (response?.status === 200) {
             return response.data;
         }
@@ -214,7 +214,63 @@ export const handleDisbandGroup = async (id: string) => {
 export const handleLeaveGroup = async (id: string) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.leaveGroup(id);
-        console.log("handleLeaveGroup ~ response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleGrantDeputy = async (id: string, userId: number) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.grantDeputy(
+            id,
+            userId
+        );
+        console.log("handleGrantDeputy ~ response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleRevokeDeputy = async (id: string, userId: number) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.revokeDeputy(
+            id,
+            userId
+        );
+        console.log("handleRevokeDeputy ~ response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleFindGroupByLink = async (link: string) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.findConversationByLink(link);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleUpdateGroupSettings = async (id: string, settings: any) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.updateGroupSetting(
+            id,
+            settings
+        );
+        console.log("response:", response);
         if (response?.status === 200) {
             return response.data;
         }

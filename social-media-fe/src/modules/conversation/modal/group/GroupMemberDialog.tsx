@@ -18,6 +18,8 @@ import Image from "next/image";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupMemberAction from "./GroupMemberAction";
 import { v4 as uuidv4 } from "uuid";
+import MemberTab from "./MemberTab";
+import AdminTab from "./AdminTab";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -52,6 +54,10 @@ const GroupMemberDialog = ({
 
     const handleClose = () => {
         setOpenGroupMemberDialog(false);
+    };
+
+    const isConversationDeputy = (id: number) => {
+        return currentConversation.deputies.some((deputy) => deputy === id);
     };
 
     return (
@@ -97,166 +103,20 @@ const GroupMemberDialog = ({
                         </Tabs>
                     </Box>
                     {value === 0 && (
-                        <Box sx={{ p: 3 }}>
-                            {listMembers.map((member) => (
-                                <Box
-                                    key={uuidv4()}
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 2,
-                                        my: 2,
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: "50%",
-                                        }}
-                                    >
-                                        <Image
-                                            src={member.image_url}
-                                            alt=""
-                                            width={40}
-                                            height={40}
-                                            className="object-cover w-full h-full rounded-full"
-                                        />
-                                    </Box>
-                                    <Box>
-                                        <Typography className="font-bold">
-                                            {member.name}
-                                        </Typography>
-                                        <Typography className="text-sm text-gray-500">
-                                            Added by Admin
-                                        </Typography>
-                                    </Box>
-                                    <PopupState
-                                        variant="popover"
-                                        popupId="group-popup-popover"
-                                    >
-                                        {(popupState) => (
-                                            <div className="ml-auto">
-                                                <IconButton
-                                                    size="small"
-                                                    color="inherit"
-                                                    {...bindTrigger(popupState)}
-                                                >
-                                                    <MoreHorizIcon />
-                                                </IconButton>
-                                                <Popover
-                                                    {...bindPopover(popupState)}
-                                                    anchorOrigin={{
-                                                        vertical: "bottom",
-                                                        horizontal: "left",
-                                                    }}
-                                                    transformOrigin={{
-                                                        vertical: "top",
-                                                        horizontal: "right",
-                                                    }}
-                                                >
-                                                    <GroupMemberAction
-                                                        userRole={
-                                                            currentConversation.owner_id ===
-                                                            currentUserId
-                                                                ? "ADMIN"
-                                                                : "MEMBER"
-                                                        }
-                                                        targetUserRole="MEMBER"
-                                                        userId={member.user_id}
-                                                        conversationId={
-                                                            currentConversation.conversation_id
-                                                        }
-                                                        popupState={popupState}
-                                                    ></GroupMemberAction>
-                                                </Popover>
-                                            </div>
-                                        )}
-                                    </PopupState>
-                                </Box>
-                            ))}
-                        </Box>
+                        <MemberTab
+                            listMembers={listMembers}
+                            currentConversation={currentConversation}
+                            isConversationDeputy={isConversationDeputy}
+                            currentUserId={currentUserId}
+                        ></MemberTab>
                     )}
                     {value === 1 && (
-                        <Box sx={{ p: 3 }}>
-                            {listAdmins.map((member) => (
-                                <Box
-                                    key={uuidv4()}
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 2,
-                                        my: 2,
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: "50%",
-                                        }}
-                                    >
-                                        <Image
-                                            src={member.image_url}
-                                            alt=""
-                                            width={40}
-                                            height={40}
-                                            className="object-cover w-full h-full rounded-full"
-                                        />
-                                    </Box>
-                                    <Box>
-                                        <Typography className="font-bold">
-                                            {member.name}
-                                        </Typography>
-                                        <Typography className="text-sm text-gray-500">
-                                            Admin
-                                        </Typography>
-                                    </Box>
-                                    <PopupState
-                                        variant="popover"
-                                        popupId="group-popup-popover"
-                                    >
-                                        {(popupState) => (
-                                            <div className="ml-auto">
-                                                <IconButton
-                                                    size="small"
-                                                    color="inherit"
-                                                    {...bindTrigger(popupState)}
-                                                >
-                                                    <MoreHorizIcon />
-                                                </IconButton>
-                                                <Popover
-                                                    {...bindPopover(popupState)}
-                                                    anchorOrigin={{
-                                                        vertical: "bottom",
-                                                        horizontal: "left",
-                                                    }}
-                                                    transformOrigin={{
-                                                        vertical: "top",
-                                                        horizontal: "right",
-                                                    }}
-                                                >
-                                                    <GroupMemberAction
-                                                        userRole={
-                                                            currentConversation.owner_id ===
-                                                            currentUserId
-                                                                ? "ADMIN"
-                                                                : "MEMBER"
-                                                        }
-                                                        targetUserRole="MEMBER"
-                                                        userId={member.user_id}
-                                                        conversationId={
-                                                            currentConversation.conversation_id
-                                                        }
-                                                        popupState={popupState}
-                                                    ></GroupMemberAction>
-                                                </Popover>
-                                            </div>
-                                        )}
-                                    </PopupState>
-                                </Box>
-                            ))}
-                        </Box>
+                        <AdminTab
+                            listAdmins={listAdmins}
+                            currentConversation={currentConversation}
+                            isConversationDeputy={isConversationDeputy}
+                            currentUserId={currentUserId}
+                        ></AdminTab>
                     )}
                 </Box>
             </DialogContent>

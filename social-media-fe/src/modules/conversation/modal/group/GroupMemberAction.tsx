@@ -1,4 +1,8 @@
-import { handleKickMember } from "@/services/conversation.service";
+import {
+    handleGrantDeputy,
+    handleKickMember,
+    handleRevokeDeputy,
+} from "@/services/conversation.service";
 import { Button, Grid } from "@mui/material";
 import { PopupState } from "material-ui-popup-state/hooks";
 import React from "react";
@@ -28,11 +32,19 @@ const GroupMemberAction = ({
     };
 
     const onGrantDeputy = async () => {
-        // const response = await handle
+        const response = await handleGrantDeputy(conversationId, userId);
+        if (response) {
+            console.log("Deputy granted successfully");
+            popupState.close();
+        }
     };
 
-    const onRemoveDeputy = () => {
-        console.log("Remove deputy");
+    const onRemoveDeputy = async () => {
+        const response = await handleRevokeDeputy(conversationId, userId);
+        if (response) {
+            console.log("Deputy removed successfully");
+            popupState.close();
+        }
     };
 
     const onViewProfile = () => {

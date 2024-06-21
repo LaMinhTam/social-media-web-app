@@ -8,7 +8,7 @@ export interface Member {
 }
 
 export interface GroupSettings {
-    link_to_join_group: boolean;
+    link_to_join_group?: string;
     confirm_new_member: boolean;
     join_by_link: boolean;
     allow_deputy_send_messages: boolean;
@@ -33,6 +33,7 @@ export type ConversationResponse = {
     type: string;
     owner_id?: number;
     settings: GroupSettings;
+    deputies: number[];
 };
 
 export type ReactionResponse = {

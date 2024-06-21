@@ -48,6 +48,7 @@ export function SocketProvider(
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/message`,
                     async function (payload) {
+                        console.log("message", JSON.parse(payload.body));
                         await onMessageReceived(
                             payload,
                             showChatModal,
@@ -131,7 +132,11 @@ export function SocketProvider(
         // Clean up
         return () => {
             if (client && client.connected) {
-                client.disconnect(() => {});
+                client.disconnect(() => {
+                    console.log(
+                        "Disconnected from the socket due to unmounting"
+                    );
+                });
             }
         };
     }, [currentConversation, triggerScrollChat]);

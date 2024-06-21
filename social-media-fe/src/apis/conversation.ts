@@ -4,6 +4,7 @@ import apiRoutes from ".";
 import { OnlineResponse } from "@/types/commonType";
 import {
     ConversationResponse,
+    GroupSettings,
     MessageResponse,
     ReactionResponse,
 } from "@/types/conversationType";
@@ -101,9 +102,12 @@ const revokeDeputy = async (id: string, userId: number) => {
     return response;
 };
 
-const updateGroupSetting = async (id: string) => {
+const updateGroupSetting = async (id: string, settings: any) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
-        apiRoutes.conversation.updateGroupSetting(id)
+        apiRoutes.conversation.updateGroupSetting(id),
+        {
+            ...settings,
+        }
     );
     return response;
 };

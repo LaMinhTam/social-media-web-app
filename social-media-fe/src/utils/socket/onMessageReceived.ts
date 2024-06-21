@@ -110,6 +110,35 @@ export default async function onMessageReceived(
                 break;
             }
 
+            case NOTIFICATION_TYPE.GRANT_DEPUTY: {
+                const newDeputies = [
+                    ...currentConversation.deputies,
+                    payloadData.target_user_id[0].user_id,
+                ];
+
+                const newCurrentConversation = {
+                    ...currentConversation,
+                    deputies: newDeputies,
+                };
+
+                dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
+            case NOTIFICATION_TYPE.REVOKE_DEPUTY: {
+                const newDeputies = currentConversation.deputies.filter(
+                    (deputy) => deputy !== payloadData.target_user_id[0].user_id
+                );
+
+                const newCurrentConversation = {
+                    ...currentConversation,
+                    deputies: newDeputies,
+                };
+
+                dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
             default:
                 break;
         }

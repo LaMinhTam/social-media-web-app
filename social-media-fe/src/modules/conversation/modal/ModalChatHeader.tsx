@@ -19,12 +19,14 @@ const ModalChatHeader = ({
     userStatus,
     avatar,
     isAdmin,
+    isGroup,
 }: {
     username: string;
     dispatch: Dispatch<any>;
     userStatus: OnlineStatus;
     avatar: string;
     isAdmin: boolean;
+    isGroup: boolean;
 }) => {
     return (
         <div className="z-50 flex-shrink-0 p-2 shadow-md">
@@ -65,7 +67,6 @@ const ModalChatHeader = ({
                                             : userStatus?.timestamp !== 0
                                             ? `Hoạt động ${userStatus?.timestamp} phút trước`
                                             : "Vừa truy cập"}
-                                        Vừa truy cập
                                     </Typography>
                                 </div>
                             </div>
@@ -80,10 +81,12 @@ const ModalChatHeader = ({
                                     horizontal: "right",
                                 }}
                             >
-                                <GroupSetting
-                                    isAdmin={isAdmin}
-                                    popupState={popupState}
-                                ></GroupSetting>
+                                {isGroup && (
+                                    <GroupSetting
+                                        isAdmin={isAdmin}
+                                        popupState={popupState}
+                                    ></GroupSetting>
+                                )}
                             </Popover>
                         </div>
                     )}

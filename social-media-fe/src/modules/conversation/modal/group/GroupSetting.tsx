@@ -1,4 +1,11 @@
-import { Button, Popover, Stack, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    IconButton,
+    Popover,
+    Stack,
+    Typography,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import PhotoIcon from "@mui/icons-material/Photo";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -18,6 +25,7 @@ import { RootState } from "@/store/configureStore";
 import GroupMemberDialog from "./GroupMemberDialog";
 import AddMemberDialog from "./AddMemberDialog";
 import ConfirmActionDialog from "./ConfirmActionDialog";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { toast } from "react-toastify";
 import {
     handleDisbandGroup,
@@ -33,6 +41,8 @@ import {
     where,
 } from "firebase/firestore";
 import { db } from "@/constants/firebaseConfig";
+import CopyToClipboard from "react-copy-to-clipboard";
+import JoinGroupLinkDialog from "./JoinGroupLinkDialog";
 
 const GroupSetting = ({
     popupState,
@@ -61,6 +71,8 @@ const GroupSetting = ({
     const [openLeaveGroupConfirm, setOpenLeaveGroupConfirm] =
         React.useState(false);
     const [openDisbandGroupConfirm, setOpenDisbandGroupConfirm] =
+        React.useState(false);
+    const [openJoinGroupLinkDialog, setOpenJoinGroupLinkDialog] =
         React.useState(false);
     const onDisbandGroup = async () => {
         const response = await handleDisbandGroup(
@@ -211,6 +223,7 @@ const GroupSetting = ({
                         color="inherit"
                         fullWidth
                         className="flex items-center justify-start normal-case gap-x-1"
+                        onClick={() => setOpenJoinGroupLinkDialog(true)}
                     >
                         <NotificationsIcon />
                         <Typography>Mute Notification</Typography>
@@ -250,9 +263,42 @@ const GroupSetting = ({
                     )}
                 </Stack>
                 <hr className="my-2" />
+                <Stack>
+                    <Box sx={{ width: "100%", py: 2 }}>
+                        <Typography className="mb-2 font-bold">
+                            Link join group
+                        </Typography>
+                        <div className="flex items-center justify-between bg-secondary bg-opacity-10 px-3 h-[40px] rounded text-secondary">
+                            <span>
+                                {
+                                    currentConversation.settings
+                                        .link_to_join_group
+                                }
+                            </span>
+                            <CopyToClipboard
+                                text={
+                                    `${window.location.origin}/join-group/` +
+                                    currentConversation.settings
+                                        .link_to_join_group
+                                }
+                                onCopy={() => toast.success("Đã sao chép")}
+                            >
+                                <IconButton
+                                    size="small"
+                                    color="inherit"
+                                    aria-label="copy"
+                                >
+                                    <ContentCopyIcon />
+                                </IconButton>
+                            </CopyToClipboard>
+                        </div>
+                    </Box>
+                </Stack>
             </div>
             {openSettingDialog && (
                 <SettingDialog
+                    popupState={popupState}
+                    conversationId={currentConversation.conversation_id}
                     openSettingDialog={openSettingDialog}
                     setOpenSettingDialog={setOpenSettingDialog}
                     settings={settings}
@@ -311,6 +357,12 @@ const GroupSetting = ({
                     buttonContent="Disband"
                     onClick={onDisbandGroup}
                 ></ConfirmActionDialog>
+            )}
+            {openJoinGroupLinkDialog && (
+                <JoinGroupLinkDialog
+                    openJoinGroupLinkDialog={openJoinGroupLinkDialog}
+                    setOpenJoinGroupLinkDialog={setOpenJoinGroupLinkDialog}
+                ></JoinGroupLinkDialog>
             )}
         </>
     );
