@@ -40,11 +40,11 @@ public class Interceptor implements ChannelInterceptor {
                 thread.start();
             }
             if(StompCommand.SUBSCRIBE.equals(command)){
-//                String userIdFromJwt = extractUserIdAndSetInHeader(headerAccessor);
-//                String subscribeUserId = msg.getHeaders().get("simpDestination").toString().split("/")[2];
-//                if(!userIdFromJwt.equals(subscribeUserId)){
-//                    throw new RuntimeException("Unauthorized");
-//                }
+                String userIdFromJwt = extractUserIdAndSetInHeader(headerAccessor);
+                String subscribeUserId = msg.getHeaders().get("simpDestination").toString().split("/")[2];
+                if(!userIdFromJwt.equals(subscribeUserId)){
+                    throw new RuntimeException("Unauthorized");
+                }
             }
             if (StompCommand.SEND.equals(command)) {
 //            return MessageBuilder.createMessage(msg.getPayload(), headerAccessor.getMessageHeaders());
