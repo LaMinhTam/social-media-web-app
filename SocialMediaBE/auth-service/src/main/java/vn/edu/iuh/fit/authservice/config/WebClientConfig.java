@@ -21,4 +21,12 @@ public class WebClientConfig {
                 .filter(filterFunction)
                 .build();
     }
+
+    @Bean
+    public WebClient userWallWebClient() {
+        return WebClient.builder()
+                .baseUrl("http://post-service")
+                .filter(filterFunction)
+                .build();
+    }
 }

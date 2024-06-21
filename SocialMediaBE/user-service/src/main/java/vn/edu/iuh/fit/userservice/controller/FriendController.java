@@ -26,7 +26,7 @@ public class FriendController {
     }
 
     @GetMapping("/friend")
-    public List<UserModel> getFriends(@RequestHeader("sub") Long userId) throws Exception {
+    public List<UserModel> getFriends(@RequestHeader("sub") Long userId) {
         return friendService.getFriend(userId);
     }
 

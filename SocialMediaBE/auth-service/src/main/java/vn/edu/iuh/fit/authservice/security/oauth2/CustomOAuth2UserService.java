@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import vn.edu.iuh.fit.authservice.client.UserClient;
+import vn.edu.iuh.fit.authservice.client.UserWallClient;
 import vn.edu.iuh.fit.authservice.dto.RequestCreateUser;
 import vn.edu.iuh.fit.authservice.exception.OAuth2AuthenticationProcessingException;
 import vn.edu.iuh.fit.authservice.model.AuthProvider;
@@ -28,6 +29,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private UserRepository userRepository;
     @Autowired
     private UserClient userClient;
+    @Autowired
+    private UserWallClient userWallClient;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
@@ -65,9 +68,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     user.getId(),
                     oAuth2UserInfo.getName(),
                     oAuth2UserInfo.getEmail(),
-                    oAuth2UserInfo.getImageUrl()
+                    oAuth2UserInfo.getImageUrl(),
+                    "https://source.unsplash.com/random"
             );
             userClient.createUser(requestCreateUser);
+            userWallClient.createUser(user.getId());
         }
 
         return UserPrincipal.create(user, oAuth2User.getAttributes());

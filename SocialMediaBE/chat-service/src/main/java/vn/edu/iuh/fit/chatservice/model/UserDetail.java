@@ -9,7 +9,8 @@ public record UserDetail(
         Long user_id,
         String name,
         String email,
-        String image_url
+        String image_url,
+        String cover
 ) {
     public static List<UserDetail> getUserDetailsFromMap(Message message, Map<Long, UserDetail> userDetailMap) {
         return message.getTargetUserId() == null ? null : message.getTargetUserId().stream()

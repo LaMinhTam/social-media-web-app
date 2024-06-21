@@ -6,7 +6,7 @@ import vn.edu.iuh.fit.userservice.model.UserModel;
 import java.util.List;
 
 public interface UserService {
-    public User createUser(Long id, String name, String email, String imageUrl);
+    public User createUser(Long id, String name, String email, String imageUrl, String cover);
 
     UserModel getUserById(Long userId);
 
