@@ -22,4 +22,6 @@ public interface UserSessionService {
     void onlineNotification(String userId);
 
     void offlineNotification(String userId);
+
+    String getUserIdBySessionId(String sessionId);
 }

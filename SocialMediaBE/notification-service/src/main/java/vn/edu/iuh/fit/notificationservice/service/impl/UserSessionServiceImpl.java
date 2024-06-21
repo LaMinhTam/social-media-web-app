@@ -109,4 +109,10 @@ public class UserSessionServiceImpl implements UserSessionService {
         userClient.getFriendUserIds(Long.parseLong(userId)).forEach(userDetail ->
                 simpMessagingTemplate.convertAndSendToUser(userDetail.user_id().toString(), "/friend-status", new UserStatus(userId, OnlineStatus.OFFLINE, System.currentTimeMillis())));
     }
+
+    @Override
+    public String getUserIdBySessionId(String sessionId) {
+        UserStatus userStatus = (UserStatus) redisTemplate.opsForValue().get(sessionId);
+        return userStatus.userId();
+    }
 }
