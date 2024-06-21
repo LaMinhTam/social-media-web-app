@@ -31,4 +31,14 @@ public class UserClient {
     public Map<Long, UserDetail> getUsersByIdsMap(List<Long> ids) {
         return getUsersByIds(ids).stream().collect(Collectors.toMap(UserDetail::user_id, Function.identity()));
     }
+
+    public List<UserDetail> getFriendUserIds(Long userId) {
+        return webClient.get()
+                .uri("/friends/friend")
+                .header("sub", String.valueOf(userId))
+                .retrieve()
+                .bodyToFlux(UserDetail.class)
+                .collectList()
+                .block();
+    }
 }

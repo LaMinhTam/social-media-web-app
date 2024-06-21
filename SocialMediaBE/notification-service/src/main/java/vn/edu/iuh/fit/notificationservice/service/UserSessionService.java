@@ -19,4 +19,7 @@ public interface UserSessionService {
 
     Map<Long, UserStatus> getUserStatuses(List<String> sessionIds);
 
+    void onlineNotification(String userId);
+
+    void offlineNotification(String userId);
 }
