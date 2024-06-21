@@ -16,6 +16,7 @@ import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
 import vn.edu.iuh.fit.chatservice.entity.message.NotificationType;
 import vn.edu.iuh.fit.chatservice.exception.AppException;
+import vn.edu.iuh.fit.chatservice.message.MessageNotificationProducer;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
 import vn.edu.iuh.fit.chatservice.repository.MessageRepository;
@@ -29,13 +30,13 @@ public class ConversationServiceImpl implements ConversationService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserClient userClient;
-    private final NotificationClient notificationClient;
+    private final MessageNotificationProducer messageNotificationProducer;
 
-    public ConversationServiceImpl(ConversationRepository conversationRepository, MessageRepository messageRepository, UserClient userClient, NotificationClient notificationClient) {
+    public ConversationServiceImpl(ConversationRepository conversationRepository, MessageRepository messageRepository, UserClient userClient, MessageNotificationProducer messageNotificationProducer) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.userClient = userClient;
-        this.notificationClient = notificationClient;
+        this.messageNotificationProducer = messageNotificationProducer;
     }
 
     public String createPrivateConversation(List<Long> members) {
@@ -70,7 +71,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .build();
         Conversation savedConversation = conversationRepository.save(conversation);
         ConversationDTO conversationDTO = createConversationDTO(savedConversation, members);
-        notificationClient.notifyConversation(conversationDTO);
+        messageNotificationProducer.notifyConversation(conversationDTO);
         return savedConversation.getId().toHexString();
     }
 
@@ -155,7 +156,7 @@ public class ConversationServiceImpl implements ConversationService {
                     .build();
             messageRepository.save(message);
 
-            notificationClient.notifyConversationMembers(conversation, message, "message");
+            messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         }
         return conversationRepository.save(conversation);
     }
@@ -186,7 +187,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.ADD_MEMBER)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
 
         return saveAndReturnDTO(conversation);
     }
@@ -211,7 +212,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .build();
         Conversation savedConversation = conversationRepository.save(conversation);
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return createConversationDTO(savedConversation, conversation.getMembers());
     }
 
@@ -240,7 +241,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.LEAVE_GROUP)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return conversationRepository.save(conversation);
     }
 
@@ -264,7 +265,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.CHANGE_GROUP_NAME)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return conversationRepository.save(conversation);
     }
 
@@ -287,7 +288,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.CHANGE_GROUP_AVATAR)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return conversationRepository.save(conversation);
     }
 
@@ -308,7 +309,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.CHANGE_GROUP_OWNER)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return conversationRepository.save(conversation);
     }
 
@@ -342,7 +343,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .build();
         Conversation copyOfConversation = new Conversation(conversation);
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(copyOfConversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(copyOfConversation, message, "message");
         conversation.getMembers().remove(memberId);
         if (conversation.getDeputies() != null) {
             conversation.getDeputies().remove(memberId);
@@ -378,7 +379,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.GRANT_DEPUTY)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return saveAndReturnDTO(conversation);
     }
 
@@ -404,7 +405,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .notificationType(NotificationType.REVOKE_DEPUTY)
                 .build();
         messageRepository.save(message);
-        notificationClient.notifyConversationMembers(conversation, message, "message");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return saveAndReturnDTO(conversation);
     }
 
@@ -438,7 +439,7 @@ public class ConversationServiceImpl implements ConversationService {
         List<Message> notificationMessages = generateSettingsChangeMessages(conversationId, adminId, oldSettings, newSettings);
         notificationMessages.forEach(message -> {
             messageRepository.save(message);
-            notificationClient.notifyConversationMembers(conversation, message, "message");
+            messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         });
 
         conversationRepository.save(conversation);

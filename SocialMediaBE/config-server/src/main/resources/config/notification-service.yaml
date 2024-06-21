@@ -18,6 +18,11 @@ spring:
       port: 6379
       timeout: 60000
       password: 123456
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: 123456
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 

@@ -1,35 +1,38 @@
-package vn.edu.iuh.fit.notificationservice.controller;
+package vn.edu.iuh.fit.notificationservice.message;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import vn.edu.iuh.fit.notificationservice.client.UserClient;
 import vn.edu.iuh.fit.notificationservice.dto.*;
 
 import java.util.*;
 
-@RestController
-@RequestMapping("/notifications")
-public class NotificationController {
+@Service
+public class MessageNotificationConsumer {
     private final SimpMessagingTemplate simpMessagingTemplate;
-    Logger loggerFactory = LoggerFactory.getLogger(NotificationController.class);
     private final UserClient userClient;
 
-    public NotificationController(SimpMessagingTemplate simpMessagingTemplate, UserClient userClient) {
+    public MessageNotificationConsumer(SimpMessagingTemplate simpMessagingTemplate, UserClient userClient) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.userClient = userClient;
     }
 
-    @PostMapping("/notify/{destination}")
-    public void notifyMessage(@PathVariable String destination, @RequestBody MessageNotificationRequest request) {
-        Set<Long> userIds = populateUserIds(request);
-        List<Long> notifyMembers = prepareNotifyMembers(request);
+    @RabbitListener(queues = "message-notification-queue")
+    public void notifyMessage(MessageNotificationPayload request) {
+        Set<Long> userIds = populateUserIds(request.message(), request.conversation());
+        List<Long> notifyMembers = prepareNotifyMembers(request.message(), request.conversation());
 
-        sendMessageToMembers(request, userIds, notifyMembers, destination);
+        sendMessageToMembers(request, userIds, notifyMembers, request.destination());
     }
 
-    private void sendMessageToMembers(MessageNotificationRequest request, Set<Long> userIds, List<Long> notifyMembers, String destination) {
+    private void sendMessageToMembers(MessageNotificationPayload request, Set<Long> userIds, List<Long> notifyMembers, String destination) {
         Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
         UserDetail senderUserDetail = userDetails.get(request.message().senderId());
         List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromMap(request.message(), userDetails);
@@ -45,33 +48,33 @@ public class NotificationController {
         }
     }
 
-    private static Set<Long> populateUserIds(MessageNotificationRequest request) {
+    private static Set<Long> populateUserIds(Message message, Conversation conversation) {
         Set<Long> userIds = new HashSet<>();
-        userIds.add(request.message().senderId());
-        if (request.message().targetUserId() != null) {
-            userIds.addAll(request.message().targetUserId());
+        userIds.add(message.senderId());
+        if (message.targetUserId() != null) {
+            userIds.addAll(message.targetUserId());
         }
-        if (request.conversation().getReadBy() != null) {
-            userIds.addAll(request.conversation().getReadBy().keySet());
+        if (conversation.getReadBy() != null) {
+            userIds.addAll(conversation.getReadBy().keySet());
         }
-        if (request.message().reactions() != null) {
-            request.message().reactions().values().forEach(userIds::addAll);
+        if (message.reactions() != null) {
+            message.reactions().values().forEach(userIds::addAll);
         }
         return userIds;
     }
 
-    private static List<Long> prepareNotifyMembers(MessageNotificationRequest request) {
-        List<Long> notifyMembers = request.conversation().getMembers();
-        if (request.message().deletedBy() != null) {
-            notifyMembers.removeAll(request.message().deletedBy());
+    private static List<Long> prepareNotifyMembers(Message message, Conversation conversation) {
+        List<Long> notifyMembers = conversation.getMembers();
+        if (message.deletedBy() != null) {
+            notifyMembers.removeAll(message.deletedBy());
         }
         return notifyMembers;
     }
 
-    @PostMapping("/notify/revoke-reply")
-    public void notifyRevokeReplyMessage(@RequestBody MessageNotificationRequest request) {
-        Set<Long> userIds = populateUserIds(request);
-        List<Long> notifyMembers = prepareNotifyMembers(request);
+    @RabbitListener(queues = "revoke-reply-notification-queue")
+    public void notifyRevokeReplyMessage(MessageNotificationRequest request) {
+        Set<Long> userIds = populateUserIds(request.message(), request.conversation());
+        List<Long> notifyMembers = prepareNotifyMembers(request.message(), request.conversation());
 
         Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
         UserDetail senderUserDetail = userDetails.get(request.message().senderId());
@@ -90,21 +93,19 @@ public class NotificationController {
         }
     }
 
-    @PostMapping("/notify/conversation")
-    public void notifyConversation(@RequestBody ConversationDTO conversationDTO) {
-        List<Long> members = conversationDTO.members().stream()
-                .map(UserDetail::user_id)
-                .toList();
+    @RabbitListener(queues = "conversation-notification-queue")
+    public void notifyConversation(ConversationDTO conversationDTO) {
+        List<Long> members = conversationDTO.members().keySet().stream().toList();
         for (Long id : members) {
             simpMessagingTemplate.convertAndSendToUser(id.toString(), "/conversation", conversationDTO);
         }
     }
 
-    @PostMapping("/notify/read")
-    public void notifyRead(@RequestHeader("sub") Long newReadUser, @RequestBody MessageNotificationRequest request) {
-        List<Long> notifyMembers = prepareNotifyMembers(request);
+    @RabbitListener(queues = "read-message-notification-queue")
+    public void notifyRead(ReadMessageNotificationPayload request) {
+        List<Long> notifyMembers = prepareNotifyMembers(request.message(), request.conversation());
 
-        List<UserDetail> userDetails = userClient.getUsersByIds(List.of(newReadUser));
+        List<UserDetail> userDetails = userClient.getUsersByIds(List.of(request.id()));
 
         for (Long memberId : notifyMembers) {
             simpMessagingTemplate.convertAndSendToUser(
