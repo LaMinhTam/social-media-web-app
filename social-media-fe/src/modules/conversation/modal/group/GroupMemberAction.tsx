@@ -18,7 +18,6 @@ const GroupMemberAction = ({
 }) => {
     const onRemoveMember = async () => {
         const response = await handleKickMember(conversationId, userId);
-        console.log("onRemoveMember ~ response:", response);
         if (response) {
             console.log("Member removed successfully");
             popupState.close();

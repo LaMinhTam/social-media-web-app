@@ -22,11 +22,7 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "@/apis/axios";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { handleCreateConversation } from "@/services/conversation.service";
-import {
-    setListConversation,
-    setTriggerFetchingConversation,
-} from "@/store/actions/conversationSlice";
-import { setTriggerReFetchingRelationship } from "@/store/actions/commonSlice";
+import { setTriggerFetchingConversation } from "@/store/actions/conversationSlice";
 import Image from "next/image";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -52,7 +48,6 @@ const CreateGroupDialog = ({
     const [checkedValues, setCheckedValues] = useState<{
         [key: string]: boolean;
     }>({});
-    console.log("checkedValues:", checkedValues);
     const [loading, setLoading] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const handleFileInputClick = () => {

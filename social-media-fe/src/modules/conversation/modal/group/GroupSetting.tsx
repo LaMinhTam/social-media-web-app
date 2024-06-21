@@ -24,6 +24,15 @@ import {
     handleLeaveGroup,
 } from "@/services/conversation.service";
 import { setShowChatModal } from "@/store/actions/commonSlice";
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    query,
+    where,
+} from "firebase/firestore";
+import { db } from "@/constants/firebaseConfig";
 
 const GroupSetting = ({
     popupState,
@@ -58,6 +67,22 @@ const GroupSetting = ({
             currentConversation.conversation_id
         );
         if (response) {
+            // find the document in unread message and delete it in firestore
+            const unreadTrackRef = collection(db, "unreadTrack");
+            const q = query(
+                unreadTrackRef,
+                where(
+                    "conversation_id",
+                    "==",
+                    currentConversation.conversation_id
+                )
+            );
+            const snapshot = await getDocs(q);
+
+            if (!snapshot.empty) {
+                deleteDoc(doc(db, "unreadTrack", snapshot.docs[0].id));
+            }
+
             toast.success("Disband group successfully");
             dispatch(setShowChatModal(false));
             popupState.close();

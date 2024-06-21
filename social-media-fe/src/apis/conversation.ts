@@ -38,7 +38,7 @@ const getConversationDetail = async (id: string) => {
     return response;
 };
 
-const addMember = async (id: string, userId: number) => {
+const addMember = async (id: string, userId: string) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.addMember(id, userId)
     );

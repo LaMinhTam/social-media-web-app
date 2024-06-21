@@ -20,8 +20,8 @@ const conversation = {
     create: "/conversations/create",
     list: "/conversations/list",
     detail: (id: string) => `/conversations/detail/${id}`,
-    addMember: (id: string, userId: number) =>
-        `/conversations/${id}/add-member?member-id=${userId}`,
+    addMember: (id: string, userId: string) =>
+        `/conversations/${id}/add-member?members=${userId}`,
     kickMember: (id: string, userId: number) =>
         `/conversations/${id}/kick?member-id=${userId}`,
     leaveGroup: (id: string) => `/conversations/${id}/leave`,

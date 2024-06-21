@@ -171,7 +171,7 @@ export const handleChangeGroupAvatar = async (id: string, imageUrl: string) => {
     }
 };
 
-export const handleAddMember = async (id: string, userId: number) => {
+export const handleAddMember = async (id: string, userId: string) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.addMember(
             id,

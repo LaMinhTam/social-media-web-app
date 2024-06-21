@@ -53,7 +53,9 @@ const ChatModal = () => {
         getStatus();
     }, []);
 
-    if (!anotherUser || !currentConversation || !stompClient) return null;
+    if (!currentConversation || !stompClient) {
+        return null;
+    }
     return (
         <div className="w-[382px] h-[467px] rounded-lg flex flex-col">
             <ModalChatHeader

@@ -91,13 +91,15 @@ export default async function onMessageReceived(
 
             case NOTIFICATION_TYPE.ADD_MEMBER: {
                 console.log("payloadData", payloadData);
-                const newMembers = {
-                    ...currentConversation.members,
-                    [payloadData.target_user_id[0].user_id]: {
-                        ...payloadData.target_user_id[0],
+                const newMembers = payloadData.target_user_id.reduce(
+                    (members: { [key: string]: Member }, user: Member) => {
+                        return {
+                            ...members,
+                            [user.user_id]: user,
+                        };
                     },
-                };
-                console.log("newMembers:", newMembers);
+                    currentConversation.members
+                );
 
                 const newCurrentConversation = {
                     ...currentConversation,
