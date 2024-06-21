@@ -1,3 +1,4 @@
+import { UserResponse } from "@/types/userType";
 import Cookies from "js-cookie";
 
 import { jwtDecode } from "jwt-decode";
@@ -46,6 +47,20 @@ export const saveRefreshToken = (refresh_token: string) => {
     }
 };
 
+export const saveUser = (id: string) => {
+    if (id) {
+        Cookies.set(userKey, id, {
+            ...objCookies,
+        });
+    } else {
+        Cookies.remove(userKey, {
+            ...objCookies,
+            path: "/",
+            domain: window.location.hostname,
+        });
+    }
+};
+
 export const getAccessToken = () => {
     const access_token = Cookies.get(accessTokenKey);
     return access_token;
@@ -54,6 +69,11 @@ export const getAccessToken = () => {
 export const getRefreshToken = () => {
     const refresh_token = Cookies.get(refreshTokenKey);
     return refresh_token;
+};
+
+export const getUser = () => {
+    const user = Cookies.get(userKey);
+    return user;
 };
 
 export const isTokenExpire = (token: string) => {

@@ -1,16 +1,28 @@
+"use client";
 import {
+    Button,
     IconButton,
     InputBase,
     Typography,
     alpha,
+    debounce,
     styled,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import FacebookIcon from "@mui/icons-material/Facebook";
-import Image from "next/image";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchResult } from "@/store/actions/searchSlice";
+import { RootState } from "@/store/configureStore";
+import { useRouter } from "next/navigation";
+import LoadingSpinner from "@/components/loading/LoadingSpinner";
+import { getSearchResultFromLocalStorage } from "@/utils/auth/handleLocalStorageSearch";
+import StorageSearchResult from "../search/StorageSearchResult";
+import SearchResult from "../search/SearchResult";
+import { v4 as uuidv4 } from "uuid";
+import SearchInput from "@/components/common/SearchInput";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -60,6 +72,38 @@ const DashboardSearch = ({
     setShowSearch: (showSearch: boolean) => void;
     searchRef: React.RefObject<HTMLDivElement>;
 }) => {
+    const router = useRouter();
+    const [searchValue, setSearchValue] = React.useState<string>("");
+    const [loading, setLoading] = React.useState<boolean>(false);
+    const searchResult = useSelector(
+        (state: RootState) => state.search.searchResult
+    );
+    const [storageSearchResult, setStorageSearchResult] = useState(
+        getSearchResultFromLocalStorage()
+    );
+    const dispatch = useDispatch();
+    const useSearchDebounce = debounce(async (searchValue: string) => {
+        try {
+            setLoading(true);
+            const response = await SOCIAL_MEDIA_API.USER.findUserByName(
+                searchValue
+            );
+            if (response?.status === 200) {
+                setLoading(false);
+                dispatch(setSearchResult(response.data));
+            }
+        } catch (error) {
+            setLoading(false);
+            console.log(error);
+        }
+    }, 500);
+
+    useEffect(() => {
+        if (searchValue) {
+            useSearchDebounce(searchValue);
+        }
+    }, [searchValue]);
+
     return (
         <div
             className={`bg-lite ${
@@ -85,8 +129,8 @@ const DashboardSearch = ({
                         </IconButton>
                     ) : (
                         <IconButton
-                            size="small"
-                            edge="start"
+                            size="large"
+                            edge="end"
                             color="primary"
                             aria-label="open drawer"
                             onClick={() => setShowSearch(false)}
@@ -94,20 +138,17 @@ const DashboardSearch = ({
                             <ArrowBackRoundedIcon className="w-6 h-full" />
                         </IconButton>
                     )}
-                    <Search>
-                        <SearchIconWrapper>
-                            <SearchIcon />
-                        </SearchIconWrapper>
-                        <StyledInputBase
-                            placeholder="Search…"
-                            inputProps={{ "aria-label": "search" }}
-                            className="search-input"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowSearch(true);
-                            }}
-                        />
-                    </Search>
+                    <SearchInput
+                        placeholder="Search…"
+                        inputProps={{ "aria-label": "search" }}
+                        className="search-input"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowSearch(true);
+                        }}
+                    ></SearchInput>
                 </div>
                 <div
                     className="flex flex-col flex-shrink-0 mt-2 gap-y-2"
@@ -115,48 +156,70 @@ const DashboardSearch = ({
                 >
                     {showSearch && (
                         <>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center justify-center gap-x-1">
-                                    <Image
-                                        src="https://source.unsplash.com/random"
-                                        width={40}
-                                        height={40}
-                                        className="object-cover w-10 h-10 rounded-full"
-                                        alt="profile-pic"
+                            {loading && <LoadingSpinner />}
+                            {searchResult.length > 0 && (
+                                <>
+                                    {searchValue && (
+                                        <div
+                                            className="flex items-center justify-between p-2 rounded cursor-pointer hover:bg-strock"
+                                            onClick={() => {
+                                                dispatch(setSearchResult([]));
+                                                router.push(
+                                                    `/search/top?q=${searchValue}`
+                                                );
+                                            }}
+                                        >
+                                            <div className="flex items-center justify-center gap-x-1">
+                                                <Button
+                                                    type="button"
+                                                    variant="text"
+                                                    color="inherit"
+                                                    startIcon={<SearchIcon />}
+                                                    sx={{
+                                                        textTransform: "none",
+                                                    }}
+                                                >
+                                                    <Typography>
+                                                        {searchValue}
+                                                    </Typography>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {searchResult.map((user) => (
+                                        <SearchResult
+                                            key={uuidv4()}
+                                            user={user}
+                                            dispatch={dispatch}
+                                            router={router}
+                                            storageSearchResult={
+                                                storageSearchResult
+                                            }
+                                        />
+                                    ))}
+                                </>
+                            )}
+                            {!loading &&
+                                searchResult.length === 0 &&
+                                storageSearchResult.length === 0 && (
+                                    <Typography>No result found</Typography>
+                                )}
+                            {!searchValue &&
+                                storageSearchResult.length > 0 &&
+                                storageSearchResult.map((user) => (
+                                    <StorageSearchResult
+                                        key={uuidv4()}
+                                        user={user}
+                                        dispatch={dispatch}
+                                        router={router}
+                                        storageSearchResult={
+                                            storageSearchResult
+                                        }
+                                        setStorageSearchResult={
+                                            setStorageSearchResult
+                                        }
                                     />
-                                    <Typography>Thong Dinh</Typography>
-                                </div>
-                                <IconButton
-                                    size="large"
-                                    edge="end"
-                                    color="primary"
-                                    aria-label="open drawer"
-                                    sx={{ mr: 2 }}
-                                >
-                                    <CloseRoundedIcon />
-                                </IconButton>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center justify-center gap-x-1">
-                                    <Image
-                                        src="https://source.unsplash.com/random"
-                                        width={40}
-                                        height={40}
-                                        className="object-cover w-10 h-10 rounded-full"
-                                        alt="profile-pic"
-                                    />
-                                    <Typography>Thong Dinh</Typography>
-                                </div>
-                                <IconButton
-                                    size="large"
-                                    edge="end"
-                                    color="primary"
-                                    aria-label="open drawer"
-                                    sx={{ mr: 2 }}
-                                >
-                                    <CloseRoundedIcon />
-                                </IconButton>
-                            </div>
+                                ))}
                         </>
                     )}
                 </div>

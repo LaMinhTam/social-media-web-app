@@ -9,6 +9,12 @@ const useClickOutSide = (dom: string = "button") => {
             if ((e.target as Element).closest(".search-input")) {
                 return;
             }
+            if ((e.target as Element).closest(".btn-delete-search-result")) {
+                return;
+            }
+            if ((e.target as Element).closest(".btn-chat-action")) {
+                return;
+            }
             if (
                 nodeRef.current &&
                 !nodeRef.current.contains(e.target as Node) &&

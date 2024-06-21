@@ -20,10 +20,15 @@ import useClickOutSide from "@/hooks/useClickOutSide";
 import { useRouter } from "next/navigation";
 import DashboardTab from "./DashboardTab";
 import DashboardFeature from "./DashboardFeature";
-import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
+import { saveAccessToken, saveRefreshToken, saveUser } from "@/utils/auth";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 
 export default function DashboardTopBar() {
     const router = useRouter();
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
         React.useState<null | HTMLElement>(null);
@@ -62,7 +67,7 @@ export default function DashboardTopBar() {
                 className="flex items-center justify-start gap-x-3 w-[360px]"
             >
                 <AccountCircle />
-                <Typography>Thong Dinh</Typography>
+                <Typography>{currentUserProfile.name}</Typography>
             </MenuItem>
             <MenuItem className="flex items-center justify-between gap-x-3 w-[360px]">
                 <div className="flex items-center justify-center gap-x-3">
@@ -76,6 +81,7 @@ export default function DashboardTopBar() {
                     handleMenuClose();
                     saveAccessToken("");
                     saveRefreshToken("");
+                    saveUser("");
                     router.push("/signin");
                 }}
                 className="flex items-center justify-start gap-x-3 w-[360px]"

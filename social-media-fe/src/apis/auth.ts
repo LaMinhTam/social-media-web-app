@@ -2,7 +2,6 @@ import {
     LoginResponse,
     RefreshTokenResponse,
     SignUpResponse,
-    UserResponse,
 } from "@/types/authType";
 import axios, { axiosPrivate } from "./axios";
 import apiRoutes from ".";
@@ -31,13 +30,6 @@ const login = async (email: string, password: string) => {
     return response;
 };
 
-const getMe = async () => {
-    const response: AxiosResponse<UserResponse> = await axiosPrivate.get(
-        apiRoutes.auth.userDetails
-    );
-    return response;
-};
-
 const refreshOAuth2Token = async (refreshToken: string) => {
     const response: AxiosResponse<RefreshTokenResponse> = await axios.post(
         apiRoutes.auth.refresh,
@@ -59,6 +51,11 @@ const refreshToken = async (accessToken: string, refreshToken: string) => {
         {
             accessToken,
             refreshToken,
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${refreshToken}`,
+            },
         }
     );
     return response;
@@ -67,7 +64,6 @@ const refreshToken = async (accessToken: string, refreshToken: string) => {
 export const AUTH = {
     createUser,
     login,
-    getMe,
     refreshToken,
     refreshOAuth2Token,
 };

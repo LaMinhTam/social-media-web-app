@@ -2,6 +2,11 @@ import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import { toast } from "react-toastify";
 import { saveAccessToken, saveRefreshToken } from ".";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import saveUserInfoToCookie from "./saveUserInfoToCookie";
+import { AxiosResponse } from "axios";
+import { UserResponse } from "@/types/userType";
+import axios from "@/apis/axios";
+import apiRoutes from "@/apis";
 
 export default async function handleRefreshToken(
     accessToken: string,
@@ -15,17 +20,21 @@ export default async function handleRefreshToken(
                 refreshToken
             );
             if (response.status === 200) {
-                saveAccessToken(response.data.accessToken);
-                saveRefreshToken(response.data.refreshToken);
-            }
-        } else {
-            if (refreshToken) {
-                const response = await SOCIAL_MEDIA_API.AUTH.refreshOAuth2Token(
-                    refreshToken
+                const meResponse: AxiosResponse<UserResponse> = await axios.get(
+                    apiRoutes.user.getMe,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${response.data.accessToken}`,
+                        },
+                    }
                 );
-                if (response.status === 200) {
+                if (meResponse.status === 200) {
                     saveAccessToken(response.data.accessToken);
                     saveRefreshToken(response.data.refreshToken);
+                    saveUserInfoToCookie(
+                        meResponse.data,
+                        response.data.accessToken
+                    );
                 }
             }
         }
@@ -33,6 +42,6 @@ export default async function handleRefreshToken(
         saveAccessToken("");
         saveRefreshToken("");
         toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
-        push("/dang-nhap");
+        push("/signin");
     }
 }

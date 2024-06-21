@@ -7,7 +7,7 @@ const LayoutFriends = ({ children }: { children: React.ReactNode }) => {
             <div className="fixed left-0 top-[64px] z-40 bottom-0">
                 <DashboardSidebar></DashboardSidebar>
             </div>
-            <div className="w-full h-full bg-strock mt-[64px] pl-[360px]">
+            <div className="w-full h-full bg-strock mt-[64px] pl-[360px] min-h-screen">
                 {children}
             </div>
         </>

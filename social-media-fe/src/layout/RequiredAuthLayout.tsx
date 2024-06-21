@@ -27,11 +27,12 @@ const RequiredAuthLayout = ({ children }: { children: React.ReactNode }) => {
                 console.log("Access token expired");
                 refreshTokenHandler();
             } else if (!isAccessTokenExpired) {
+                console.log("Access token not expired");
                 return;
             } else {
                 saveAccessToken("");
                 saveRefreshToken("");
-                push("/dang-nhap");
+                push("/signin");
             }
         }
         handleExpiredToken();

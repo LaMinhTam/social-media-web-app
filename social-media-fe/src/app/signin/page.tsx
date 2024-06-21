@@ -15,6 +15,12 @@ import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
+import { fetchingMe } from "@/services/profile.service";
+import axios from "@/apis/axios";
+import { UserResponse } from "@/types/userType";
+import { AxiosResponse } from "axios";
+import apiRoutes from "@/apis";
 
 const schema = yup.object({
     email: yup
@@ -58,12 +64,27 @@ export default function SignInPage() {
                 data.password
             );
             if (response.status === 200) {
-                saveAccessToken(response.data.accessToken);
-                saveRefreshToken(response.data.refreshToken);
-                route.push("/");
-                toast.success("Sign in successfully");
+                const meResponse: AxiosResponse<UserResponse> = await axios.get(
+                    apiRoutes.user.getMe,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${response.data.accessToken}`,
+                        },
+                    }
+                );
+                if (meResponse.status === 200) {
+                    saveAccessToken(response.data.accessToken);
+                    saveRefreshToken(response.data.refreshToken);
+                    saveUserInfoToCookie(
+                        meResponse.data,
+                        response.data.accessToken
+                    );
+                    route.push("/");
+                    toast.success("Sign in successfully");
+                }
             }
         } catch (error) {
+            toast.error("Username or password is incorrect");
             console.error(error);
         }
     });

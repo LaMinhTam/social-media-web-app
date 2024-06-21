@@ -206,7 +206,11 @@ services:
                 reservations:
                     memory: 128M
         healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
+            test:
+                [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:8761/actuator/health || exit 1",
+                ]
             interval: 30s
             timeout: 10s
             retries: 5
@@ -294,7 +298,7 @@ services:
                     memory: 512M
                 reservations:
                     memory: 256M
-    
+
     user-service:
         image: laminhtam/social-media-user-service:latest
         container_name: user-service-con
@@ -313,7 +317,7 @@ services:
         networks:
             - backend
             - db-neo4j-net
-    
+
     chat-service:
         image: laminhtam/social-media-chat-service:latest
         container_name: chat-service-con
@@ -335,7 +339,7 @@ services:
             - backend
             - db-mongodb-net
             - db-redis-net
-    
+
     notification-service:
         image: laminhtam/social-media-notification-service:latest
         container_name: notification-service-con
@@ -359,14 +363,14 @@ services:
             - backend
             - db-redis-net
 
-    nextjs14-social-media-fe: 
-        image: dinhthong17/nextjs14-social-media-fe:latest
-        container_name: nextjs14-social-media-fe-con
-        restart: always
-        ports:
-            - "3000:3000"
-        networks:
-            - frontend
+    # nextjs14-social-media-fe:
+    #     image: dinhthong17/nextjs14-social-media-fe:latest
+    #     container_name: nextjs14-social-media-fe-con
+    #     restart: always
+    #     ports:
+    #         - "3000:3000"
+    #     networks:
+    #         - frontend
 
 volumes:
     mysql-data:
