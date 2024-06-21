@@ -13,6 +13,7 @@ import vn.edu.iuh.fit.chatservice.entity.message.Message;
 import vn.edu.iuh.fit.chatservice.entity.message.MessageType;
 import vn.edu.iuh.fit.chatservice.entity.message.ReactionType;
 import vn.edu.iuh.fit.chatservice.exception.AppException;
+import vn.edu.iuh.fit.chatservice.message.MessageNotificationProducer;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
 import vn.edu.iuh.fit.chatservice.repository.MessageRepository;
@@ -27,13 +28,13 @@ public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
     private final UserClient userClient;
-    private final NotificationClient notificationClient;
+    private final MessageNotificationProducer messageNotificationProducer;
 
-    public MessageServiceImpl(MessageRepository messageRepository, ConversationRepository conversationRepository, UserClient userClient, NotificationClient notificationClient) {
+    public MessageServiceImpl(MessageRepository messageRepository, ConversationRepository conversationRepository, UserClient userClient, MessageNotificationProducer messageNotificationProducer) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.userClient = userClient;
-        this.notificationClient = notificationClient;
+        this.messageNotificationProducer = messageNotificationProducer;
     }
 
     @Override
@@ -125,11 +126,11 @@ public class MessageServiceImpl implements MessageService {
         message.setReactions(null);
         message.setMedia(null);
         message.setUpdatedAt(new Date());
-        notificationClient.notifyConversationMembers(conversation, message, "revoke");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "revoke");
         Thread thread = new Thread(() -> {
             List<Message> messages = messageRepository.findMessagesByReplyToMessageId(message.getId().toHexString());
             messages.forEach(currentMessage ->
-                    notificationClient.notifyRevokeReplyMessage(conversation, currentMessage)
+                    messageNotificationProducer.notifyRevokeReplyMessage(conversation, currentMessage)
             );
         });
         thread.start();
@@ -172,7 +173,7 @@ public class MessageServiceImpl implements MessageService {
         List<Message> savedMessages = messageRepository.saveAll(messages);
         conversations.forEach(conversation -> {
             Message messageByConversationId = savedMessages.stream().filter(message -> message.getConversationId().equals(conversation.getId().toHexString())).findFirst().get();
-            notificationClient.notifyConversationMembers(conversation, messageByConversationId, "message");
+            messageNotificationProducer.notifyConversationMembers(conversation, messageByConversationId, "message");
         });
 
         return savedMessages.stream().map(MessageDTO::new).toList();
@@ -188,7 +189,7 @@ public class MessageServiceImpl implements MessageService {
         }
         message.getReactions().computeIfAbsent(reaction, k -> new ArrayList<>());
         message.getReactions().get(reaction).add(senderId);
-        notificationClient.notifyConversationMembers(conversation, message, "react");
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "react");
         return new MessageDTO(messageRepository.save(message));
     }
 
@@ -202,7 +203,7 @@ public class MessageServiceImpl implements MessageService {
         if (lastReadMessageId == null || isLaterMessage(lastReadMessageId, messageId)) {
             conversation.getReadBy().put(id, messageId.toHexString());
             conversationRepository.save(conversation);
-            notificationClient.notifyRead(id, conversation, message);
+            messageNotificationProducer.notifyRead(id, conversation, message);
         }
     }
 
