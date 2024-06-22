@@ -9,8 +9,6 @@ import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import onMessageReceived from "@/utils/socket/onMessageReceived";
-import { setCurrentConversation } from "@/store/actions/conversationSlice";
-import { setShowChatModal } from "@/store/actions/commonSlice";
 
 const SocketContext = React.createContext<SocketType>({} as SocketType);
 
@@ -48,7 +46,6 @@ export function SocketProvider(
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/message`,
                     async function (payload) {
-                        console.log("message", JSON.parse(payload.body));
                         await onMessageReceived(
                             payload,
                             showChatModal,
@@ -59,8 +56,7 @@ export function SocketProvider(
                             setTriggerScrollChat,
                             triggerScrollChat
                         );
-                    },
-                    { Authorization: accessToken }
+                    }
                 );
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/revoke`,
@@ -82,8 +78,7 @@ export function SocketProvider(
                             reactions: payloadData.reactions,
                         };
                         setMessages(newMessages);
-                    },
-                    { Authorization: accessToken }
+                    }
                 );
 
                 client.subscribe(
@@ -91,8 +86,7 @@ export function SocketProvider(
                     function (payload) {
                         const payloadData = JSON.parse(payload.body);
                         console.log("conversation", payloadData);
-                    },
-                    { Authorization: accessToken }
+                    }
                 );
 
                 client.subscribe(
@@ -118,8 +112,7 @@ export function SocketProvider(
                     `/user/${decryptedData.user_id}/friend-status`,
                     function (payload) {
                         console.log("read", JSON.parse(payload.body));
-                    },
-                    { Authorization: accessToken }
+                    }
                 );
             },
             (error) => {

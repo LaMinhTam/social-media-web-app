@@ -110,6 +110,16 @@ export default async function onMessageReceived(
                 break;
             }
 
+            case NOTIFICATION_TYPE.CHANGE_GROUP_OWNER: {
+                const newCurrentConversation = {
+                    ...currentConversation,
+                    owner_id: payloadData.target_user_id[0].user_id,
+                };
+
+                dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
             case NOTIFICATION_TYPE.GRANT_DEPUTY: {
                 const newDeputies = [
                     ...currentConversation.deputies,
@@ -136,6 +146,25 @@ export default async function onMessageReceived(
                 };
 
                 dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
+            case NOTIFICATION_TYPE.JOIN_BY_LINK: {
+                if (
+                    payloadData.user_detail.user_id !== userId &&
+                    showChatModal
+                ) {
+                    const newCurrentConversation = {
+                        ...currentConversation,
+                        members: {
+                            ...currentConversation.members,
+                            [payloadData.user_detail.user_id]:
+                                payloadData.user_detail,
+                        },
+                    };
+
+                    dispatch(setCurrentConversation(newCurrentConversation));
+                }
                 break;
             }
 

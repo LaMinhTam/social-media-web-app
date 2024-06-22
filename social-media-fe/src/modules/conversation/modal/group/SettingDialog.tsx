@@ -18,6 +18,9 @@ import { handleUpdateGroupSettings } from "@/services/conversation.service";
 import { toast } from "react-toastify";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { PopupState } from "material-ui-popup-state/hooks";
+import { RootState } from "@/store/configureStore";
+import { useDispatch, useSelector } from "react-redux";
+import { setCurrentConversation } from "@/store/actions/conversationSlice";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -40,6 +43,10 @@ const SettingDialog = ({
     settings: GroupSettings;
 }) => {
     const [loading, setLoading] = useState(false);
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
+    );
+    const dispatch = useDispatch();
     const handleClose = () => {
         setOpenSettingDialog(false);
     };
@@ -75,6 +82,11 @@ const SettingDialog = ({
         if (response) {
             handleClose();
             popupState.close();
+            const newCurrentConversation = {
+                ...currentConversation,
+                settings: response,
+            };
+            dispatch(setCurrentConversation(newCurrentConversation));
             toast.success("Update group settings successfully");
         }
         setLoading(false);
@@ -185,6 +197,23 @@ const SettingDialog = ({
                         </Typography>
                     </Grid>
                     <Grid item className="w-full h-full">
+                        <Box className="flex items-center justify-between flex-1">
+                            <Typography className="text-sm font-medium">
+                                Change group name & avatar
+                            </Typography>
+                            <Checkbox
+                                color="primary"
+                                inputProps={{
+                                    "aria-label": "select all desserts",
+                                }}
+                                className="ml-auto"
+                                checked={
+                                    newSettings.allow_deputy_change_group_info
+                                }
+                                onChange={handleCheckboxChange}
+                                name="allow_deputy_change_group_info"
+                            />
+                        </Box>
                         <Box className="flex items-center justify-between flex-1">
                             <Typography className="text-sm font-medium">
                                 Send message

@@ -279,6 +279,32 @@ export const handleUpdateGroupSettings = async (id: string, settings: any) => {
     }
 };
 
+export const handleJoinGroupByLink = async (groupId: string) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.joinConversationByLink(groupId);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleTransferOwner = async (id: string, userId: number) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.changeGroupOwner(
+            id,
+            userId
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 export const handleUploadFile = async (formData: FormData) => {
     try {
         const response = await axios.post(

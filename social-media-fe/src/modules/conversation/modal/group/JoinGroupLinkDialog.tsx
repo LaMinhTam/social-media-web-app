@@ -13,9 +13,17 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import React, { useEffect, useState } from "react";
-import { handleFindGroupByLink } from "@/services/conversation.service";
+import {
+    handleFindGroupByLink,
+    handleJoinGroupByLink,
+} from "@/services/conversation.service";
 import Image from "next/image";
 import { ConversationResponse } from "@/types/conversationType";
+import { useRouter } from "next/navigation";
+import { setCurrentConversation } from "@/store/actions/conversationSlice";
+import { useDispatch } from "react-redux";
+import { setShowChatModal } from "@/store/actions/commonSlice";
+import LoadingSpinner from "@/components/loading/LoadingSpinner";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -25,35 +33,37 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 const JoinGroupLinkDialog = ({
+    groupInfo,
     openJoinGroupLinkDialog,
     setOpenJoinGroupLinkDialog,
 }: {
+    groupInfo: ConversationResponse;
     openJoinGroupLinkDialog: boolean;
     setOpenJoinGroupLinkDialog: (open: boolean) => void;
 }) => {
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
-    const [groupInfo, setGroupInfo] = useState<ConversationResponse>(
-        {} as ConversationResponse
-    );
+    const [buttonText, setButtonText] = useState("Join" as string);
     const handleClose = () => {
         setOpenJoinGroupLinkDialog(false);
     };
-    useEffect(() => {
-        async function findGroupByLink() {
-            setLoading(true);
-            const response = await handleFindGroupByLink(
-                "f616b953-1e08-4cd4-8df9-43590fcaf5e6"
-            );
-            console.log("response:", response);
-            if (response) {
-                setGroupInfo(response);
+    const onJoinGroupByLink = async () => {
+        setLoading(true);
+        const settings = groupInfo.settings;
+        const group_id = settings.link_to_join_group;
+        const response = await handleJoinGroupByLink(group_id ?? "");
+        if (response) {
+            if (settings.confirm_new_member) {
+                setButtonText("Request Sent");
+            } else {
+                setButtonText("Joined");
+                setOpenJoinGroupLinkDialog(false);
+                dispatch(setCurrentConversation(groupInfo));
+                dispatch(setShowChatModal(true));
             }
-            setLoading(false);
         }
-        if (openJoinGroupLinkDialog) {
-            findGroupByLink();
-        }
-    }, []);
+        setLoading(false);
+    };
     return (
         <BootstrapDialog
             onClose={handleClose}
@@ -149,8 +159,14 @@ const JoinGroupLinkDialog = ({
                 <Button onClick={handleClose} color="info">
                     Cancel
                 </Button>
-                <Button autoFocus variant="contained" color="info">
-                    Join
+                <Button
+                    autoFocus
+                    variant="contained"
+                    color="info"
+                    disabled={loading}
+                    onClick={onJoinGroupByLink}
+                >
+                    {loading ? <LoadingSpinner /> : buttonText}
                 </Button>
             </DialogActions>
         </BootstrapDialog>

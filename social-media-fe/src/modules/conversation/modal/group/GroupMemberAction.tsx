@@ -2,18 +2,22 @@ import {
     handleGrantDeputy,
     handleKickMember,
     handleRevokeDeputy,
+    handleTransferOwner,
 } from "@/services/conversation.service";
+import { GroupSettings } from "@/types/conversationType";
 import { Button, Grid } from "@mui/material";
 import { PopupState } from "material-ui-popup-state/hooks";
 import React from "react";
 
 const GroupMemberAction = ({
+    settings,
     popupState,
     userRole,
     targetUserRole,
     userId,
     conversationId,
 }: {
+    settings: GroupSettings;
     popupState: PopupState;
     userRole: string;
     targetUserRole: string;
@@ -27,8 +31,12 @@ const GroupMemberAction = ({
             popupState.close();
         }
     };
-    const onGrantAdmin = () => {
-        console.log("Grant admin");
+    const onGrantAdmin = async () => {
+        const response = await handleTransferOwner(conversationId, userId);
+        if (response) {
+            console.log("Admin granted successfully");
+            popupState.close();
+        }
     };
 
     const onGrantDeputy = async () => {
@@ -135,18 +143,34 @@ const GroupMemberAction = ({
             {userRole === "DEPUTY" && (
                 <>
                     {targetUserRole === "MEMBER" && (
-                        <Grid item className="w-full">
-                            <Button
-                                type="button"
-                                fullWidth
-                                variant="text"
-                                color="inherit"
-                                className="normal-case"
-                                onClick={onRemoveMember}
-                            >
-                                Remove from group
-                            </Button>
-                        </Grid>
+                        <>
+                            <Grid item className="w-full">
+                                <Button
+                                    type="button"
+                                    fullWidth
+                                    variant="text"
+                                    color="inherit"
+                                    className="normal-case"
+                                    onClick={onRemoveMember}
+                                >
+                                    Remove from group
+                                </Button>
+                            </Grid>
+                            {settings.allow_deputy_promote_member && (
+                                <Grid item className="w-full">
+                                    <Button
+                                        type="button"
+                                        fullWidth
+                                        variant="text"
+                                        color="inherit"
+                                        className="normal-case"
+                                        onClick={onGrantDeputy}
+                                    >
+                                        Grant deputy
+                                    </Button>
+                                </Grid>
+                            )}
+                        </>
                     )}
                     <Grid item className="w-full">
                         <Button

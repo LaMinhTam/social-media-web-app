@@ -103,7 +103,7 @@ const revokeDeputy = async (id: string, userId: number) => {
 };
 
 const updateGroupSetting = async (id: string, settings: any) => {
-    const response: AxiosResponse<string> = await axiosPrivate.patch(
+    const response: AxiosResponse<GroupSettings> = await axiosPrivate.patch(
         apiRoutes.conversation.updateGroupSetting(id),
         {
             ...settings,

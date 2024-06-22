@@ -1,14 +1,18 @@
 import { MESSAGE_TYPE } from "@/constants/global";
 import { MessageData } from "@/types/conversationType";
-import handleFormatMessage from "@/utils/conversation/messages/handleFormatMessage";
-import { Button, Tooltip } from "@mui/material";
-import { v4 as uuidv4 } from "uuid";
-import React from "react";
-import handleRenderReactionMessage from "@/utils/conversation/messages/handleRenderReactionMessage";
+import { Tooltip } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import parse, {
+    DOMNode,
+    Element,
+    HTMLReactParserOptions,
+    domToReact,
+} from "html-react-parser";
 import formatTime from "@/utils/conversation/messages/handleGroupMessage";
 import handleScrollToReplyMessage from "@/utils/conversation/messages/handleScrollToReplyMessage";
 import { useSocket } from "@/contexts/socket-context";
 import MessageReaction from "./MessageReaction";
+import Link from "next/link";
 
 const MessageText = ({
     message,
@@ -19,6 +23,7 @@ const MessageText = ({
     type: string;
     isGroup: boolean;
 }) => {
+    const [messageFormat, setMessageFormat] = useState<string>("");
     const { messageRefs } = useSocket();
     let renderContent = "";
     if (message.reply_message?.type === MESSAGE_TYPE.TEXT) {
@@ -32,6 +37,44 @@ const MessageText = ({
     } else {
         renderContent = "Message";
     }
+
+    useEffect(() => {
+        const regex = /((http|https):\/\/[^\s]+)/g;
+        const messageContent = message.content;
+        if (messageContent.match(regex)) {
+            const formattedMessage = messageContent.replace(
+                regex,
+                function (url) {
+                    let linkJoinGroup = url.split("=")[1];
+                    return `<a href="/join/group?groupId=${linkJoinGroup}" target="_blank" class="underline text-lite">${url}</a>`;
+                }
+            );
+            setMessageFormat(formattedMessage);
+        } else {
+            setMessageFormat(messageContent);
+        }
+    }, []);
+    const options: HTMLReactParserOptions = {
+        replace: (domNode) => {
+            if (
+                domNode instanceof Element &&
+                domNode.attribs &&
+                domNode.name === "a"
+            ) {
+                return (
+                    <Link
+                        href={domNode.attribs.href}
+                        target="_blank"
+                        className={`underline ${
+                            type === "send" ? "text-lite" : "text-text1"
+                        }`}
+                    >
+                        {domToReact((domNode as Element).children as DOMNode[])}
+                    </Link>
+                );
+            }
+        },
+    };
     return (
         <div
             className={`relative rounded-lg w-fit max-w-[212px] px-3 py-2 my-2 ${
@@ -45,7 +88,11 @@ const MessageText = ({
             }}
         >
             {isGroup && type === "receive" && (
-                <p className="text-xs text-text7">{message.user_detail.name}</p>
+                <>
+                    <p className="text-xs text-text7">
+                        {message.user_detail.name}
+                    </p>
+                </>
             )}
             {message.type !== MESSAGE_TYPE.REVOKED &&
                 message.reply_message &&
@@ -72,7 +119,8 @@ const MessageText = ({
                     </div>
                 )}
             <Tooltip title={formatTime(message.created_at)}>
-                <p className="text-wrap">{handleFormatMessage(message)}</p>
+                {/* <p className="text-wrap">{handleFormatMessage(message)}</p> */}
+                <>{parse(messageFormat, options)}</>
             </Tooltip>
             <MessageReaction message={message}></MessageReaction>
         </div>

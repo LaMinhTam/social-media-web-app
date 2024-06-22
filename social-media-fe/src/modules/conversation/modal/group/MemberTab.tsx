@@ -7,16 +7,15 @@ import { ConversationResponse, Member } from "@/types/conversationType";
 import Image from "next/image";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupMemberAction from "./GroupMemberAction";
+import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
 
 const MemberTab = ({
     listMembers,
     currentConversation,
-    isConversationDeputy,
     currentUserId,
 }: {
     listMembers: Member[];
     currentConversation: ConversationResponse;
-    isConversationDeputy: (userId: number) => boolean;
     currentUserId: number;
 }) => {
     return (
@@ -52,7 +51,10 @@ const MemberTab = ({
                         </Typography>
                         <Typography className="text-sm text-gray-500">
                             {currentConversation.deputies &&
-                            isConversationDeputy(member.user_id)
+                            isConversationDeputy(
+                                member.user_id,
+                                currentConversation
+                            )
                                 ? "Deputy"
                                 : "Member"}
                         </Typography>
@@ -79,13 +81,15 @@ const MemberTab = ({
                                     }}
                                 >
                                     <GroupMemberAction
+                                        settings={currentConversation.settings}
                                         userRole={
                                             currentConversation.owner_id ===
                                             currentUserId
                                                 ? "ADMIN"
                                                 : currentConversation.deputies &&
                                                   isConversationDeputy(
-                                                      member.user_id
+                                                      currentUserId,
+                                                      currentConversation
                                                   )
                                                 ? "DEPUTY"
                                                 : "MEMBER"
@@ -96,7 +100,8 @@ const MemberTab = ({
                                                 ? "ADMIN"
                                                 : currentConversation.deputies &&
                                                   isConversationDeputy(
-                                                      member.user_id
+                                                      member.user_id,
+                                                      currentConversation
                                                   )
                                                 ? "DEPUTY"
                                                 : "MEMBER"

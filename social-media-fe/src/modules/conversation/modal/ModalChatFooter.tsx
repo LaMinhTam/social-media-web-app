@@ -26,8 +26,11 @@ import {
 } from "@/services/search.service";
 import StickerPicker from "@/components/common/StickerPicker";
 import ChatFeature from "@/components/common/ChatFeature";
+import { toast } from "react-toastify";
+import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
 
 const ModalChatFooter = ({
+    isAdmin,
     isActive,
     setIsActive,
     showFullInput,
@@ -36,6 +39,7 @@ const ModalChatFooter = ({
     stompClient,
     conversationId,
 }: {
+    isAdmin: boolean;
     isActive: boolean;
     setIsActive: React.Dispatch<React.SetStateAction<boolean>>;
     showFullInput: boolean;
@@ -63,6 +67,9 @@ const ModalChatFooter = ({
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
+    );
     const accessToken = getAccessToken();
     const [message, setMessage] = React.useState<string>("");
     const [GIFData, setGIFData] = React.useState<any>([]);
@@ -75,22 +82,42 @@ const ModalChatFooter = ({
     );
     const handleSendMessage = () => {
         if (message.trim() === "") return;
-        const chatMessage = {
-            conversation_id: conversationId,
-            content: message,
-            type: MESSAGE_TYPE.TEXT,
-            reply_to_message_id: isReplying ? replyMessage.message_id : null,
-        };
-        setMessage("");
-        dispatch(setIsReplying(false));
-        dispatch(setMessageReply({} as any));
-        stompClient.send(
-            "/app/message",
-            {
-                Authorization: accessToken,
-            },
-            JSON.stringify(chatMessage)
-        );
+        else {
+            if (currentConversation.settings.restricted_messaging) {
+                toast.error(
+                    "The group has restricted messaging. You can't send message to this group."
+                );
+            } else if (
+                isConversationDeputy(
+                    currentUserProfile.user_id,
+                    currentConversation
+                ) &&
+                !currentConversation.settings.allow_deputy_send_messages
+            ) {
+                toast.error(
+                    "You are not allowed to send message to this group."
+                );
+            } else {
+                const chatMessage = {
+                    conversation_id: conversationId,
+                    content: message,
+                    type: MESSAGE_TYPE.TEXT,
+                    reply_to_message_id: isReplying
+                        ? replyMessage.message_id
+                        : null,
+                };
+                setMessage("");
+                dispatch(setIsReplying(false));
+                dispatch(setMessageReply({} as any));
+                stompClient.send(
+                    "/app/message",
+                    {
+                        Authorization: accessToken,
+                    },
+                    JSON.stringify(chatMessage)
+                );
+            }
+        }
     };
 
     const handleSendLikeMessage = () => {

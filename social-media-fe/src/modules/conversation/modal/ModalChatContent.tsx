@@ -11,6 +11,8 @@ import { useSocket } from "@/contexts/socket-context";
 import { groupMessages } from "@/utils/conversation/messages/handleGroupMessage";
 import { v4 as uuidv4 } from "uuid";
 import handleFormatNotificationMessage from "@/utils/conversation/messages/handleFormatNotificationMessage";
+import Image from "next/image";
+import { Box, Tooltip } from "@mui/material";
 const ModalChatContent = ({
     conversationId,
     messages,
@@ -33,20 +35,9 @@ const ModalChatContent = ({
         (state: RootState) => state.conversation.currentConversation
     );
     const chatContentRef = useRef<HTMLDivElement>(null);
+    const observerRef = useRef<MutationObserver | null>(null);
     const [loading, setLoading] = React.useState(false);
     const [isEnd, setIsEnd] = React.useState(false);
-    useEffect(() => {
-        if (chatContentRef.current) {
-            chatContentRef.current.scrollTop =
-                chatContentRef.current.scrollHeight;
-        }
-    }, []);
-    useEffect(() => {
-        if (chatContentRef.current) {
-            chatContentRef.current.scrollTop =
-                chatContentRef.current.scrollHeight;
-        }
-    }, [triggerScrollChat]);
     const groupedMessages = groupMessages(Object.values(messages));
     const handleScroll = async () => {
         if (chatContentRef.current?.scrollTop === 0) {
@@ -84,6 +75,27 @@ const ModalChatContent = ({
             });
         });
     }, [groupedMessages, messageRefs, setMessageRefs]);
+    useEffect(() => {
+        if (chatContentRef.current) {
+            const observer = new MutationObserver(() => {
+                chatContentRef.current!.scrollTop =
+                    chatContentRef.current!.scrollHeight;
+            });
+
+            observer.observe(chatContentRef.current, {
+                childList: true,
+                subtree: true,
+            });
+
+            observerRef.current = observer;
+
+            return () => {
+                if (observerRef.current) {
+                    observerRef.current.disconnect();
+                }
+            };
+        }
+    }, [groupedMessages]);
     return (
         <div
             ref={chatContentRef}
@@ -97,37 +109,63 @@ const ModalChatContent = ({
                     <div className="mt-2 text-xs text-center text-gray-500">
                         {group.formattedTime}
                     </div>
-                    {group.data.map((message) => (
-                        <div
-                            className="relative"
-                            ref={messageRefs[message.message_id]}
-                            key={uuidv4()}
-                        >
-                            {message.type !== "NOTIFICATION" ? (
-                                <ModalChatMessage
-                                    message={message}
-                                    type={
-                                        message.user_detail.user_id ===
-                                        currentUserId
-                                            ? "send"
-                                            : "receive"
-                                    }
-                                    isGroup={isGroup}
-                                    isLastMessage={
-                                        group.data.indexOf(message) ===
-                                        group.data.length - 1
-                                    }
-                                />
-                            ) : (
-                                <div className="my-2 text-sm text-center text-text8">
-                                    {handleFormatNotificationMessage(
-                                        message,
-                                        currentUserId
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                    {group.data.map((message, index) => {
+                        const isLastMessage = index === group.data.length - 1; // Now messageIndex is correctly used
+                        return (
+                            <div
+                                className="relative"
+                                ref={messageRefs[message.message_id]}
+                                key={uuidv4()}
+                            >
+                                {message.type !== "NOTIFICATION" ? (
+                                    <ModalChatMessage
+                                        message={message}
+                                        type={
+                                            message.user_detail.user_id ===
+                                            currentUserId
+                                                ? "send"
+                                                : "receive"
+                                        }
+                                        isGroup={isGroup}
+                                    />
+                                ) : (
+                                    <div className="my-2 text-sm text-center text-text8">
+                                        {handleFormatNotificationMessage(
+                                            message,
+                                            currentUserId,
+                                            currentConversation.settings
+                                        )}
+                                    </div>
+                                )}
+                                {isLastMessage &&
+                                    message.read_by &&
+                                    message.read_by.length > 0 &&
+                                    message.read_by.map((member) => {
+                                        if (member.user_id === currentUserId)
+                                            return null;
+                                        return (
+                                            <Tooltip
+                                                key={member.user_id}
+                                                title={member.name}
+                                            >
+                                                <Box className="flex items-center justify-end mt-2 cursor-pointer">
+                                                    <Image
+                                                        src={
+                                                            member.image_url ??
+                                                            "https://source.unsplash.com/random"
+                                                        }
+                                                        width={16}
+                                                        height={16}
+                                                        alt="avatar"
+                                                        className="w-4 h-4 rounded-full"
+                                                    />
+                                                </Box>
+                                            </Tooltip>
+                                        );
+                                    })}
+                            </div>
+                        );
+                    })}
                 </div>
             ))}
         </div>

@@ -1,11 +1,4 @@
-import {
-    Box,
-    Button,
-    IconButton,
-    Popover,
-    Stack,
-    Typography,
-} from "@mui/material";
+import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import PhotoIcon from "@mui/icons-material/Photo";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -43,6 +36,7 @@ import {
 import { db } from "@/constants/firebaseConfig";
 import CopyToClipboard from "react-copy-to-clipboard";
 import JoinGroupLinkDialog from "./JoinGroupLinkDialog";
+import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
 
 const GroupSetting = ({
     popupState,
@@ -71,8 +65,6 @@ const GroupSetting = ({
     const [openLeaveGroupConfirm, setOpenLeaveGroupConfirm] =
         React.useState(false);
     const [openDisbandGroupConfirm, setOpenDisbandGroupConfirm] =
-        React.useState(false);
-    const [openJoinGroupLinkDialog, setOpenJoinGroupLinkDialog] =
         React.useState(false);
     const onDisbandGroup = async () => {
         const response = await handleDisbandGroup(
@@ -130,6 +122,14 @@ const GroupSetting = ({
                         onClick={() => {
                             if (!isAdmin) {
                                 if (
+                                    isConversationDeputy(
+                                        currentUserProfile.user_id,
+                                        currentConversation
+                                    ) &&
+                                    settings.allow_deputy_change_group_info
+                                ) {
+                                    setOpenChangeGroupNameDialog(true);
+                                } else if (
                                     settings.allow_member_to_change_group_info
                                 ) {
                                     setOpenChangeGroupNameDialog(true);
@@ -154,6 +154,14 @@ const GroupSetting = ({
                         onClick={() => {
                             if (!isAdmin) {
                                 if (
+                                    isConversationDeputy(
+                                        currentUserProfile.user_id,
+                                        currentConversation
+                                    ) &&
+                                    settings.allow_deputy_change_group_info
+                                ) {
+                                    setOpenChangeAvatarDialog(true);
+                                } else if (
                                     settings.allow_member_to_change_group_info
                                 ) {
                                     setOpenChangeAvatarDialog(true);
@@ -190,12 +198,24 @@ const GroupSetting = ({
                         className="flex items-center justify-start normal-case gap-x-1"
                         onClick={() => {
                             if (!isAdmin) {
-                                if (settings.allow_member_to_invite_member) {
+                                if (
+                                    isConversationDeputy(
+                                        currentUserProfile.user_id,
+                                        currentConversation
+                                    ) &&
+                                    settings.allow_deputy_to_invite_member
+                                ) {
                                     setOpenAddMemberDialog(true);
                                 } else {
-                                    toast.error(
-                                        "You don't have permission to add member"
-                                    );
+                                    if (
+                                        settings.allow_member_to_invite_member
+                                    ) {
+                                        setOpenAddMemberDialog(true);
+                                    } else {
+                                        toast.error(
+                                            "You don't have permission to add member"
+                                        );
+                                    }
                                 }
                             } else {
                                 setOpenAddMemberDialog(true);
@@ -223,7 +243,6 @@ const GroupSetting = ({
                         color="inherit"
                         fullWidth
                         className="flex items-center justify-start normal-case gap-x-1"
-                        onClick={() => setOpenJoinGroupLinkDialog(true)}
                     >
                         <NotificationsIcon />
                         <Typography>Mute Notification</Typography>
@@ -277,11 +296,10 @@ const GroupSetting = ({
                             </span>
                             <CopyToClipboard
                                 text={
-                                    `${window.location.origin}/join-group/` +
+                                    `${window.location.origin}/join/group?groupId=` +
                                     currentConversation.settings
                                         .link_to_join_group
                                 }
-                                onCopy={() => toast.success("Đã sao chép")}
                             >
                                 <IconButton
                                     size="small"
@@ -357,12 +375,6 @@ const GroupSetting = ({
                     buttonContent="Disband"
                     onClick={onDisbandGroup}
                 ></ConfirmActionDialog>
-            )}
-            {openJoinGroupLinkDialog && (
-                <JoinGroupLinkDialog
-                    openJoinGroupLinkDialog={openJoinGroupLinkDialog}
-                    setOpenJoinGroupLinkDialog={setOpenJoinGroupLinkDialog}
-                ></JoinGroupLinkDialog>
             )}
         </>
     );

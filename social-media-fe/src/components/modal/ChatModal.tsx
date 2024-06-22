@@ -23,7 +23,6 @@ const ChatModal = () => {
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
     );
-
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
@@ -76,6 +75,9 @@ const ChatModal = () => {
                 setMessages={setMessages}
             ></ModalChatContent>
             <ModalChatFooter
+                isAdmin={
+                    currentConversation.owner_id === currentUserProfile.user_id
+                }
                 isActive={isActive}
                 setIsActive={setIsActive}
                 showFullInput={showFullInput}

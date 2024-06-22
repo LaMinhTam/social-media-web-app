@@ -41,3 +41,25 @@ export default function formatTime(timestamp: number) {
         return timeString;
     }
 }
+
+export function formatOnlineTime(updated_at: number) {
+    const now = moment();
+    // Assuming updated_at is a timestamp in milliseconds
+    const updatedAt = moment(updated_at);
+    const diffInMinutes = now.diff(updatedAt, "minutes");
+    const diffInHours = now.diff(updatedAt, "hours");
+    const diffInDays = now.diff(updatedAt, "days");
+    const diffInYears = now.diff(updatedAt, "years");
+
+    if (diffInMinutes < 60) {
+        return `${diffInMinutes} phút`;
+    } else if (diffInHours < 24) {
+        return `${diffInHours} giờ`;
+    } else if (diffInDays < 7) {
+        return `${diffInDays} ngày`;
+    } else if (diffInYears < 1) {
+        return updatedAt.format("DD/MM");
+    } else {
+        return updatedAt.format("DD/MM/YY");
+    }
+}

@@ -7,16 +7,15 @@ import { ConversationResponse, Member } from "@/types/conversationType";
 import Image from "next/image";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupMemberAction from "./GroupMemberAction";
+import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
 
 const AdminTab = ({
     listAdmins,
     currentConversation,
-    isConversationDeputy,
     currentUserId,
 }: {
     listAdmins: Member[];
     currentConversation: ConversationResponse;
-    isConversationDeputy: (userId: number) => boolean;
     currentUserId: number;
 }) => {
     return (
@@ -76,18 +75,20 @@ const AdminTab = ({
                                     }}
                                 >
                                     <GroupMemberAction
-                                        userRole={
+                                        settings={currentConversation.settings}
+                                        userRole={"ADMIN"}
+                                        targetUserRole={
                                             currentConversation.owner_id ===
                                             currentUserId
                                                 ? "ADMIN"
                                                 : currentConversation.deputies &&
                                                   isConversationDeputy(
-                                                      member.user_id
+                                                      member.user_id,
+                                                      currentConversation
                                                   )
                                                 ? "DEPUTY"
                                                 : "MEMBER"
                                         }
-                                        targetUserRole="ADMIN"
                                         userId={member.user_id}
                                         conversationId={
                                             currentConversation.conversation_id

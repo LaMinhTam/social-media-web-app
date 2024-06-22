@@ -4,22 +4,16 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
-    Popover,
     Tab,
     Tabs,
-    Typography,
     styled,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import React, { useState } from "react";
 import { ConversationResponse } from "@/types/conversationType";
-import Image from "next/image";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
-import GroupMemberAction from "./GroupMemberAction";
-import { v4 as uuidv4 } from "uuid";
 import MemberTab from "./MemberTab";
 import AdminTab from "./AdminTab";
+import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -54,10 +48,6 @@ const GroupMemberDialog = ({
 
     const handleClose = () => {
         setOpenGroupMemberDialog(false);
-    };
-
-    const isConversationDeputy = (id: number) => {
-        return currentConversation.deputies.some((deputy) => deputy === id);
     };
 
     return (
@@ -106,7 +96,6 @@ const GroupMemberDialog = ({
                         <MemberTab
                             listMembers={listMembers}
                             currentConversation={currentConversation}
-                            isConversationDeputy={isConversationDeputy}
                             currentUserId={currentUserId}
                         ></MemberTab>
                     )}
@@ -114,7 +103,6 @@ const GroupMemberDialog = ({
                         <AdminTab
                             listAdmins={listAdmins}
                             currentConversation={currentConversation}
-                            isConversationDeputy={isConversationDeputy}
                             currentUserId={currentUserId}
                         ></AdminTab>
                     )}

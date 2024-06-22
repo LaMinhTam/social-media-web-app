@@ -13,6 +13,7 @@ import { ConversationResponse } from "@/types/conversationType";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupSetting from "./group/GroupSetting";
 import VideoCallDialog from "./call/VideoCallDialog";
+import { formatOnlineTime } from "@/utils/conversation/messages/handleGroupMessage";
 
 const ModalChatHeader = ({
     username,
@@ -66,7 +67,9 @@ const ModalChatHeader = ({
                                         {userStatus?.online === "ONLINE"
                                             ? "Đang hoạt động"
                                             : userStatus?.timestamp !== 0
-                                            ? `Hoạt động ${userStatus?.timestamp} phút trước`
+                                            ? `Hoạt động ${formatOnlineTime(
+                                                  userStatus.timestamp
+                                              )} trước`
                                             : "Vừa truy cập"}
                                     </Typography>
                                 </div>
