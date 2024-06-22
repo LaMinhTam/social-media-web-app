@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 @RequestMapping("/conversations")
 public class ConversationController {
     private final ConversationService conversationService;
+
     public ConversationController(ConversationService conversationService) {
         this.conversationService = conversationService;
     }
@@ -60,8 +61,8 @@ public class ConversationController {
 
     @PatchMapping("/{conversationId}/add-member")
     public ResponseEntity<SimpleConversationDTO> addMember(@RequestHeader("sub") Long id,
-                                       @PathVariable String conversationId,
-                                       @RequestParam(name = "members") List<Long> members) {
+                                                           @PathVariable String conversationId,
+                                                           @RequestParam(name = "members") List<Long> members) {
         return ResponseEntity.ok(conversationService.addMember(id, conversationId, members));
     }
 
@@ -83,8 +84,8 @@ public class ConversationController {
 
     @PatchMapping("/{conversationId}/grant-owner")
     public ResponseEntity<Conversation> grantOwner(@RequestHeader("sub") Long adminId,
-                                        @PathVariable String conversationId,
-                                        @RequestParam(name = "member-id") Long memberId) {
+                                                   @PathVariable String conversationId,
+                                                   @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.grantOwner(adminId, conversationId, memberId));
     }
 
@@ -96,15 +97,15 @@ public class ConversationController {
 
     @PatchMapping("/{conversationId}/kick")
     public ResponseEntity<SimpleConversationDTO> kickMember(@RequestHeader("sub") Long adminId,
-                                        @PathVariable String conversationId,
-                                        @RequestParam(name = "member-id") Long memberId) {
+                                                            @PathVariable String conversationId,
+                                                            @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.kickMember(adminId, conversationId, memberId));
     }
 
     @PatchMapping("/{conversationId}/grant-deputy")
     public ResponseEntity<SimpleConversationDTO> grantDeputy(@RequestHeader("sub") Long adminId,
-                                         @PathVariable String conversationId,
-                                         @RequestParam(name = "member-id") Long memberId) {
+                                                             @PathVariable String conversationId,
+                                                             @RequestParam(name = "member-id") Long memberId) {
         return ResponseEntity.ok(conversationService.grantDeputy(adminId, conversationId, memberId));
     }
 
@@ -132,4 +133,26 @@ public class ConversationController {
         return ResponseEntity.ok(conversationService.joinByLink(id, link));
     }
 
+    @GetMapping("/pending-member/{conversationId}")
+    public ResponseEntity<List<PendingMemberRequestDetail>> getPendingMemberRequests(@PathVariable String conversationId) {
+        return ResponseEntity.ok(conversationService.getPendingMemberRequests(conversationId));
+    }
+
+    @PatchMapping("/approve-pending-member")
+    public ResponseEntity<String> approvePendingMemberRequest(@RequestHeader("sub") Long userId,
+                                                              @RequestParam("conversation_id") String conversationId,
+                                                              @RequestParam("requester_id") Long requesterId,
+                                                              @RequestParam("waiting_member_id") Long waitingMemberId) {
+        conversationService.approvePendingMemberRequest(userId, conversationId, requesterId, waitingMemberId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/reject-pending-member")
+    public ResponseEntity<String> rejectPendingMemberRequest(@RequestHeader("sub") Long userId,
+                                                             @RequestParam("conversation_id") String conversationId,
+                                                             @RequestParam("requester_id") Long requesterId,
+                                                             @RequestParam("waiting_member_id") Long waitingMemberId) {
+        conversationService.rejectPendingMemberRequest(userId, conversationId, requesterId, waitingMemberId);
+        return ResponseEntity.ok().build();
+    }
 }

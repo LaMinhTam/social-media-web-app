@@ -332,12 +332,17 @@ services:
             - SPRING_DATA_MONGODB_DATABASE=chat_db
             - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
             - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
+            - SPRING_RABBITMQ_HOST=rabbitmq
+            - SPRING_RABBITMQ_PORT=5672
+            - SPRING_RABBITMQ_USERNAME=admin
+            - SPRING_RABBITMQ_PASSWORD=123456
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
             - db-mongodb-net
+            - rabbitmq-net
             - db-redis-net
 
     notification-service:
@@ -356,12 +361,17 @@ services:
             - SPRING_DATA_REDIS_PORT=6379
             - SPRING_DATA_REDIS_TIMEOUT=60000
             - SPRING_DATA_REDIS_PASSWORD=123456
+            - SPRING_RABBITMQ_HOST=rabbitmq
+            - SPRING_RABBITMQ_PORT=5672
+            - SPRING_RABBITMQ_USERNAME=admin
+            - SPRING_RABBITMQ_PASSWORD=123456
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
             - db-redis-net
+            - rabbitmq-net
 
     # nextjs14-social-media-fe:
     #     image: dinhthong17/nextjs14-social-media-fe:latest
