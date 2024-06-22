@@ -40,4 +40,12 @@ public record MessageDetailDTO(String messageId,
                 readBy,
                 replyMessage);
     }
+
+    public static MessageDetailDTO createMessageDetailDTO(Message message, Map<Long, UserDetail> userDetailMap) {
+        UserDetail senderUserDetail = userDetailMap.get(message.getSenderId());
+        List<UserDetail> targetUserDetails = (message.getTargetUserId() != null)
+                ? message.getTargetUserId().stream().map(userDetailMap::get).toList()
+                : null;
+        return new MessageDetailDTO(message.getId().toString(), message.getConversationId(), senderUserDetail, targetUserDetails, message.getContent(), message.getMedia(), message.getType(), message.getNotificationType(), message.getReactions(), message.getCreatedAt(), message.getUpdatedAt(), null, null);
+    }
 }

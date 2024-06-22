@@ -29,8 +29,9 @@ public class ConversationDTO implements Serializable {
     private ConversationSettings settings;
     private List<Long> deputies;
     private List<String> pinnedMessages;
+    private MessageDetailDTO lastMessage;
 
-    public ConversationDTO(Conversation conversation, Map<Long, UserDetail> userModels, Long id) {
+    public ConversationDTO(Conversation conversation, Map<Long, UserDetail> userModels, Long id, MessageDetailDTO lastMessage) {
         ConversationDTO conversationDTO = ConversationDTO.builder()
                 .conversationId(conversation.getId().toHexString())
                 .members(userModels)
@@ -56,6 +57,7 @@ public class ConversationDTO implements Serializable {
         this.settings = conversation.getSettings();
         this.deputies = conversation.getDeputies();
         this.pinnedMessages = conversation.getPinnedMessages();
+        this.lastMessage = lastMessage;
     }
 
     public UserDetail getOtherMember(Long id) {

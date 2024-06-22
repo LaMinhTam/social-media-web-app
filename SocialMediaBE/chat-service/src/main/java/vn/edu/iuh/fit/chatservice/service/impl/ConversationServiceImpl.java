@@ -3,10 +3,10 @@ package vn.edu.iuh.fit.chatservice.service.impl;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.fit.chatservice.client.NotificationClient;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
 import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
 import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
+import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
 import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
@@ -98,7 +98,15 @@ public class ConversationServiceImpl implements ConversationService {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         List<Long> memberIds = conversation.getMembers();
         Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
-        return new ConversationDTO(conversation, userModels, userId);
+        Map<String, Message> messages = messageRepository.findLastMessagesByConversationIdIn(userId, List.of(conversation.getId().toHexString()));
+
+        return new ConversationDTO(
+                conversation,
+                userModels,
+                userId,
+                messages.get(conversationId) != null ?
+                        MessageDetailDTO.createMessageDetailDTO(messages.get(conversationId), userModels) :
+                        null);
     }
 
     @Override
@@ -109,20 +117,27 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public List<ConversationDTO> findConversationsByUserId(Long id) {
         List<Conversation> conversations = conversationRepository.findByMembersAndStatus(List.of(id), ConversationStatus.ACTIVE);
+        Map<String, Message> messages = messageRepository.findLastMessagesByConversationIdIn(id, conversations.stream().map(conversation -> conversation.getId().toHexString()).toList());
         List<Long> memberIds = conversations.stream()
                 .flatMap(conversation -> conversation.getMembers().stream())
                 .distinct().toList();
         Map<Long, UserDetail> userModels = userClient.getUsersByIds(memberIds).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
         List<ConversationDTO> conversationDTOS = conversations.stream()
-                .map(conversation -> new ConversationDTO(
-                                conversation,
-                                conversation.getMembers().stream()
-                                        .collect(Collectors.toMap(
-                                                memberId -> memberId,
-                                                userModels::get
-                                        )),
-                                id
-                        )
+                .map(conversation -> {
+                            Message lastMessage = messages.get(conversation.getId().toHexString());
+                            MessageDetailDTO messageDetailDTO = (lastMessage != null) ? MessageDetailDTO.createMessageDetailDTO(lastMessage, userModels) : null;
+
+                            return new ConversationDTO(
+                                    conversation,
+                                    conversation.getMembers().stream()
+                                            .collect(Collectors.toMap(
+                                                    memberId -> memberId,
+                                                    userModels::get
+                                            )),
+                                    id,
+                                    messageDetailDTO
+                            );
+                        }
                 )
                 .toList();
         conversationDTOS.forEach(currentConversation -> {
@@ -504,7 +519,7 @@ public class ConversationServiceImpl implements ConversationService {
 
     private ConversationDTO createConversationDTO(Conversation conversation, List<Long> members) {
         Map<Long, UserDetail> userModels = userClient.getUsersByIds(members).stream().collect(Collectors.toMap(UserDetail::user_id, u -> u));
-        return new ConversationDTO(conversation, userModels, conversation.getOwnerId());
+        return new ConversationDTO(conversation, userModels, conversation.getOwnerId(), null);
     }
 
     private Message createNotificationMessageForUpdateSetting(String conversationId, Long adminId, NotificationType
