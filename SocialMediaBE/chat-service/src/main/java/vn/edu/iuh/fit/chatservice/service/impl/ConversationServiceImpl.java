@@ -4,10 +4,8 @@ import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
-import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
-import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
-import vn.edu.iuh.fit.chatservice.dto.MessageDetailDTO;
-import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
+import vn.edu.iuh.fit.chatservice.dto.*;
+import vn.edu.iuh.fit.chatservice.entity.PendingMemberRequest;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationStatus;
@@ -20,10 +18,12 @@ import vn.edu.iuh.fit.chatservice.message.MessageNotificationProducer;
 import vn.edu.iuh.fit.chatservice.model.UserDetail;
 import vn.edu.iuh.fit.chatservice.repository.ConversationRepository;
 import vn.edu.iuh.fit.chatservice.repository.MessageRepository;
+import vn.edu.iuh.fit.chatservice.repository.PendingMemberRequestRepository;
 import vn.edu.iuh.fit.chatservice.service.ConversationService;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ConversationServiceImpl implements ConversationService {
@@ -31,12 +31,14 @@ public class ConversationServiceImpl implements ConversationService {
     private final MessageRepository messageRepository;
     private final UserClient userClient;
     private final MessageNotificationProducer messageNotificationProducer;
+    private final PendingMemberRequestRepository pendingMemberRequestRepository;
 
-    public ConversationServiceImpl(ConversationRepository conversationRepository, MessageRepository messageRepository, UserClient userClient, MessageNotificationProducer messageNotificationProducer) {
+    public ConversationServiceImpl(ConversationRepository conversationRepository, MessageRepository messageRepository, UserClient userClient, MessageNotificationProducer messageNotificationProducer, PendingMemberRequestRepository pendingMemberRequestRepository) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.userClient = userClient;
         this.messageNotificationProducer = messageNotificationProducer;
+        this.pendingMemberRequestRepository = pendingMemberRequestRepository;
     }
 
     public String createPrivateConversation(List<Long> members) {
@@ -177,21 +179,15 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public SimpleConversationDTO addMember(Long userId, String conversationId, List<Long> members) {
+    public SimpleConversationDTO addMember(Long userId, String conversationId, List<Long> newMembers) {
         Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
         if (conversation.getType().equals(ConversationType.PRIVATE)) {
             throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "You can not add member to a private conversation");
         }
 
-        members = members.stream()
-                .filter(memberId -> !conversation.getMembers().contains(memberId))
-                .toList();
+        newMembers = filterNewMembers(conversation, newMembers);
 
-        if (members.isEmpty()) {
-            throw new AppException(HttpStatus.BAD_REQUEST.value(), "All members are already in this conversation");
-        }
-
-        members.forEach(memberId -> {
+        newMembers.forEach(newMemberId -> {
             //1. check if user is owner, if owner then could invite
             //2. check if member have permission to invite
             //3. check if deputy have permission to invite, and deputy is not null, and user is deputy
@@ -201,21 +197,103 @@ public class ConversationServiceImpl implements ConversationService {
                 throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to invite member");
             }
 
-            conversation.getMembers().add(memberId);
-            Message message = Message.builder()
-                    .conversationId(conversationId)
-                    .senderId(userId)
-                    .targetUserId(List.of(memberId))
-                    .createdAt(new Date())
-                    .updatedAt(new Date())
-                    .type(MessageType.NOTIFICATION)
-                    .notificationType(NotificationType.ADD_MEMBER)
-                    .build();
-            messageRepository.save(message);
-            messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
+            if (conversation.getSettings().isConfirmNewMember() && !conversation.getOwnerId().equals(userId)) {
+                pendingMemberRequestRepository.save(
+                        new PendingMemberRequest(
+                                conversation.getId().toHexString(),
+                                userId,
+                                newMemberId,
+                                new Date()
+                        )
+                );
+            } else {
+                conversation.getMembers().add(newMemberId);
+                Message message = Message.builder()
+                        .conversationId(conversationId)
+                        .senderId(userId)
+                        .targetUserId(List.of(newMemberId))
+                        .createdAt(new Date())
+                        .updatedAt(new Date())
+                        .type(MessageType.NOTIFICATION)
+                        .notificationType(NotificationType.ADD_MEMBER)
+                        .build();
+                messageRepository.save(message);
+                messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
+            }
         });
 
         return saveAndReturnDTO(conversation);
+    }
+
+    private List<Long> filterNewMembers(Conversation conversation, List<Long> newMembers) {
+        // Filter out members who are already in the conversation
+        List<Long> filteredMembers = newMembers.stream()
+                .filter(memberId -> !conversation.getMembers().contains(memberId))
+                .toList();
+
+        if (filteredMembers.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "All members are already in this conversation");
+        }
+
+        // Get the list of pending member requests
+        List<PendingMemberRequest> pendingMemberRequests = pendingMemberRequestRepository.findByConversationId(conversation.getId().toHexString());
+
+        // Filter out members who are already in the pending list
+        filteredMembers = filteredMembers.stream()
+                .filter(newMemberId -> pendingMemberRequests.stream().noneMatch(pendingMemberRequest -> pendingMemberRequest.getMemberId().equals(newMemberId)))
+                .toList();
+
+        if (filteredMembers.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "All new members are already in the pending list");
+        }
+
+        return filteredMembers;
+    }
+
+    @Override
+    public List<PendingMemberRequestDetail> getPendingMemberRequests(String conversationId) {
+        List<PendingMemberRequest> pendingMemberRequests = pendingMemberRequestRepository.findByConversationId(conversationId);
+        List<Long> userIds = pendingMemberRequests.stream()
+                .flatMap(pendingMemberRequest -> Stream.of(pendingMemberRequest.getRequesterId(), pendingMemberRequest.getMemberId()))
+                .toList();
+
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(userIds);
+        return pendingMemberRequests.stream()
+                .map(pendingMemberRequest -> PendingMemberRequestDetail.create(pendingMemberRequest, userDetailMap))
+                .toList();
+    }
+
+    @Override
+    public void approvePendingMemberRequest(Long userId, String conversationId, Long requesterId, Long waitingMemberId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        PendingMemberRequest pendingMemberRequest = pendingMemberRequestRepository.findByConversationIdAndRequesterIdAndMemberId(conversationId, requesterId, waitingMemberId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Pending member request not found"));
+        if (!conversation.getOwnerId().equals(userId)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to approve member request");
+        }
+        conversation.getMembers().add(waitingMemberId);
+        pendingMemberRequestRepository.delete(pendingMemberRequest);
+        Message message = Message.builder()
+                .conversationId(conversationId)
+                .senderId(userId)
+                .targetUserId(List.of(requesterId))
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .type(MessageType.NOTIFICATION)
+                .notificationType(NotificationType.ADD_MEMBER)
+                .build();
+        messageRepository.save(message);
+        conversationRepository.save(conversation);
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
+    }
+
+    @Override
+    public void rejectPendingMemberRequest(Long userId, String conversationId, Long requesterId, Long waitingMemberId) {
+        Conversation conversation = conversationRepository.findById(new ObjectId(conversationId), userId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+        PendingMemberRequest pendingMemberRequest = pendingMemberRequestRepository.findByConversationIdAndRequesterIdAndMemberId(conversationId, requesterId, waitingMemberId).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Pending member request not found"));
+        if (!conversation.getOwnerId().equals(userId)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not allowed to reject member request");
+        }
+        pendingMemberRequestRepository.delete(pendingMemberRequest);
     }
 
     @Override
@@ -227,18 +305,29 @@ public class ConversationServiceImpl implements ConversationService {
         if (!conversation.getSettings().isJoinByLink()) {
             throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "This conversation does not allow join by link");
         }
-        conversation.getMembers().add(id);
-        Message message = Message.builder()
-                .conversationId(conversation.getId().toHexString())
-                .senderId(id)
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .type(MessageType.NOTIFICATION)
-                .notificationType(NotificationType.JOIN_BY_LINK)
-                .build();
+        if (conversation.getSettings().isConfirmNewMember()) {
+            pendingMemberRequestRepository.save(
+                    new PendingMemberRequest(
+                            conversation.getId().toHexString(),
+                            id,
+                            id,
+                            new Date()
+                    )
+            );
+        } else {
+            conversation.getMembers().add(id);
+            Message message = Message.builder()
+                    .conversationId(conversation.getId().toHexString())
+                    .senderId(id)
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .type(MessageType.NOTIFICATION)
+                    .notificationType(NotificationType.JOIN_BY_LINK)
+                    .build();
+            messageRepository.save(message);
+            messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
+        }
         Conversation savedConversation = conversationRepository.save(conversation);
-        messageRepository.save(message);
-        messageNotificationProducer.notifyConversationMembers(conversation, message, "message");
         return createConversationDTO(savedConversation, conversation.getMembers());
     }
 

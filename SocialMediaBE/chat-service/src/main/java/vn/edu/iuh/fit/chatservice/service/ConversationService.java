@@ -2,6 +2,7 @@ package vn.edu.iuh.fit.chatservice.service;
 
 import vn.edu.iuh.fit.chatservice.dto.ConversationDTO;
 import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
+import vn.edu.iuh.fit.chatservice.dto.PendingMemberRequestDetail;
 import vn.edu.iuh.fit.chatservice.dto.SimpleConversationDTO;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
 import vn.edu.iuh.fit.chatservice.entity.conversation.ConversationSettings;
@@ -29,6 +30,12 @@ public interface ConversationService {
     ConversationSettings updateConversationSettings(Long adminId, String conversationId, ConversationSettingsRequest settings);
 
     SimpleConversationDTO addMember(Long id, String conversationId, List<Long> memberId);
+
+    List<PendingMemberRequestDetail> getPendingMemberRequests(String conversationId);
+
+    void approvePendingMemberRequest(Long userId, String conversationId, Long requesterId, Long waitingMemberId);
+
+    void rejectPendingMemberRequest(Long userId, String conversationId, Long requesterId, Long waitingMemberId);
 
     ConversationDTO joinByLink(Long id, String link);
 
