@@ -27,7 +27,7 @@ public class WebSocketController {
 
     @MessageMapping("/message")
     public void processMessageFromClient(SimpMessageHeaderAccessor sha, @Payload MessageFromClientDTO message) {
-        String userId = sha.getNativeHeader("sub").get(0);
+        String userId = sha.getSessionAttributes().get("sub").toString();
         try {
             ReplyMessageDTO replyToMessage = null;
             if (message.reply_to_message_id() != null) {
@@ -67,7 +67,7 @@ public class WebSocketController {
     @MessageExceptionHandler
     @SendToUser("/topic/errors")
     public String handleException(@Payload Map<String, Object> msg, SimpMessageHeaderAccessor sha, Throwable exception) {
-        String userId = sha.getNativeHeader("sub").get(0);
+        String userId = sha.getSessionAttributes().get("sub").toString();
         if (msg.get("conversation_id") == null || msg.get("message") == null) {
             sendMessageToUser(userId, "error", "unknown error");
         } else {

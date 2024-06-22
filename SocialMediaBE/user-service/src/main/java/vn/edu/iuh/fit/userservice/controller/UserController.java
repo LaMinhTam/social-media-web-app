@@ -21,7 +21,7 @@ public class UserController {
 
     @PostMapping("/create-user")
     public User createUser(@RequestBody RequestCreateUser request) {
-        return userService.createUser(request.id(), request.name(), request.email(), request.imageUrl());
+        return userService.createUser(request.id(), request.name(), request.email(), request.imageUrl(), request.cover());
     }
 
     @GetMapping("/me")
@@ -42,5 +42,10 @@ public class UserController {
     @GetMapping
     public List<UserModel> getUsersByIds(@RequestParam List<Long> ids) {
         return userService.getUsersByIds(ids);
+    }
+
+    @PutMapping
+    public ResponseEntity<UserModel> updateUser(@RequestHeader("sub") Long id, @RequestBody RequestCreateUser request) {
+        return ResponseEntity.ok(userService.updateUser(id, request.name(), request.email(), request.imageUrl(), request.cover()));
     }
 }

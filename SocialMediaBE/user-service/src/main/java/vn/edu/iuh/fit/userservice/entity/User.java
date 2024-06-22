@@ -17,12 +17,11 @@ public class User {
     @Email
     private String email;
     private String imageUrl;
+    private String cover;
     @Relationship(type = "SEND", direction = Relationship.Direction.OUTGOING)
     private List<FriendRelationship> sentRequests = new ArrayList<>();
-
     @Relationship(type = "RECEIVE", direction = Relationship.Direction.INCOMING)
     private List<FriendRelationship> receivedRequests = new ArrayList<>();
-
     @Relationship(type = "FRIEND", direction = Relationship.Direction.OUTGOING)
     private List<FriendRelationship> friends = new ArrayList<>();
     @Relationship(type = "BLOCK", direction = Relationship.Direction.OUTGOING)
@@ -33,19 +32,21 @@ public class User {
     public User() {
     }
 
-    public User(Long userId, String name, String email, String imageUrl) {
+    public User(Long userId, String name, String email, String imageUrl, String cover) {
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.imageUrl = imageUrl;
+        this.cover = cover;
     }
 
-    public User(Long id, Long userId, String name, String email, String imageUrl, List<FriendRelationship> sentRequests, List<FriendRelationship> receivedRequests, List<FriendRelationship> friends, List<FriendRelationship> blocked, List<FriendRelationship> blockedBy) {
+    public User(Long id, Long userId, String name, String email, String imageUrl, String cover, List<FriendRelationship> sentRequests, List<FriendRelationship> receivedRequests, List<FriendRelationship> friends, List<FriendRelationship> blocked, List<FriendRelationship> blockedBy) {
         this.id = id;
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.imageUrl = imageUrl;
+        this.cover = cover;
         this.sentRequests = sentRequests;
         this.receivedRequests = receivedRequests;
         this.friends = friends;
@@ -87,6 +88,14 @@ public class User {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public String getCover() {
+        return cover;
+    }
+
+    public void setCover(String cover) {
+        this.cover = cover;
     }
 
     public void setImageUrl(String imageUrl) {

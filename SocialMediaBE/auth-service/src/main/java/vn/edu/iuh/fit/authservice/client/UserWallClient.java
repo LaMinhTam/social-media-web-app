@@ -5,17 +5,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 import vn.edu.iuh.fit.authservice.dto.RequestCreateUser;
 
 @Service
-public class UserClient {
+public class UserWallClient {
     private final WebClient webClient;
 
-    public UserClient(WebClient userWebClient) {
-        this.webClient = userWebClient;
+    public UserWallClient(WebClient userWallWebClient) {
+        this.webClient = userWallWebClient;
     }
 
-    public void createUser(RequestCreateUser requestCreateUser) {
+    public void createUser(Long id) {
         webClient.post()
-                .uri("/user/create-user")
-                .bodyValue(requestCreateUser)
+                .uri("/user-wall")
+                .bodyValue(id)
                 .retrieve()
                 .bodyToMono(RequestCreateUser.class)
                 .block();

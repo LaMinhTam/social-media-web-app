@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping
-    public void saveUser(Long userId) {
+    public void saveUser(@RequestBody Long userId) {
         userService.saveUser(userId);
     }
 

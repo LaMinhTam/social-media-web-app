@@ -33,16 +33,17 @@ public class Interceptor implements ChannelInterceptor {
         try {
             if (StompCommand.CONNECT.equals(command)) {
                 String userId = extractUserIdAndSetInHeader(headerAccessor);
+                headerAccessor.getSessionAttributes().put("sub", userId);
                 Thread thread = new Thread(() -> {
                     userSessionService.addUserSession(userId, headerAccessor.getSessionId());
                     userSessionService.onlineNotification(userId);
                 });
                 thread.start();
             }
-            if(StompCommand.SUBSCRIBE.equals(command)){
-                String userIdFromJwt = extractUserIdAndSetInHeader(headerAccessor);
+            if (StompCommand.SUBSCRIBE.equals(command)) {
+                String sub = headerAccessor.getSessionAttributes().get("sub").toString();
                 String subscribeUserId = msg.getHeaders().get("simpDestination").toString().split("/")[2];
-                if(!userIdFromJwt.equals(subscribeUserId)){
+                if (!sub.equals(subscribeUserId)) {
                     throw new RuntimeException("Unauthorized");
                 }
             }
@@ -50,10 +51,10 @@ public class Interceptor implements ChannelInterceptor {
 //            return MessageBuilder.createMessage(msg.getPayload(), headerAccessor.getMessageHeaders());
             }
             if (StompCommand.DISCONNECT.equals(command)) {
-                String userId = extractUserIdAndSetInHeader(headerAccessor);
                 Thread thread = new Thread(() -> {
+                    String sub = headerAccessor.getSessionAttributes().get("sub").toString();
                     userSessionService.removeUserSession(headerAccessor.getSessionId());
-                    userSessionService.onlineNotification(userId);
+                    userSessionService.offlineNotification(sub);
                 });
                 thread.start();
             }

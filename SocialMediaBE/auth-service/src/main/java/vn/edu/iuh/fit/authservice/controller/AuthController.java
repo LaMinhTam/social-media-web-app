@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import vn.edu.iuh.fit.authservice.client.UserClient;
+import vn.edu.iuh.fit.authservice.client.UserWallClient;
 import vn.edu.iuh.fit.authservice.exception.BadRequestException;
 import vn.edu.iuh.fit.authservice.model.AuthProvider;
 import vn.edu.iuh.fit.authservice.model.User;
@@ -42,10 +43,12 @@ public class AuthController {
     private CustomUserDetailsService userDetailsService;
     @Autowired
     private UserClient userClient;
+    @Autowired
+    private UserWallClient userWallClient;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        try{
+        try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getEmail(),
@@ -57,7 +60,7 @@ public class AuthController {
             String accessToken = tokenProvider.createToken(authentication);
             String refreshToken = tokenProvider.refreshToken((UserPrincipal) authentication.getPrincipal());
             return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
-        }catch (InternalAuthenticationServiceException e){
+        } catch (InternalAuthenticationServiceException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email or password is incorrect");
         }
     }
@@ -81,8 +84,8 @@ public class AuthController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/user/me")
                 .buildAndExpand(result.getId()).toUri();
-        userClient.createUser(new RequestCreateUser(result.getId(), signUpRequest.getName(), signUpRequest.getEmail(), "https://source.unsplash.com/random"));
-
+        userClient.createUser(new RequestCreateUser(result.getId(), signUpRequest.getName(), signUpRequest.getEmail(), "https://source.unsplash.com/random", "https://source.unsplash.com/random"));
+        userWallClient.createUser(result.getId());
         return ResponseEntity.created(location)
                 .body(new ApiResponse(true, "User registered successfully"));
     }
