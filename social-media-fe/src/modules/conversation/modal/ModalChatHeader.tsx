@@ -12,6 +12,7 @@ import { setCurrentConversation } from "@/store/actions/conversationSlice";
 import { ConversationResponse } from "@/types/conversationType";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupSetting from "./group/GroupSetting";
+import VideoCallDialog from "./call/VideoCallDialog";
 
 const ModalChatHeader = ({
     username,
@@ -95,9 +96,37 @@ const ModalChatHeader = ({
                     <IconButton size="small" color="inherit">
                         <CallIcon />
                     </IconButton>
-                    <IconButton size="small" color="inherit">
-                        <VideocamIcon />
-                    </IconButton>
+                    <PopupState variant="popover" popupId="call-popup-popover">
+                        {(popupState) => (
+                            <div>
+                                <IconButton
+                                    size="small"
+                                    color="inherit"
+                                    {...bindTrigger(popupState)}
+                                >
+                                    <VideocamIcon />
+                                </IconButton>
+                                <Popover
+                                    {...bindPopover(popupState)}
+                                    anchorOrigin={{
+                                        vertical: "bottom",
+                                        horizontal: "left",
+                                    }}
+                                    transformOrigin={{
+                                        vertical: "top",
+                                        horizontal: "right",
+                                    }}
+                                >
+                                    <VideoCallDialog
+                                        setOpenVideoCallDialog={
+                                            popupState.setOpen
+                                        }
+                                        openVideoCallDialog={popupState.isOpen}
+                                    ></VideoCallDialog>
+                                </Popover>
+                            </div>
+                        )}
+                    </PopupState>
                     <IconButton size="small" color="inherit">
                         <RemoveIcon />
                     </IconButton>
