@@ -80,4 +80,24 @@ public class Conversation {
         this.createdAt = conversation.createdAt;
         this.updatedAt = conversation.updatedAt;
     }
+
+    public Conversation(ConversationType type, List<Long> members, ConversationStatus status) {
+        this.type = type;
+        this.members = members;
+        this.status = status;
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
+    public Conversation(Long ownerId, ConversationType type, String name, String avatar, List<Long> members, ConversationStatus status) {
+        this.ownerId = ownerId;
+        this.type = type;
+        this.name = Optional.ofNullable(name).orElse("");
+        this.avatar = Optional.ofNullable(avatar).orElse("");
+        this.members = members;
+        this.settings = new ConversationSettings();
+        this.status = status;
+        this.updatedAt = new Date();
+        this.createdAt = new Date();
+    }
 }

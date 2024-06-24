@@ -21,7 +21,7 @@ public interface MessageService {
 
     MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction);
 
-    void markMessageAsRead(Long id, ObjectId messageId);
+    void markMessageAsRead(Long id, String messageId);
 
     void deleteMessage(Long id, String messageId);
 

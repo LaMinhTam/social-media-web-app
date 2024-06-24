@@ -21,10 +21,10 @@ public class PendingMemberRequest {
     private Long memberId;
     private Date createdAt;
 
-    public PendingMemberRequest(String conversationId, Long requesterId, Long memberId, Date createdAt) {
+    public PendingMemberRequest(String conversationId, Long requesterId, Long memberId) {
         this.conversationId = conversationId;
         this.requesterId = requesterId;
         this.memberId = memberId;
-        this.createdAt = createdAt;
+        this.createdAt = new Date();
     }
 }
