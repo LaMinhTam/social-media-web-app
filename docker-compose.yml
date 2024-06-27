@@ -345,6 +345,31 @@ services:
             - rabbitmq-net
             - db-redis-net
 
+    post-service:
+        image: laminhtam/social-media-post-service:latest
+        container_name: post-service-con
+        restart: always
+        ports:
+            - "8083:8083"
+        environment:
+            - CONFIG_SERVER_URL=http://config-server:8889
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+            - SPRING_DATA_MONGODB_PORT=27017
+            - SPRING_DATA_MONGODB_HOST=db-mongodb-con
+            - SPRING_DATA_MONGODB_DATABASE=post_db
+            - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
+            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
+            - SPRING_NEO4J_URI=bolt://localhost:7687/friend_db
+            - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
+            - SPRING_NEO4J_AUTHENTICATION_PASSWORD=12345678
+        depends_on:
+            service-registry:
+                condition: service_healthy
+        networks:
+            - backend
+            - db-mongodb-net
+            - db-neo4j-net
+
     notification-service:
         image: laminhtam/social-media-notification-service:latest
         container_name: notification-service-con
