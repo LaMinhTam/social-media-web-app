@@ -52,4 +52,33 @@ public class Message {
     @Column(name = "deleted_by")
     @JsonProperty("deleted_by")
     private List<Long> deletedBy;
+
+    public Message(String conversationId, Long senderId, MessageType type, NotificationType notificationType) {
+        this.conversationId = conversationId;
+        this.senderId = senderId;
+        this.type = type;
+        this.notificationType = notificationType;
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
+    public Message(String conversationId, Long senderId, List<Long> targetUserId, MessageType type, NotificationType notificationType) {
+        this.conversationId = conversationId;
+        this.senderId = senderId;
+        this.targetUserId = targetUserId;
+        this.type = type;
+        this.notificationType = notificationType;
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
+    public Message(String conversationId, Long senderId, String content, MessageType type, NotificationType notificationType) {
+        this.conversationId = conversationId;
+        this.senderId = senderId;
+        this.type = type;
+        this.content = content;
+        this.notificationType = notificationType;
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
 }

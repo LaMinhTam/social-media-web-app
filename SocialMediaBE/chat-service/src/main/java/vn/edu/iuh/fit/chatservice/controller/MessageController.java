@@ -83,7 +83,7 @@ public class MessageController {
 
     @PatchMapping("/{messageId}/read")
     public ResponseEntity<Void> markMessageAsRead(@RequestHeader("sub") Long id, @PathVariable String messageId) {
-        messageService.markMessageAsRead(id, new ObjectId(messageId));
+        messageService.markMessageAsRead(id, messageId);
         return ResponseEntity.ok().build();
     }
 

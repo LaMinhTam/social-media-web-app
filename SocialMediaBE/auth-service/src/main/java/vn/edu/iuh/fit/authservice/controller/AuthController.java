@@ -3,7 +3,6 @@ package vn.edu.iuh.fit.authservice.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -16,14 +15,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import vn.edu.iuh.fit.authservice.client.UserClient;
 import vn.edu.iuh.fit.authservice.client.UserWallClient;
-import vn.edu.iuh.fit.authservice.exception.BadRequestException;
+import vn.edu.iuh.fit.authservice.dto.*;
 import vn.edu.iuh.fit.authservice.model.AuthProvider;
 import vn.edu.iuh.fit.authservice.model.User;
-import vn.edu.iuh.fit.authservice.dto.*;
 import vn.edu.iuh.fit.authservice.repository.UserRepository;
 import vn.edu.iuh.fit.authservice.security.CustomUserDetailsService;
 import vn.edu.iuh.fit.authservice.security.TokenProvider;
 import vn.edu.iuh.fit.authservice.security.UserPrincipal;
+import vn.edu.iuh.fit.authservice.service.AuthService;
 
 import java.net.URI;
 
@@ -45,6 +44,8 @@ public class AuthController {
     private UserClient userClient;
     @Autowired
     private UserWallClient userWallClient;
+    @Autowired
+    private AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -56,9 +57,9 @@ public class AuthController {
                     )
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String accessToken = tokenProvider.createToken(authentication);
-            String refreshToken = tokenProvider.refreshToken((UserPrincipal) authentication.getPrincipal());
+            UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+            String accessToken = tokenProvider.accessToken(principal);
+            String refreshToken = tokenProvider.refreshToken(principal);
             return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
         } catch (InternalAuthenticationServiceException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email or password is incorrect");
@@ -91,10 +92,18 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader("email") String email, @Valid @RequestBody TokenRefreshRequest tokenRefreshRequest) {
+    public ResponseEntity<?> refreshToken(@RequestHeader("email") String email, @RequestHeader("sub") Long sub, @RequestHeader("refresh-token") String refreshToken) {
+        authService.setTokenToBlackList(refreshToken, sub);
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        String accessToken = tokenProvider.accessToken((UserPrincipal) userDetails);
-        String refreshToken = tokenProvider.refreshToken((UserPrincipal) userDetails);
-        return ResponseEntity.ok(new TokenRefreshResponse(accessToken, refreshToken));
+        String newAccessToken = tokenProvider.accessToken((UserPrincipal) userDetails);
+        String newRefreshToken = tokenProvider.refreshToken((UserPrincipal) userDetails);
+        return ResponseEntity.ok(new TokenRefreshResponse(newAccessToken, newRefreshToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("sub") Long sub, @RequestHeader("refresh-token") String refreshToken) {
+        authService.setTokenToBlackList(refreshToken, sub);
+        return ResponseEntity.ok().build();
     }
 }

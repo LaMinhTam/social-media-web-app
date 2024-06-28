@@ -32,33 +32,27 @@ public class AuthenticationFilter implements GatewayFilter {
         ServerHttpRequest request = exchange.getRequest();
 
         if (routerValidator.isSecured.test(request)) {
-            if (this.isAuthMissing(request)) {
-                return this.onError(exchange, "Authorization header is missing in request", HttpStatus.UNAUTHORIZED);
-            }
-
             final String token = this.getAuthHeader(request);
+            if (routerValidator.isRefreshTokenRequest.test(request)) {
+                if (jwtUtil.isInValid(token) || !jwtUtil.isRefreshToken(token)) {
+                    return this.onError(exchange, "Authorization header is invalid or expired", HttpStatus.UNAUTHORIZED);
+                }
+                this.populateRefreshRequestWithHeaders(exchange, token);
+            } else {
+                if (this.isAuthMissing(request)) {
+                    return this.onError(exchange, "Authorization header is missing in request", HttpStatus.UNAUTHORIZED);
+                }
 
-            if (jwtUtil.isInValid(token))
-                return this.onError(exchange, "Authorization header is invalid or expired", HttpStatus.UNAUTHORIZED);
+                if (jwtUtil.isInValid(token))
+                    return this.onError(exchange, "Authorization header is invalid or expired", HttpStatus.UNAUTHORIZED);
 
-            this.populateRequestWithHeaders(exchange, token);
-        } else if (routerValidator.isRefreshToken.test(request)) {
-            final String token = this.getAuthHeader(request);
-            if (!jwtUtil.isRefreshToken(token)) {
-                return this.onError(exchange, "Invalid token type", HttpStatus.UNAUTHORIZED);
+                this.populateRequestWithHeaders(exchange, token);
             }
-            this.populateRequestWithHeaders(exchange, token);
         }
         return chain.filter(exchange);
     }
 
-
-    /*PRIVATE*/
-
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
-//        ServerHttpResponse response = exchange.getResponse();
-//        response.setStatusCode(httpStatus);
-//        return response.setComplete();
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
         response.getHeaders().add("Content-Type", "application/json");
@@ -92,6 +86,16 @@ public class AuthenticationFilter implements GatewayFilter {
                 .header("sub", claims.getSubject())
                 .header("email", String.valueOf(claims.get("email")))
                 .header("role", String.valueOf(claims.get("role")))
+                .build();
+    }
+
+    private void populateRefreshRequestWithHeaders(ServerWebExchange exchange, String token) {
+        Claims claims = jwtUtil.getAllClaimsFromToken(token);
+        exchange.getRequest().mutate()
+                .header("sub", claims.getSubject())
+                .header("email", String.valueOf(claims.get("email")))
+                .header("role", String.valueOf(claims.get("role")))
+                .header("refresh-token", token.substring(7))
                 .build();
     }
 }

@@ -3,7 +3,6 @@ package vn.edu.iuh.fit.chatservice.service.impl;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import vn.edu.iuh.fit.chatservice.client.NotificationClient;
 import vn.edu.iuh.fit.chatservice.client.UserClient;
 import vn.edu.iuh.fit.chatservice.dto.*;
 import vn.edu.iuh.fit.chatservice.entity.conversation.Conversation;
@@ -39,22 +38,9 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message saveMessage(Long userId, MessageFromClientDTO messageDTO) {
-        Message.MessageBuilder messageBuilder = Message.builder();
-        if (!messageDTO.type().equals(MessageType.TEST)) {
-            Conversation conversation = conversationRepository.findById(new ObjectId(messageDTO.conversationId()), userId)
-                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
-            if (conversation.getType().equals(ConversationType.GROUP)) {
-                if (conversation.getStatus().equals(ConversationStatus.DISBAND)) {
-                    throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
-                } else if (conversation.getSettings().isRestrictedMessaging() &&
-                        !(conversation.getSettings().isAllowDeputySendMessages() &&
-                                conversation.getDeputies() != null &&
-                                conversation.getDeputies().contains(userId))) {
-                    throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
-                }
-            }
-        }
+        validateMessageDTO(messageDTO, userId);
         // Conditionally set fields
+        Message.MessageBuilder messageBuilder = Message.builder();
         Date timestamp = new Date();
         Optional.ofNullable(userId).ifPresent(messageBuilder::senderId);
         Optional.of(messageDTO.conversationId()).ifPresent(messageBuilder::conversationId);
@@ -73,13 +59,14 @@ public class MessageServiceImpl implements MessageService {
     public List<MessageDetailDTO> getMessagesByConversationId(Long userId, Conversation conversation, String messageId, int size) {
         List<Message> messages = messageRepository.findMessagesAfterMessageId(userId, conversation.getId().toHexString(), messageId, size);
 
-        Set<Long> userIds = messages.stream().flatMap(message -> Stream.concat(
-                Stream.of(message.getSenderId()),
-                message.getTargetUserId() == null ? Stream.empty() : message.getTargetUserId().stream())
-        ).collect(Collectors.toSet());
+        Set<Long> userIds = messages.stream()
+                .flatMap(message -> Stream.concat(Stream.of(message.getSenderId()),
+                        Optional.ofNullable(message.getTargetUserId()).orElse(Collections.emptyList()).stream()))
+                .collect(Collectors.toSet());
+
         userIds.addAll(conversation.getReadBy().keySet());
 
-        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(userIds);
         List<ObjectId> replyToMessageIds = messages.stream()
                 .map(message -> message.getReplyToMessageId() != null ? new ObjectId(message.getReplyToMessageId()) : null)
                 .filter(Objects::nonNull)
@@ -102,44 +89,42 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private List<UserDetail> getReadByUserDetails(Conversation conversation, Message message, Map<Long, UserDetail> userDetailMap) {
-        List<UserDetail> readBy = new ArrayList<>();
-        ObjectId messageId = message.getId();
-
-        conversation.getReadBy().forEach((userId, lastReadMessageId) -> {
-            if (isLaterMessage(lastReadMessageId, messageId)) {
-                readBy.add(userDetailMap.get(userId));
-            }
-        });
-
-        return readBy;
+        return conversation.getReadBy().entrySet().stream()
+                .filter(entry -> isLaterMessage(entry.getValue(), message.getId()))
+                .map(entry -> userDetailMap.get(entry.getKey()))
+                .toList();
     }
 
     @Override
     public MessageDTO revokeMessage(Long senderId, String messageId) {
-        Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        Message message = getMessageById(messageId);
         if (!message.getSenderId().equals(senderId)) {
             throw new AppException(HttpStatus.FORBIDDEN.value(), "You can't revoke this message");
         }
-        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId())).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+        Conversation conversation = getConversationById(message.getConversationId());
+        updateRevokedMessage(message);
+        messageNotificationProducer.notifyConversationMembers(conversation, message, "revoke");
+        notifyRevokeReplyMessages(conversation, message);
+
+        return new MessageDTO(messageRepository.save(message));
+    }
+
+    private void updateRevokedMessage(Message message) {
         message.setType(MessageType.REVOKED);
         message.setContent("This message has been revoked");
         message.setReactions(null);
         message.setMedia(null);
         message.setUpdatedAt(new Date());
-        messageNotificationProducer.notifyConversationMembers(conversation, message, "revoke");
-        Thread thread = new Thread(() -> {
-            List<Message> messages = messageRepository.findMessagesByReplyToMessageId(message.getId().toHexString());
-            messages.forEach(currentMessage ->
-                    messageNotificationProducer.notifyRevokeReplyMessage(conversation, currentMessage)
-            );
-        });
-        thread.start();
-        return new MessageDTO(messageRepository.save(message));
+    }
+
+    private void notifyRevokeReplyMessages(Conversation conversation, Message message) {
+        new Thread(() -> messageRepository.findMessagesByReplyToMessageId(message.getId().toHexString())
+                .forEach(replyMessage -> messageNotificationProducer.notifyRevokeReplyMessage(conversation, replyMessage))).start();
     }
 
     @Override
     public List<MessageDTO> shareMessage(Long senderId, String messageId, List<String> conversationIds) {
-        Message existMessage = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+        Message existMessage = getMessageById(messageId);
         List<Message> messages = new ArrayList<>();
         List<Conversation> conversations = new ArrayList<>();
         for (String conversationId : conversationIds) {
@@ -147,15 +132,12 @@ public class MessageServiceImpl implements MessageService {
             conversations.add(conversation);
             if (!conversation.getMembers().contains(existMessage.getSenderId())) {
                 throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
-            } else if (conversation.getType().equals(ConversationType.GROUP)) {
-                if (conversation.getStatus().equals(ConversationStatus.DISBAND)) {
-                    throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
-                } else if (conversation.getSettings().isRestrictedMessaging() &&
-                        !(conversation.getSettings().isAllowDeputySendMessages() &&
-                                conversation.getDeputies() != null &&
-                                conversation.getDeputies().contains(senderId))) {
-                    throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
-                }
+            } else if (conversation.getType().equals(ConversationType.GROUP) && conversation.getStatus().equals(ConversationStatus.DISBAND)) {
+                throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
+            } else if (conversation.getSettings().isRestrictedMessaging() &&
+                    !(conversation.getSettings().isAllowDeputySendMessages() &&
+                            Optional.ofNullable(conversation.getDeputies()).orElse(Collections.emptyList()).contains(senderId))) {
+                throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
             }
             Message.MessageBuilder messageBuilder = Message.builder();
             messageBuilder.senderId(senderId);
@@ -171,18 +153,18 @@ public class MessageServiceImpl implements MessageService {
             messages.add(messageBuilder.build());
         }
         List<Message> savedMessages = messageRepository.saveAll(messages);
-        conversations.forEach(conversation -> {
-            Message messageByConversationId = savedMessages.stream().filter(message -> message.getConversationId().equals(conversation.getId().toHexString())).findFirst().get();
-            messageNotificationProducer.notifyConversationMembers(conversation, messageByConversationId, "message");
-        });
+        conversations.forEach(conversation -> savedMessages.stream()
+                .filter(message -> message.getConversationId().equals(conversation.getId().toHexString()))
+                .findFirst()
+                .ifPresent(message -> messageNotificationProducer.notifyConversationMembers(conversation, message, "message")));
 
         return savedMessages.stream().map(MessageDTO::new).toList();
     }
 
     @Override
     public MessageDTO reactMessage(Long senderId, String messageId, ReactionType reaction) {
-        Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
-        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId())).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+        Message message = getMessageById(messageId);
+        Conversation conversation = getConversationById(message.getConversationId());
 
         if (message.getReactions() == null) {
             message.setReactions(new EnumMap<>(ReactionType.class));
@@ -194,77 +176,114 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void markMessageAsRead(Long id, ObjectId messageId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
-        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId()))
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
-        String lastReadMessageId = conversation.getReadBy().get(id);
-        if (lastReadMessageId == null || isLaterMessage(lastReadMessageId, messageId)) {
-            conversation.getReadBy().put(id, messageId.toHexString());
-            conversationRepository.save(conversation);
-            messageNotificationProducer.notifyRead(id, conversation, message);
-        }
+    public void markMessageAsRead(Long id, String messageId) {
+        Message message = getMessageById(messageId);
+        Conversation conversation = getConversationById(message.getConversationId());
+        //TODO: check if the message is later than the last read message
+        conversation.getReadBy().compute(id, (userId, lastReadMessageId) ->
+                Optional.ofNullable(lastReadMessageId)
+                        .filter(lastReadId -> !isLaterMessage(lastReadId, new ObjectId(messageId)))
+                        .orElse(messageId));
+        conversationRepository.save(conversation);
+        messageNotificationProducer.notifyRead(id, conversation, message);
     }
 
     @Override
     public void deleteMessage(Long id, String messageId) {
-        Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
-        if (message.getDeletedBy() == null) {
-            message.setDeletedBy(new ArrayList<>());
-        }
-        message.getDeletedBy().add(id);
+        Message message = getMessageById(messageId);
+//        if (message.getDeletedBy() == null) {
+//            message.setDeletedBy(new ArrayList<>());
+//        }
+//        message.getDeletedBy().add(id);
+        //TODO: check if the message is later than the last read message
+        Optional.ofNullable(message.getDeletedBy())
+                .ifPresentOrElse(deletedBy -> deletedBy.add(id), () -> {
+                    List<Long> deletedBy = new ArrayList<>();
+                    deletedBy.add(id);
+                    message.setDeletedBy(deletedBy);
+                });
+
         messageRepository.save(message);
     }
 
     @Override
     public ReplyMessageDTO getPlainMessage(Long id, String messageId) {
-        Message message = messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
-        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId())).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
-        if (!conversation.getMembers().contains(id)) {
-            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
-        }
+        Message message = getMessageById(messageId);
+        Conversation conversation = getConversationById(message.getConversationId());
+        validateConversationMember(id, conversation);
         return new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId());
 
     }
 
     @Override
     public Map<String, List<ReactionDetail>> getReactions(Long id, String messageId) {
-        Message message = messageRepository.findById(new ObjectId(messageId))
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
-        Conversation conversation = conversationRepository.findById(new ObjectId(message.getConversationId()))
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
-
-        if (!conversation.getMembers().contains(id)) {
-            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
-        }
+        Message message = getMessageById(messageId);
+        Conversation conversation = getConversationById(message.getConversationId());
+        validateConversationMember(id, conversation);
 
         Map<ReactionType, List<Long>> reactions = message.getReactions();
-        Set<Long> userIds = reactions.values().stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
-        Map<String, List<ReactionDetail>> reactionMap = new HashMap<>();
-
-        reactions.forEach((reactionType, userIdList) -> {
-            Map<Long, Long> userReactionCounts = userIdList.stream()
-                    .collect(Collectors.groupingBy(userId -> userId, Collectors.counting()));
-
-            List<ReactionDetail> reactionDetails = userReactionCounts.entrySet().stream()
-                    .map(entry -> {
-                        UserDetail userDetail = userDetailMap.get(entry.getKey());
-                        return new ReactionDetail(userDetail, entry.getValue());
-                    })
-                    .toList();
-
-            reactionMap.put(reactionType.name(), reactionDetails);
-        });
-
-        return reactionMap;
+        Set<Long> userIds = reactions.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+        Map<Long, UserDetail> userDetailMap = userClient.getUsersByIdsMap(userIds);
+//        Map<String, List<ReactionDetail>> reactionMap = new HashMap<>();
+//
+//        reactions.forEach((reactionType, userIdList) -> {
+//            Map<Long, Long> userReactionCounts = userIdList.stream()
+//                    .collect(Collectors.groupingBy(userId -> userId, Collectors.counting()));
+//
+//            List<ReactionDetail> reactionDetails = userReactionCounts.entrySet().stream()
+//                    .map(entry -> {
+//                        UserDetail userDetail = userDetailMap.get(entry.getKey());
+//                        return new ReactionDetail(userDetail, entry.getValue());
+//                    })
+//                    .toList();
+//
+//            reactionMap.put(reactionType.name(), reactionDetails);
+//        });
+        // TODO: refactor this
+        return reactions.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().name(),
+                        entry -> entry.getValue().stream()
+                                .collect(Collectors.groupingBy(userId -> userId, Collectors.counting()))
+                                .entrySet().stream()
+                                .map(userReaction -> new ReactionDetail(userDetailMap.get(userReaction.getKey()), userReaction.getValue()))
+                                .toList()
+                ));
     }
 
 
     private boolean isLaterMessage(String lastReadMessageId, ObjectId currentMessageId) {
         return currentMessageId.compareTo(new ObjectId(lastReadMessageId)) >= 0;
+    }
+
+    private Message getMessageById(String messageId) {
+        return messageRepository.findById(new ObjectId(messageId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Message not found"));
+    }
+
+    private void validateMessageDTO(MessageFromClientDTO messageDTO, Long userId) {
+        if (!messageDTO.type().equals(MessageType.TEST)) {
+            Conversation conversation = conversationRepository.findById(new ObjectId(messageDTO.conversationId()), userId)
+                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found or you are not a member of this conversation"));
+
+            if (conversation.getType().equals(ConversationType.GROUP) && conversation.getStatus().equals(ConversationStatus.DISBAND)) {
+                throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
+            }
+
+            if (conversation.getType().equals(ConversationType.GROUP) && conversation.getSettings().isRestrictedMessaging() &&
+                    !(conversation.getSettings().isAllowDeputySendMessages() &&
+                            Optional.ofNullable(conversation.getDeputies()).orElse(Collections.emptyList()).contains(userId))) {
+                throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
+            }
+        }
+    }
+
+    private Conversation getConversationById(String conversationId) {
+        return conversationRepository.findById(new ObjectId(conversationId)).orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Conversation not found"));
+    }
+
+    private void validateConversationMember(Long id, Conversation conversation) {
+        if (!conversation.getMembers().contains(id)) {
+            throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
+        }
     }
 }

@@ -3,6 +3,7 @@ package vn.edu.iuh.fit.chatservice.entity.conversation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.edu.iuh.fit.chatservice.dto.ConversationSettingsRequest;
 
 @Data
 @AllArgsConstructor
@@ -35,4 +36,21 @@ public class ConversationSettings {
         this.isAllowDeputyPromoteMember = false;
         this.isAllowDeputyDemoteMember = false;
     }
+
+    public ConversationSettings(ConversationSettingsRequest settings, String linkToJoinGroup) {
+        this.isConfirmNewMember = settings.isConfirmNewMember();
+        this.isRestrictedMessaging = settings.isRestrictedMessaging();
+        this.isAllowDeputySendMessages = settings.isAllowDeputySendMessages();
+        this.isJoinByLink = settings.isJoinByLink();
+        this.linkToJoinGroup = linkToJoinGroup;
+        this.isAllowMemberToChangeGroupInfo = settings.isAllowMemberToChangeGroupInfo();
+        this.isAllowDeputyToInviteMember = settings.isAllowDeputyToInviteMember();
+        this.isAllowMemberToInviteMember = settings.isAllowMemberToInviteMember();
+        this.isAllowDeputyRemoveMember = settings.isAllowDeputyRemoveMember();
+        this.isAllowDeputyChangeGroupInfo = settings.isAllowDeputyChangeGroupInfo();
+        this.isAllowMemberToPinMessage = settings.isAllowMemberToPinMessage();
+        this.isAllowDeputyPromoteMember = settings.isAllowDeputyPromoteMember();
+        this.isAllowDeputyDemoteMember = settings.isAllowDeputyDemoteMember();
+    }
+
 }
