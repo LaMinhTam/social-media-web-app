@@ -6,6 +6,7 @@ public record ReplyMessageDTO(
         String message_id,
         String content,
         List<String> media,
-        Long sender_id
+        Long sender_id,
+        MessageType type
 ) {
 }
