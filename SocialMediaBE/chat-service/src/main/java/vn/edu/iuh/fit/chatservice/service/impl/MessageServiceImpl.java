@@ -76,7 +76,7 @@ public class MessageServiceImpl implements MessageService {
                 .stream()
                 .collect(Collectors.toMap(
                         message -> message.getId().toHexString(),
-                        message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId())
+                        message -> new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId(), message.getType())
                 ));
 
         return messages.stream()
@@ -211,7 +211,7 @@ public class MessageServiceImpl implements MessageService {
         Message message = getMessageById(messageId);
         Conversation conversation = getConversationById(message.getConversationId());
         validateConversationMember(id, conversation);
-        return new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId());
+        return new ReplyMessageDTO(message.getId().toHexString(), message.getContent(), message.getMedia(), message.getSenderId(), message.getType());
 
     }
 
