@@ -305,6 +305,61 @@ export const handleTransferOwner = async (id: string, userId: number) => {
     }
 };
 
+export const handleGetListPendingMembers = async (id: string) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.listPendingMembers(
+            id
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleApproveJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.approveJoinGroupRequest(
+                conversation_id,
+                request_id,
+                userId
+            );
+        console.log("response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleRejectJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.rejectJoinGroupRequest(
+                conversation_id,
+                request_id,
+                userId
+            );
+        console.log("response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 export const handleUploadFile = async (formData: FormData) => {
     try {
         const response = await axios.post(

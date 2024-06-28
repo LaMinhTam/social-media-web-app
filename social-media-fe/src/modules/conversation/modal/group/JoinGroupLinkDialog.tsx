@@ -15,15 +15,21 @@ import CloseIcon from "@mui/icons-material/Close";
 import React, { useEffect, useState } from "react";
 import {
     handleFindGroupByLink,
+    handleGetListPendingMembers,
     handleJoinGroupByLink,
 } from "@/services/conversation.service";
 import Image from "next/image";
-import { ConversationResponse } from "@/types/conversationType";
+import {
+    ConversationResponse,
+    Member,
+    PendingUser,
+} from "@/types/conversationType";
 import { useRouter } from "next/navigation";
 import { setCurrentConversation } from "@/store/actions/conversationSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setShowChatModal } from "@/store/actions/commonSlice";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
+import { RootState } from "@/store/configureStore";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -33,17 +39,38 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 const JoinGroupLinkDialog = ({
+    currentUserProfile,
+    pendingUsers,
     groupInfo,
     openJoinGroupLinkDialog,
     setOpenJoinGroupLinkDialog,
 }: {
+    currentUserProfile: Member;
+    pendingUsers: PendingUser[];
     groupInfo: ConversationResponse;
     openJoinGroupLinkDialog: boolean;
     setOpenJoinGroupLinkDialog: (open: boolean) => void;
 }) => {
+    console.log("pendingUsers:", pendingUsers);
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
-    const [buttonText, setButtonText] = useState("Join" as string);
+    const [buttonText, setButtonText] = useState(() => {
+        const isWaiting = pendingUsers.some(
+            (user) => user.requester.user_id === currentUserProfile.user_id
+        );
+        if (isWaiting) {
+            return "Request Sent";
+        } else {
+            const isInGroup = Object.values(groupInfo.members).some(
+                (member) => member.user_id === currentUserProfile.user_id
+            );
+            if (isInGroup) {
+                return "Joined";
+            } else {
+                return "Join Group";
+            }
+        }
+    });
     const handleClose = () => {
         setOpenJoinGroupLinkDialog(false);
     };
@@ -64,6 +91,7 @@ const JoinGroupLinkDialog = ({
         }
         setLoading(false);
     };
+
     return (
         <BootstrapDialog
             onClose={handleClose}
@@ -163,7 +191,11 @@ const JoinGroupLinkDialog = ({
                     autoFocus
                     variant="contained"
                     color="info"
-                    disabled={loading}
+                    disabled={
+                        loading ||
+                        buttonText === "Joined" ||
+                        buttonText === "Request Sent"
+                    }
                     onClick={onJoinGroupByLink}
                 >
                     {loading ? <LoadingSpinner /> : buttonText}

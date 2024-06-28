@@ -156,32 +156,39 @@ const ModalChatContent = ({
                                 </div>
                             );
                         })}
-                        {lastGroup &&
-                            lastMessageOfGroup.read_by &&
-                            lastMessageOfGroup.read_by.length > 0 &&
-                            lastMessageOfGroup.read_by.map((member) => {
-                                if (member.user_id === currentUserId)
-                                    return null;
-                                return (
-                                    <Tooltip
-                                        key={member.user_id}
-                                        title={member.name}
-                                    >
-                                        <Box className="flex items-center justify-end mt-2 cursor-pointer">
-                                            <Image
-                                                src={
-                                                    member.image_url ??
-                                                    "https://source.unsplash.com/random"
-                                                }
-                                                width={16}
-                                                height={16}
-                                                alt="avatar"
-                                                className="w-4 h-4 rounded-full"
-                                            />
-                                        </Box>
-                                    </Tooltip>
-                                );
-                            })}
+                        <div className="flex items-center justify-end gap-x-2">
+                            {lastGroup &&
+                                lastMessageOfGroup.read_by &&
+                                lastMessageOfGroup.read_by.length > 0 &&
+                                lastMessageOfGroup.read_by.map((member) => {
+                                    if (
+                                        member.user_id === currentUserId ||
+                                        currentUserId !==
+                                            lastMessageOfGroup.user_detail
+                                                .user_id
+                                    )
+                                        return null;
+                                    return (
+                                        <Tooltip
+                                            key={member.user_id}
+                                            title={member.name}
+                                        >
+                                            <Box className="flex items-center justify-end mt-2 cursor-pointer">
+                                                <Image
+                                                    src={
+                                                        member.image_url ??
+                                                        "https://source.unsplash.com/random"
+                                                    }
+                                                    width={16}
+                                                    height={16}
+                                                    alt="avatar"
+                                                    className="w-4 h-4 rounded-full"
+                                                />
+                                            </Box>
+                                        </Tooltip>
+                                    );
+                                })}
+                        </div>
                     </div>
                 );
             })}

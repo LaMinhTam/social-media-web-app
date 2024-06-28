@@ -1,4 +1,3 @@
-import { UserResponse } from "@/types/userType";
 import Cookies from "js-cookie";
 
 import { jwtDecode } from "jwt-decode";

@@ -91,3 +91,10 @@ export interface GroupedMessage {
     formattedTime: string;
     data: MessageData[];
 }
+
+export interface PendingUser {
+    id: string;
+    requester: Member;
+    waiting_member: Member;
+    created_at: number;
+}

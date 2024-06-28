@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
@@ -14,6 +15,7 @@ import React from "react";
 import SearchInput from "@/components/common/SearchInput";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
+import { handleShareMessage } from "@/services/conversation.service";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -25,12 +27,15 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 const ForwardMessageDialog = ({
     openForwardDialog,
     setOpenForwardDialog,
-    onForwardMessage,
+    messageId,
 }: {
     openForwardDialog: boolean;
     setOpenForwardDialog: (open: boolean) => void;
-    onForwardMessage: () => void;
+    messageId: string;
 }) => {
+    const [checkedValues, setCheckedValues] = React.useState<{
+        [key: string]: boolean;
+    }>({});
     const handleClose = () => {
         setOpenForwardDialog(false);
     };
@@ -43,6 +48,18 @@ const ForwardMessageDialog = ({
     const listGroupConversation = listConversation.filter(
         (conversation) => conversation.type === "GROUP"
     );
+    const handleForwardMessage = async () => {
+        const listConversationId = Object.keys(checkedValues).filter(
+            (key) => checkedValues[key]
+        );
+        const response = await handleShareMessage(
+            messageId,
+            listConversationId
+        );
+        if (response) {
+            setOpenForwardDialog(false);
+        }
+    };
     if (!listConversation) return null;
     return (
         <BootstrapDialog
@@ -78,16 +95,15 @@ const ForwardMessageDialog = ({
                 dividers
                 className="py-4 overflow-x-hidden overflow-y-auto"
             >
-                <SearchInput
-                    placeholder="Search for people and groups"
-                    inputProps={{
-                        "aria-label": "Search for people and groups",
-                    }}
-                    onClick={() => {}}
-                    onChange={() => {}}
-                    value=""
-                    className="w-full h-full"
-                ></SearchInput>
+                <Box className="w-full h-full px-4 my-4">
+                    <SearchInput
+                        placeholder="Input name to search..."
+                        inputProps={{ "aria-label": "Input name to search..." }}
+                        onChange={() => {}}
+                        value=""
+                        className=""
+                    ></SearchInput>
+                </Box>
                 <Box className="px-2 pt-5 pb-1">
                     <Typography className="text-lg font-bold">
                         Friends
@@ -107,15 +123,22 @@ const ForwardMessageDialog = ({
                                 />
                                 <span>{item.name}</span>
                             </div>
-                            <Button
-                                type="button"
-                                variant="contained"
-                                color="inherit"
-                                size="medium"
-                                className="shadow-none bg-tertiary bg-opacity-10 text-tertiary hover:bg-opacity-30 hover:bg-tertiary hover:shadow-none"
-                            >
-                                <Typography>Send</Typography>
-                            </Button>
+                            <Checkbox
+                                color="primary"
+                                inputProps={{
+                                    "aria-label": "select all desserts",
+                                }}
+                                checked={
+                                    checkedValues[item.conversation_id] || false
+                                }
+                                onChange={(e) => {
+                                    setCheckedValues({
+                                        ...checkedValues,
+                                        [item.conversation_id]:
+                                            e.target.checked,
+                                    });
+                                }}
+                            />
                         </div>
                     ))}
                 </Box>
@@ -138,19 +161,36 @@ const ForwardMessageDialog = ({
                                 />
                                 <span>{item.name}</span>
                             </div>
-                            <Button
-                                type="button"
-                                variant="contained"
-                                color="inherit"
-                                size="medium"
-                                className="shadow-none bg-tertiary bg-opacity-10 text-tertiary hover:bg-opacity-30 hover:bg-tertiary hover:shadow-none"
-                            >
-                                <Typography>Send</Typography>
-                            </Button>
+                            <Checkbox
+                                color="primary"
+                                inputProps={{
+                                    "aria-label": "select all desserts",
+                                }}
+                                checked={
+                                    checkedValues[item.conversation_id] || false
+                                }
+                                onChange={(e) => {
+                                    setCheckedValues({
+                                        ...checkedValues,
+                                        [item.conversation_id]:
+                                            e.target.checked,
+                                    });
+                                }}
+                            />
                         </div>
                     ))}
                 </Box>
             </DialogContent>
+            <DialogActions>
+                <Button
+                    autoFocus
+                    onClick={handleForwardMessage}
+                    variant="contained"
+                    color="primary"
+                >
+                    Forward
+                </Button>
+            </DialogActions>
         </BootstrapDialog>
     );
 };

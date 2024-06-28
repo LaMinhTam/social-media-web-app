@@ -1,4 +1,3 @@
-import { UserResponse } from "@/types/userType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type CommonType = {

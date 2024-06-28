@@ -10,8 +10,10 @@ import {
     Member,
     MessageResponse,
 } from "@/types/conversationType";
+import { setShowChatModal } from "@/store/actions/commonSlice";
 
 export default async function onMessageReceived(
+    currentUserProfile: Member,
     payload: any,
     showChatModal: boolean,
     currentConversation: ConversationResponse,
@@ -50,6 +52,7 @@ export default async function onMessageReceived(
         }
     }
     if (payloadData.type === MESSAGE_TYPE.NOTIFICATION) {
+        console.log("payloadData:", payloadData);
         switch (payloadData.notification_type) {
             case NOTIFICATION_TYPE.CHANGE_GROUP_NAME: {
                 const newCurrentConversation = {
@@ -68,24 +71,30 @@ export default async function onMessageReceived(
                 break;
             }
             case NOTIFICATION_TYPE.REMOVE_MEMBER: {
-                console.log(payloadData.target_user_id[0].user_id);
-                const newMembers = Object.keys(currentConversation.members)
-                    .filter(
-                        (key) =>
-                            key !==
-                            payloadData.target_user_id[0].user_id.toString()
-                    )
-                    .reduce((obj, key) => {
-                        obj[key] = currentConversation.members[key];
-                        return obj;
-                    }, {} as { [key: string]: Member });
+                if (payloadData.target_user_id.includes(userId)) {
+                    dispatch(
+                        setCurrentConversation({} as ConversationResponse)
+                    );
+                    dispatch(setShowChatModal(false));
+                } else {
+                    const newMembers = Object.keys(currentConversation.members)
+                        .filter(
+                            (key) =>
+                                key !==
+                                payloadData.target_user_id[0].user_id.toString()
+                        )
+                        .reduce((obj, key) => {
+                            obj[key] = currentConversation.members[key];
+                            return obj;
+                        }, {} as { [key: string]: Member });
 
-                const newCurrentConversation = {
-                    ...currentConversation,
-                    members: newMembers,
-                };
+                    const newCurrentConversation = {
+                        ...currentConversation,
+                        members: newMembers,
+                    };
 
-                dispatch(setCurrentConversation(newCurrentConversation));
+                    dispatch(setCurrentConversation(newCurrentConversation));
+                }
                 break;
             }
 
@@ -176,6 +185,7 @@ export default async function onMessageReceived(
         ...prev,
         [payloadData.message_id]: {
             ...payloadData,
+            read_by: [payloadData.user_detail, currentUserProfile],
         },
     }));
     setTriggerScrollChat(!triggerScrollChat);

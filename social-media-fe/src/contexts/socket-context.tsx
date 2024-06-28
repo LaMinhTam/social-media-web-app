@@ -4,7 +4,7 @@ import SockJS from "sockjs-client";
 import { SOCKET_URL } from "@/constants/global";
 import SocketType from "@/types/socketType";
 import { getAccessToken } from "@/utils/auth";
-import { MessageResponse } from "@/types/conversationType";
+import { Member, MessageResponse } from "@/types/conversationType";
 import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
@@ -46,38 +46,47 @@ export function SocketProvider(
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/message`,
                     async function (payload) {
-                        await onMessageReceived(
-                            payload,
-                            showChatModal,
-                            currentConversation,
-                            dispatch,
-                            decryptedData.user_id,
-                            setMessages,
-                            setTriggerScrollChat,
-                            triggerScrollChat
-                        );
+                        const payloadData = JSON.parse(payload.body);
+                        if (
+                            payloadData.conversation_id ===
+                            currentConversation.conversation_id
+                        ) {
+                            await onMessageReceived(
+                                decryptedData as Member,
+                                payload,
+                                showChatModal,
+                                currentConversation,
+                                dispatch,
+                                decryptedData.user_id,
+                                setMessages,
+                                setTriggerScrollChat,
+                                triggerScrollChat
+                            );
+                        }
                     }
                 );
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/revoke`,
                     function (payload) {
                         const payloadData = JSON.parse(payload.body);
-                        const newMessages = { ...messages };
-                        newMessages[payloadData.message_id] = payloadData;
-                        setMessages(newMessages);
-                    },
-                    { Authorization: accessToken }
+                        setMessages((prev: MessageResponse) => ({
+                            ...prev,
+                            [payloadData.message_id]: {
+                                ...payloadData,
+                            },
+                        }));
+                    }
                 );
                 client.subscribe(
                     `/user/${decryptedData.user_id}/react`,
                     function (payload) {
                         const payloadData = JSON.parse(payload.body);
-                        const newMessages = { ...messages };
-                        newMessages[payloadData.message_id] = {
-                            ...messages[payloadData.message_id],
-                            reactions: payloadData.reactions,
-                        };
-                        setMessages(newMessages);
+                        setMessages((prev: MessageResponse) => ({
+                            ...prev,
+                            [payloadData.message_id]: {
+                                ...payloadData,
+                            },
+                        }));
                     }
                 );
 

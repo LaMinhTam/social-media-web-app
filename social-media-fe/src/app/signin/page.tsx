@@ -18,9 +18,9 @@ import { toast } from "react-toastify";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
 import { fetchingMe } from "@/services/profile.service";
 import axios from "@/apis/axios";
-import { UserResponse } from "@/types/userType";
 import { AxiosResponse } from "axios";
 import apiRoutes from "@/apis";
+import { Member } from "@/types/conversationType";
 
 const schema = yup.object({
     email: yup
@@ -64,7 +64,7 @@ export default function SignInPage() {
                 data.password
             );
             if (response.status === 200) {
-                const meResponse: AxiosResponse<UserResponse> = await axios.get(
+                const meResponse: AxiosResponse<Member> = await axios.get(
                     apiRoutes.user.getMe,
                     {
                         headers: {

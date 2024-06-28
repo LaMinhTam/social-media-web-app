@@ -96,7 +96,7 @@ export function CallProvider(
     }, []);
 
     useEffect(() => {
-        if (isReady) {
+        if (isReady && decryptedData) {
             register(decryptedData.user_id);
         }
     }, [isReady]);
@@ -147,9 +147,6 @@ export function CallProvider(
                 ? message.message
                 : "Unknown reason for register rejection.";
             console.log(errorMessage);
-            alert(
-                "Error registering user. See console for further information."
-            );
         }
     }
 

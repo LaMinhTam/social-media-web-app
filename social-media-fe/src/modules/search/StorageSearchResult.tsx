@@ -3,10 +3,10 @@ import { IconButton, Typography } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { UserResponse } from "@/types/userType";
 import { Dispatch } from "@reduxjs/toolkit";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { setSearchResult } from "@/store/actions/searchSlice";
+import { Member } from "@/types/conversationType";
 
 const StorageSearchResult = ({
     user,
@@ -15,11 +15,9 @@ const StorageSearchResult = ({
     dispatch,
     router,
 }: {
-    user: UserResponse;
-    storageSearchResult: UserResponse[];
-    setStorageSearchResult: React.Dispatch<
-        React.SetStateAction<UserResponse[]>
-    >;
+    user: Member;
+    storageSearchResult: Member[];
+    setStorageSearchResult: React.Dispatch<React.SetStateAction<Member[]>>;
     dispatch: Dispatch<any>;
     router: AppRouterInstance;
 }) => {

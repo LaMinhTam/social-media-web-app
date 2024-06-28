@@ -13,8 +13,11 @@ import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { CallProvider, useCall } from "@/contexts/call-context";
 import CallType from "@/types/callType";
 import VideoCallDialog from "@/modules/conversation/modal/call/VideoCallDialog";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
+    const router = useRouter();
     const dispatch = useDispatch();
     const openCallDialog = useSelector(
         (state: RootState) => state.common.openCallDialog
@@ -44,6 +47,9 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
         const decryptedData = getUserInfoFromCookie();
         if (decryptedData) {
             dispatch(setCurrentUserProfile(decryptedData));
+        } else {
+            router.push("/signin");
+            toast.error("Session expired, please login again.");
         }
     }, []);
 

@@ -6,8 +6,8 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { UserResponse } from "@/types/userType";
-const Header = ({ data }: { data: UserResponse }) => {
+import { Member } from "@/types/conversationType";
+const Header = ({ data }: { data: Member }) => {
     const [currentTab, setCurrentTab] = React.useState(1);
     return (
         <div className="w-full h-full shadow-md bg-lite">

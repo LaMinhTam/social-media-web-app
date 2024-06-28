@@ -1,9 +1,9 @@
-import { UserResponse } from "@/types/userType";
 import CryptoJS from "crypto-js";
 import { saveUser } from ".";
+import { Member } from "@/types/conversationType";
 
 export default function saveUserInfoToCookie(
-    user: UserResponse,
+    user: Member,
     accessToken: string
 ) {
     const cipherText = CryptoJS.AES.encrypt(

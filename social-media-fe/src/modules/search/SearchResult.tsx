@@ -1,5 +1,5 @@
 import { setSearchResult } from "@/store/actions/searchSlice";
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import { saveSearchResultToLocalStorage } from "@/utils/auth/handleLocalStorageSearch";
 import { Typography } from "@mui/material";
 import { Dispatch } from "@reduxjs/toolkit";
@@ -13,8 +13,8 @@ const SearchResult = ({
     dispatch,
     router,
 }: {
-    user: UserResponse;
-    storageSearchResult: UserResponse[];
+    user: Member;
+    storageSearchResult: Member[];
     dispatch: Dispatch<any>;
     router: AppRouterInstance;
 }) => {

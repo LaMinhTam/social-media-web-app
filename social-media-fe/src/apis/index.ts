@@ -47,6 +47,19 @@ const conversation = {
     deleteMessage: (id: string) => `/messages/${id}/delete`,
     reactMessage: "/messages/react",
     readMessage: (id: string) => `/messages/${id}/read`,
+    getPendingMembers: (id: string) => `/conversations/pending-member/${id}`,
+    approveMemberRequest: (
+        conversation_id: string,
+        request_id: number,
+        userId: number
+    ) =>
+        `/conversations/approve-pending-member?conversation_id=${conversation_id}&requester_id=${request_id}&waiting_member_id=${userId}`,
+    rejectMemberRequest: (
+        conversation_id: string,
+        request_id: number,
+        userId: number
+    ) =>
+        `/conversations/reject-pending-member?conversation_id=${conversation_id}&requester_id=${request_id}&waiting_member_id=${userId}`,
 };
 
 const apiRoutes = {

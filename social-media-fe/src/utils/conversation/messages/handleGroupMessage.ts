@@ -52,11 +52,11 @@ export function formatOnlineTime(updated_at: number) {
     const diffInYears = now.diff(updatedAt, "years");
 
     if (diffInMinutes < 60) {
-        return `${diffInMinutes} phút`;
+        return `${diffInMinutes} minutes`;
     } else if (diffInHours < 24) {
-        return `${diffInHours} giờ`;
+        return `${diffInHours} hours`;
     } else if (diffInDays < 7) {
-        return `${diffInDays} ngày`;
+        return `${diffInDays} days`;
     } else if (diffInYears < 1) {
         return updatedAt.format("DD/MM");
     } else {

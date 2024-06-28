@@ -22,6 +22,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { toast } from "react-toastify";
 import {
     handleDisbandGroup,
+    handleGetListPendingMembers,
     handleLeaveGroup,
 } from "@/services/conversation.service";
 import { setShowChatModal } from "@/store/actions/commonSlice";
@@ -35,8 +36,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/constants/firebaseConfig";
 import CopyToClipboard from "react-copy-to-clipboard";
-import JoinGroupLinkDialog from "./JoinGroupLinkDialog";
 import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
+import { setListPendingUsers } from "@/store/actions/conversationSlice";
 
 const GroupSetting = ({
     popupState,
@@ -48,6 +49,9 @@ const GroupSetting = ({
     const dispatch = useDispatch();
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
+    );
+    const listPendingUsers = useSelector(
+        (state: RootState) => state.conversation.listPendingUsers
     );
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
@@ -107,6 +111,16 @@ const GroupSetting = ({
                 dispatch(setShowChatModal(false));
                 popupState.close();
             }
+        }
+    };
+
+    const handleOpenMemberDialog = async () => {
+        const response = await handleGetListPendingMembers(
+            currentConversation.conversation_id
+        );
+        if (response) {
+            setOpenGroupMemberDialog(true);
+            dispatch(setListPendingUsers(response));
         }
     };
 
@@ -186,7 +200,7 @@ const GroupSetting = ({
                         color="inherit"
                         fullWidth
                         className="flex items-center justify-start normal-case gap-x-1"
-                        onClick={() => setOpenGroupMemberDialog(true)}
+                        onClick={handleOpenMemberDialog}
                     >
                         <GroupsIcon />
                         <Typography>Members</Typography>
@@ -346,6 +360,7 @@ const GroupSetting = ({
                     currentConversation={currentConversation}
                     openGroupMemberDialog={openGroupMemberDialog}
                     setOpenGroupMemberDialog={setOpenGroupMemberDialog}
+                    listPendingUsers={listPendingUsers}
                 ></GroupMemberDialog>
             )}
             {openAddMemberDialog && (

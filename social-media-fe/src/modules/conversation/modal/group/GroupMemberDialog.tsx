@@ -6,14 +6,16 @@ import {
     IconButton,
     Tab,
     Tabs,
+    Typography,
     styled,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import React, { useState } from "react";
-import { ConversationResponse } from "@/types/conversationType";
+import React, { useEffect, useState } from "react";
+import { ConversationResponse, PendingUser } from "@/types/conversationType";
 import MemberTab from "./MemberTab";
 import AdminTab from "./AdminTab";
-import isConversationDeputy from "@/utils/conversation/messages/isConversationDeputy";
+import { size } from "lodash";
+import { handleGetListPendingMembers } from "@/services/conversation.service";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -29,11 +31,13 @@ const GroupMemberDialog = ({
     currentConversation,
     openGroupMemberDialog,
     setOpenGroupMemberDialog,
+    listPendingUsers,
 }: {
     currentUserId: number;
     currentConversation: ConversationResponse;
     openGroupMemberDialog: boolean;
     setOpenGroupMemberDialog: (open: boolean) => void;
+    listPendingUsers: PendingUser[];
 }) => {
     const [value, setValue] = useState(0);
     const listMembers = Object.values(currentConversation.members).filter(
@@ -97,6 +101,7 @@ const GroupMemberDialog = ({
                             listMembers={listMembers}
                             currentConversation={currentConversation}
                             currentUserId={currentUserId}
+                            pendingUsers={listPendingUsers}
                         ></MemberTab>
                     )}
                     {value === 1 && (

@@ -76,8 +76,8 @@ const AdminTab = ({
                                 >
                                     <GroupMemberAction
                                         settings={currentConversation.settings}
-                                        userRole={"ADMIN"}
-                                        targetUserRole={
+                                        targetUserRole={"ADMIN"}
+                                        userRole={
                                             currentConversation.owner_id ===
                                             currentUserId
                                                 ? "ADMIN"

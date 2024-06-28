@@ -1,10 +1,11 @@
-import { ListFriendResponse, UserResponse } from "@/types/userType";
+import { ListFriendResponse } from "@/types/userType";
 import { AxiosResponse } from "axios";
 import apiRoutes from ".";
 import { axiosPrivate } from "./axios";
+import { Member } from "@/types/conversationType";
 
 const getMe = async () => {
-    const response: AxiosResponse<UserResponse> = await axiosPrivate.get(
+    const response: AxiosResponse<Member> = await axiosPrivate.get(
         apiRoutes.user.getMe
     );
     return response;
@@ -12,7 +13,7 @@ const getMe = async () => {
 
 const findUserById = async (id: string) => {
     try {
-        const response: AxiosResponse<UserResponse> = await axiosPrivate.get(
+        const response: AxiosResponse<Member> = await axiosPrivate.get(
             apiRoutes.user.findUserById(id)
         );
         return response;
@@ -23,7 +24,7 @@ const findUserById = async (id: string) => {
 
 const findUserByName = async (name: string) => {
     try {
-        const response: AxiosResponse<UserResponse[]> = await axiosPrivate.get(
+        const response: AxiosResponse<Member[]> = await axiosPrivate.get(
             apiRoutes.user.findUserByName(name)
         );
         return response;

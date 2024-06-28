@@ -74,12 +74,12 @@ const ModalChatHeader = ({
                                             className="text-xs font-normal line-clamp-1"
                                         >
                                             {userStatus?.online === "ONLINE"
-                                                ? "Đang hoạt động"
+                                                ? "Online"
                                                 : userStatus?.timestamp !== 0
-                                                ? `Hoạt động ${formatOnlineTime(
+                                                ? `Online ${formatOnlineTime(
                                                       userStatus.timestamp
-                                                  )} trước`
-                                                : "Vừa truy cập"}
+                                                  )} ago`
+                                                : "Just now"}
                                         </Typography>
                                     </div>
                                 </div>

@@ -4,9 +4,10 @@ import { saveAccessToken, saveRefreshToken } from ".";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import saveUserInfoToCookie from "./saveUserInfoToCookie";
 import { AxiosResponse } from "axios";
-import { UserResponse } from "@/types/userType";
+
 import axios from "@/apis/axios";
 import apiRoutes from "@/apis";
+import { Member } from "@/types/conversationType";
 
 export default async function handleRefreshToken(
     accessToken: string,
@@ -20,7 +21,7 @@ export default async function handleRefreshToken(
                 refreshToken
             );
             if (response.status === 200) {
-                const meResponse: AxiosResponse<UserResponse> = await axios.get(
+                const meResponse: AxiosResponse<Member> = await axios.get(
                     apiRoutes.user.getMe,
                     {
                         headers: {

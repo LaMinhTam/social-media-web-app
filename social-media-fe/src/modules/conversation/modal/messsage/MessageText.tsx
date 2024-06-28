@@ -13,6 +13,8 @@ import handleScrollToReplyMessage from "@/utils/conversation/messages/handleScro
 import { useSocket } from "@/contexts/socket-context";
 import MessageReaction from "./MessageReaction";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 
 const MessageText = ({
     message,
@@ -37,6 +39,10 @@ const MessageText = ({
     } else {
         renderContent = "Message";
     }
+
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
+    );
 
     useEffect(() => {
         const regex = /((http|https):\/\/[^\s]+)/g;
@@ -98,7 +104,7 @@ const MessageText = ({
                 message.reply_message &&
                 message.reply_message.message_id && (
                     <div
-                        className={`w-full h-full px-2 py-3 rounded-lg cursor-pointer bg-strock shadow-sm`}
+                        className={`h-full px-2 py-3 w-full rounded-lg cursor-pointer bg-strock shadow-sm`}
                         onClick={() =>
                             handleScrollToReplyMessage(
                                 message.reply_message?.message_id ?? "",
@@ -106,12 +112,14 @@ const MessageText = ({
                             )
                         }
                     >
-                        <div className="flex items-center justify-center">
-                            <div className="flex flex-col pl-2 border-l-2 border-l-secondary">
+                        <div className="flex items-center justify-center w-full h-full">
+                            <div className="flex flex-col w-full pl-2 border-l-2 border-l-secondary">
                                 <span className="text-sm font-semibold text-text2">
-                                    Thong Dinh
+                                    {currentConversation.members[
+                                        message.reply_message.sender_id
+                                    ]?.name ?? "Unknown"}
                                 </span>
-                                <span className="font-medium text-text3">
+                                <span className="font-medium text-text3 line-clamp-3 text-wrap">
                                     {renderContent}
                                 </span>
                             </div>
@@ -119,7 +127,6 @@ const MessageText = ({
                     </div>
                 )}
             <Tooltip title={formatTime(message.created_at)}>
-                {/* <p className="text-wrap">{handleFormatMessage(message)}</p> */}
                 <>{parse(messageFormat, options)}</>
             </Tooltip>
             <MessageReaction message={message}></MessageReaction>

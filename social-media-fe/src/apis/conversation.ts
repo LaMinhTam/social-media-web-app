@@ -6,6 +6,7 @@ import {
     ConversationResponse,
     GroupSettings,
     MessageResponse,
+    PendingUser,
     ReactionResponse,
 } from "@/types/conversationType";
 
@@ -184,6 +185,43 @@ const readMessage = async (messageId: string) => {
     return response;
 };
 
+const listPendingMembers = async (id: string) => {
+    const response: AxiosResponse<PendingUser[]> = await axiosPrivate.get(
+        apiRoutes.conversation.getPendingMembers(id)
+    );
+    return response;
+};
+
+const approveJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.approveMemberRequest(
+            conversation_id,
+            request_id,
+            userId
+        )
+    );
+    return response;
+};
+
+const rejectJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    const response: AxiosResponse<string> = await axiosPrivate.delete(
+        apiRoutes.conversation.rejectMemberRequest(
+            conversation_id,
+            request_id,
+            userId
+        )
+    );
+    return response;
+};
+
 export const CONVERSATION = {
     createConversation,
     getListConversation,
@@ -207,4 +245,7 @@ export const CONVERSATION = {
     deleteMessage,
     reactionMessage,
     readMessage,
+    listPendingMembers,
+    approveJoinGroupRequest,
+    rejectJoinGroupRequest,
 };

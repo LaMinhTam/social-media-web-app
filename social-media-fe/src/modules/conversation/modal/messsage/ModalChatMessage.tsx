@@ -186,7 +186,7 @@ const ModalChatMessage = ({
                 <ForwardMessageDialog
                     openForwardDialog={openForwardDialog}
                     setOpenForwardDialog={setOpenForwardDialog}
-                    onForwardMessage={() => {}}
+                    messageId={message.message_id}
                 />
             )}
         </>
