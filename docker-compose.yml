@@ -31,7 +31,6 @@ services:
             - MYSQL_ROOT_PASSWORD=123456
         volumes:
             - mysql-data:/var/lib/mysql
-            - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
         ports:
             - "3306:3306"
         networks:
@@ -71,7 +70,6 @@ services:
             - MONGO_INITDB_ROOT_PASSWORD=123456
         volumes:
             - mongodb-data:/data/db
-            - ./database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
         networks:
             - db-mongodb-net
 
@@ -106,8 +104,6 @@ services:
             - NEO4J_AUTH=neo4j/12345678
             - NEO4J_dbms_memory_pagecache_size=1G
             - NEO4J_dbms_memory_heap_max__size=512M
-        volumes:
-            - neo4j-data:/data
         networks:
             - backend
             - db-neo4j-net
