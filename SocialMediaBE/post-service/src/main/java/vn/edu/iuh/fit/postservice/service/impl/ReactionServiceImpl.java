@@ -5,12 +5,11 @@ import vn.edu.iuh.fit.postservice.client.UserClient;
 import vn.edu.iuh.fit.postservice.dto.UserDetail;
 import vn.edu.iuh.fit.postservice.entity.neo4j.*;
 import vn.edu.iuh.fit.postservice.exception.AppException;
-import vn.edu.iuh.fit.postservice.repository.neo4j.CommentNodeRepository;
-import vn.edu.iuh.fit.postservice.repository.neo4j.PostNodeRepository;
-import vn.edu.iuh.fit.postservice.repository.neo4j.ReactionNodeRepository;
-import vn.edu.iuh.fit.postservice.repository.neo4j.UserNodeRepository;
+import vn.edu.iuh.fit.postservice.repository.neo4j.*;
 import vn.edu.iuh.fit.postservice.service.ReactionService;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -20,14 +19,16 @@ public class ReactionServiceImpl implements ReactionService {
     private final CommentNodeRepository commentNodeRepository;
     private final UserNodeRepository userNodeRepository;
     private final UserClient userClient;
+    private final UserCategoryInterestRepository userCategoryInterestRepository;
 
     public ReactionServiceImpl(ReactionNodeRepository reactionNodeRepository, PostNodeRepository postNodeRepository,
-                               CommentNodeRepository commentNodeRepository, UserNodeRepository userNodeRepository, UserClient userClient) {
+                               CommentNodeRepository commentNodeRepository, UserNodeRepository userNodeRepository, UserClient userClient, UserCategoryInterestRepository userCategoryInterestRepository) {
         this.reactionNodeRepository = reactionNodeRepository;
         this.postNodeRepository = postNodeRepository;
         this.commentNodeRepository = commentNodeRepository;
         this.userNodeRepository = userNodeRepository;
         this.userClient = userClient;
+        this.userCategoryInterestRepository = userCategoryInterestRepository;
     }
 
     @Override
@@ -36,8 +37,65 @@ public class ReactionServiceImpl implements ReactionService {
                 .orElseThrow(() -> new AppException(404, "Post not found"));
         UserNode userNode = userNodeRepository.findById(userId)
                 .orElseThrow(() -> new AppException(404, "User not found"));
+        boolean result = handleReaction(postId, reactionType, userNode, post, null);
+        if (result) {
+            new Thread(() -> updateInterestScore(userNode, post)).start();
+        }
+        return result;
+    }
 
-        return handleReaction(postId, userId, reactionType, userNode, post, null);
+    private void updateInterestScore(UserNode user, PostNode post) {
+        if (post.getCategories() != null) {
+            for (CategoryNode category : post.getCategories()) {
+                UserCategoryInterest interest = user.getCategoryInterests().stream()
+                        .filter(uci -> uci.getCategory().equals(category))
+                        .findFirst()
+                        .orElse(null);
+
+                if (interest == null) {
+                    interest = new UserCategoryInterest();
+                    interest.setUser(user);
+                    interest.setCategory(category);
+                    interest.setScore(0.0);
+                    interest.setLastUpdated(LocalDateTime.now());
+                    user.getCategoryInterests().add(interest);
+                } else {
+                    calculateDecay(user, interest);
+                }
+
+                interest.updateScore(1.0); // Adjust the interaction score as needed
+                if (shouldUpdateInterest(interest)) {
+                    interest.updateScore(1.0); // Example interaction score increment
+                }
+            }
+
+            userNodeRepository.save(user);
+        }
+    }
+
+    private boolean shouldUpdateInterest(UserCategoryInterest interest) {
+        int reactionThreshold = 10; // Example threshold
+        long timeThresholdDays = 7; // Example time threshold in days
+
+        LocalDateTime now = LocalDateTime.now();
+        Duration duration = Duration.between(interest.getLastUpdated(), now);
+        long days = duration.toDays();
+
+        return (interest.getScore() > reactionThreshold && days < timeThresholdDays);
+    }
+
+    private void calculateDecay(UserNode user, UserCategoryInterest interest) {
+        LocalDateTime now = LocalDateTime.now();
+        Duration duration = Duration.between(interest.getLastUpdated(), now);
+        long days = duration.toDays();
+        if (days > 0) {
+            double decayFactor = 0.9; // Decay factor, adjust as needed
+            double decayedScore = interest.getScore() * Math.pow(decayFactor, days);
+            interest.setScore(decayedScore);
+            interest.setLastUpdated(now);
+            user.getCategoryInterests().removeIf(uci -> uci.getCategory().equals(interest.getCategory()));
+            user.getCategoryInterests().add(interest);
+        }
     }
 
     @Override
@@ -47,7 +105,7 @@ public class ReactionServiceImpl implements ReactionService {
         UserNode userNode = userNodeRepository.findById(userId)
                 .orElseThrow(() -> new AppException(404, "User not found"));
 
-        return handleReaction(commentId, userId, reactionType, userNode, null, comment);
+        return handleReaction(commentId, reactionType, userNode, null, comment);
     }
 
     @Override
@@ -86,7 +144,7 @@ public class ReactionServiceImpl implements ReactionService {
         return reactionTypeListMap;
     }
 
-    private boolean handleReaction(String targetId, Long userId, ReactionType reactionType,
+    private boolean handleReaction(String targetId, ReactionType reactionType,
                                    UserNode userNode, PostNode post, CommentNode comment) {
         Optional<ReactionNode> existingReactionOpt = userNode.getReactions().stream()
                 .filter(r -> (r.getPost() != null && r.getPost().getPostId().equals(targetId)) ||

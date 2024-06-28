@@ -27,4 +27,17 @@ public class Post {
     private Date createAt;
     @Column(name = "update_at")
     private Date updateAt;
+
+    public Post(String content) {
+        this.content = content;
+        this.updateAt = new Date();
+        this.createAt = new Date();
+    }
+
+    public Post(String content, List<String> media) {
+        this.content = content;
+        this.media = media;
+        this.updateAt = new Date();
+        this.createAt = new Date();
+    }
 }

@@ -1,6 +1,9 @@
 package vn.edu.iuh.fit.postservice.dto;
 
-import java.util.List;
+import vn.edu.iuh.fit.postservice.entity.neo4j.Category;
 
-public record PostRequest(List<Long> coAuthor, String content, List<String> media) {
+import java.util.List;
+import java.util.Set;
+
+public record PostRequest(List<Long> coAuthor, String content, List<String> media, Set<Category> category) {
 }

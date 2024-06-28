@@ -31,9 +31,18 @@ public class PostNode {
     private PostNode originalPost;
     @Relationship(type = "REACTION", direction = Relationship.Direction.INCOMING)
     private Set<ReactionNode> reactions = new HashSet<>();
+    @Relationship(type = "BELONG_TO", direction = Relationship.Direction.OUTGOING)
+    private Set<CategoryNode> categories = new HashSet<>();
 
     public PostNode(String id) {
         this.postId = id;
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
+    public PostNode(String id, Set<CategoryNode> categoryNodes) {
+        this.postId = id;
+        this.categories = categoryNodes;
         this.createdAt = new Date();
         this.updatedAt = new Date();
     }
