@@ -23,6 +23,16 @@ export interface GroupSettings {
     allow_deputy_to_invite_member: boolean;
 }
 
+export interface LastMessage {
+    message_id: string;
+    conversation_id: string;
+    user_detail: Member;
+    content: string;
+    type: string;
+    created_at: number;
+    updated_at: number;
+}
+
 export type ConversationResponse = {
     conversation_id: string;
     name: string;
@@ -34,6 +44,7 @@ export type ConversationResponse = {
     owner_id?: number;
     settings: GroupSettings;
     deputies: number[];
+    last_message: LastMessage;
 };
 
 export type ReactionResponse = {

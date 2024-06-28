@@ -20,6 +20,7 @@ var ws = new WebSocket('wss://' + location.host + '/websocket/call', [], {
 		'Authorization': 'Bearer ' + token
 	}
 });
+console.info(ws)
 // var ws = new WebSocket('ws://192.168.1.21:8086/call');
 var videoInput;
 var videoOutput;
@@ -99,18 +100,23 @@ ws.onmessage = function(message) {
 
 	switch (parsedMessage.id) {
 	case 'registerResponse':
+		console.log('Register response received');
 		registerResponse(parsedMessage);
 		break;
 	case 'callResponse':
+		console.log('Call response received');
 		callResponse(parsedMessage);
 		break;
 	case 'incomingCall':
+		console.log('Incoming call received');
 		incomingCall(parsedMessage);
 		break;
 	case 'startCommunication':
+		console.log('Communication started');
 		startCommunication(parsedMessage);
 		break;
 	case 'stopCommunication':
+		console.log('Communication ended by remote peer');
 		console.info('Communication ended by remote peer');
 		stop(true);
 		break;
@@ -162,6 +168,7 @@ function startCommunication(message) {
 }
 
 function incomingCall(message) {
+	console.info("Incoming call from: " + message.from);
 	// If bussy just reject without disturbing user
 	if (callState != NO_CALL) {
 		var response = {

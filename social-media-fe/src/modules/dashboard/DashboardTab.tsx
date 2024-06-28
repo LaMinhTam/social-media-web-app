@@ -17,6 +17,7 @@ const DashboardTab = ({ showSearch }: { showSearch: boolean }) => {
                 justifyContent: "center",
                 ml: showSearch ? "320px" : 0,
             }}
+            className="hidden md:flex"
         >
             <button
                 className={`flex items-center justify-center w-[112px] h-[56px] 

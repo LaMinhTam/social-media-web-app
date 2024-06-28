@@ -83,16 +83,20 @@ const ModalChatFooter = ({
     const handleSendMessage = () => {
         if (message.trim() === "") return;
         else {
-            if (currentConversation.settings.restricted_messaging) {
+            if (
+                currentConversation?.settings?.restricted_messaging &&
+                currentConversation.type === "GROUP"
+            ) {
                 toast.error(
                     "The group has restricted messaging. You can't send message to this group."
                 );
             } else if (
                 isConversationDeputy(
-                    currentUserProfile.user_id,
+                    currentUserProfile?.user_id,
                     currentConversation
                 ) &&
-                !currentConversation.settings.allow_deputy_send_messages
+                !currentConversation?.settings?.allow_deputy_send_messages &&
+                currentConversation.type === "GROUP"
             ) {
                 toast.error(
                     "You are not allowed to send message to this group."

@@ -12,7 +12,12 @@ import CallEndIcon from "@mui/icons-material/CallEnd";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import VideoCameraBackIcon from "@mui/icons-material/VideoCameraBack";
 import MicIcon from "@mui/icons-material/Mic";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useCall } from "@/contexts/call-context";
+import { CALL_STATE } from "@/constants/global";
+import { Dispatch } from "@reduxjs/toolkit";
+import { setOpenCallDialog } from "@/store/actions/commonSlice";
+
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -21,16 +26,53 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
         padding: theme.spacing(1),
     },
 }));
+
 const VideoCallDialog = ({
     openVideoCallDialog,
-    setOpenVideoCallDialog,
+    dispatch,
 }: {
     openVideoCallDialog: boolean;
-    setOpenVideoCallDialog: (open: boolean) => void;
+    dispatch: Dispatch<any>;
 }) => {
+    const { call, setVideoInput, setVideoOutput, callState } = useCall();
     const [loading, setLoading] = useState<boolean>(false);
+    const [videoInputElement, setVideoInputElement] =
+        useState<HTMLVideoElement | null>(null);
+    const [videoOutputElement, setVideoOutputElement] =
+        useState<HTMLVideoElement | null>(null);
+
+    const videoInputRef = useCallback((node: HTMLVideoElement) => {
+        if (node !== null) {
+            setVideoInputElement(node);
+        }
+    }, []);
+
+    const videoOutputRef = useCallback((node: HTMLVideoElement) => {
+        if (node !== null) {
+            setVideoOutputElement(node);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (videoInputElement && videoOutputElement) {
+            setVideoInput(videoInputElement);
+            setVideoOutput(videoOutputElement);
+        }
+    }, [videoInputElement, videoOutputElement]);
+
+    useEffect(() => {
+        if (
+            videoInputElement &&
+            videoOutputElement &&
+            callState === CALL_STATE.NO_CALL
+        ) {
+            setLoading(true);
+            call(videoInputElement, videoOutputElement);
+        }
+    }, [videoInputElement, videoOutputElement]);
+
     const handleClose = () => {
-        setOpenVideoCallDialog(false);
+        dispatch(setOpenCallDialog(false));
     };
 
     return (
@@ -64,10 +106,22 @@ const VideoCallDialog = ({
                 <CloseIcon />
             </IconButton>
             <DialogContent dividers className="w-[548px] h-full">
-                <video
-                    src=""
-                    className="object-cover w-full h-[300px] bg-strock rounded shadow-md"
-                ></video>
+                <div className="flex flex-col items-center justify-center">
+                    <video
+                        id="videoOutput"
+                        ref={videoOutputRef}
+                        autoPlay
+                        playsInline
+                        className="w-full h-full"
+                    ></video>
+                    <video
+                        id="videoInput"
+                        ref={videoInputRef}
+                        autoPlay
+                        playsInline
+                        className="w-full h-full"
+                    ></video>
+                </div>
             </DialogContent>
             <DialogActions className="flex justify-center gap-2">
                 <Button
@@ -87,7 +141,6 @@ const VideoCallDialog = ({
                 >
                     <CallEndIcon />
                 </Button>
-
                 <Button
                     type="button"
                     variant="outlined"

@@ -4,11 +4,13 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 type CommonType = {
     triggerReFetchingRelationship: boolean;
     showChatModal: boolean;
+    openCallDialog: boolean;
 };
 
 const initialState: CommonType = {
     triggerReFetchingRelationship: true,
     showChatModal: false,
+    openCallDialog: false,
 };
 
 const commonSlice = createSlice({
@@ -24,9 +26,15 @@ const commonSlice = createSlice({
         setShowChatModal(state, action: PayloadAction<boolean>) {
             state.showChatModal = action.payload;
         },
+        setOpenCallDialog(state, action: PayloadAction<boolean>) {
+            state.openCallDialog = action.payload;
+        },
     },
 });
 
-export const { setTriggerReFetchingRelationship, setShowChatModal } =
-    commonSlice.actions;
+export const {
+    setTriggerReFetchingRelationship,
+    setShowChatModal,
+    setOpenCallDialog,
+} = commonSlice.actions;
 export default commonSlice.reducer;

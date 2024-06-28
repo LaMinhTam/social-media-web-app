@@ -1,4 +1,14 @@
-import { Badge, Box, IconButton, Popover } from "@mui/material";
+import {
+    Badge,
+    Box,
+    IconButton,
+    Menu,
+    MenuItem,
+    Popover,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
@@ -9,17 +19,159 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/constants/firebaseConfig";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
-const DashboardFeature = ({
-    handleProfileMenuOpen,
-    menuId,
-}: {
-    handleProfileMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
-    menuId: string;
-}) => {
+import { useRouter } from "next/navigation";
+import { saveAccessToken, saveRefreshToken, saveUser } from "@/utils/auth";
+import MoreIcon from "@mui/icons-material/MoreVert";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LogoutIcon from "@mui/icons-material/Logout";
+const DashboardFeature = () => {
+    const router = useRouter();
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
     const [unreadCount, setUnreadCount] = useState(0);
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
+        React.useState<null | HTMLElement>(null);
+
+    const isMenuOpen = Boolean(anchorEl);
+    const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+    const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMobileMenuClose = () => {
+        setMobileMoreAnchorEl(null);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        handleMobileMenuClose();
+    };
+
+    const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setMobileMoreAnchorEl(event.currentTarget);
+    };
+
+    const menuId = "primary-search-account-menu";
+    const renderMenu = (
+        <Menu
+            anchorEl={anchorEl}
+            id={menuId}
+            keepMounted
+            open={isMenuOpen}
+            onClose={handleMenuClose}
+        >
+            <MenuItem
+                onClick={() => router.push("/me")}
+                className="flex items-center justify-start gap-x-3 w-[360px]"
+            >
+                <AccountCircle />
+                <Typography>{currentUserProfile.name}</Typography>
+            </MenuItem>
+            <MenuItem className="flex items-center justify-between gap-x-3 w-[360px]">
+                <div className="flex items-center justify-center gap-x-3">
+                    <DarkModeIcon />
+                    <Typography>Dark/Light</Typography>
+                </div>
+                <ToggleButtonGroup />
+            </MenuItem>
+            <MenuItem
+                onClick={() => {
+                    handleMenuClose();
+                    saveAccessToken("");
+                    saveRefreshToken("");
+                    saveUser("");
+                    router.push("/signin");
+                }}
+                className="flex items-center justify-start gap-x-3 w-[360px]"
+            >
+                <LogoutIcon />
+                <Typography>Logout</Typography>
+            </MenuItem>
+        </Menu>
+    );
+
+    const mobileMenuId = "primary-search-account-menu-mobile";
+    const renderMobileMenu = (
+        <Menu
+            anchorEl={mobileMoreAnchorEl}
+            anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+            }}
+            id={mobileMenuId}
+            keepMounted
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+            }}
+            open={isMobileMenuOpen}
+            onClose={handleMobileMenuClose}
+        >
+            <PopupState
+                variant="popover"
+                popupId="message-popup-popover-mobile"
+            >
+                {(popupState) => (
+                    <>
+                        <MenuItem {...bindTrigger(popupState)}>
+                            <IconButton
+                                size="large"
+                                aria-label="show 4 new mails"
+                                color="inherit"
+                            >
+                                <Badge badgeContent={unreadCount} color="error">
+                                    <MailIcon />
+                                </Badge>
+                            </IconButton>
+                            <p>Messages</p>
+                        </MenuItem>
+                        <Popover
+                            {...bindPopover(popupState)}
+                            anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "center",
+                            }}
+                            transformOrigin={{
+                                vertical: "top",
+                                horizontal: "center",
+                            }}
+                        >
+                            <ConversationModal
+                                popupState={popupState}
+                            ></ConversationModal>
+                        </Popover>
+                    </>
+                )}
+            </PopupState>
+            <MenuItem>
+                <IconButton
+                    size="large"
+                    aria-label="show 17 new notifications"
+                    color="inherit"
+                >
+                    <Badge badgeContent={17} color="error">
+                        <NotificationsIcon />
+                    </Badge>
+                </IconButton>
+                <p>Notifications</p>
+            </MenuItem>
+            <MenuItem onClick={handleProfileMenuOpen}>
+                <IconButton
+                    size="large"
+                    aria-label="account of current user"
+                    aria-controls="primary-search-account-menu"
+                    aria-haspopup="true"
+                    color="inherit"
+                >
+                    <AccountCircle />
+                </IconButton>
+                <p>Profile</p>
+            </MenuItem>
+        </Menu>
+    );
 
     useEffect(() => {
         const fetchUnreadCount = () => {
@@ -122,6 +274,20 @@ const DashboardFeature = ({
                     <AccountCircle />
                 </IconButton>
             </Box>
+            <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                <IconButton
+                    size="large"
+                    aria-label="show more"
+                    aria-controls={mobileMenuId}
+                    aria-haspopup="true"
+                    onClick={handleMobileMenuOpen}
+                    color="inherit"
+                >
+                    <MoreIcon />
+                </IconButton>
+            </Box>
+            {renderMenu}
+            {renderMobileMenu}
         </>
     );
 };
