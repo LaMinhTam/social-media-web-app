@@ -19,16 +19,14 @@ public class ReactionServiceImpl implements ReactionService {
     private final CommentNodeRepository commentNodeRepository;
     private final UserNodeRepository userNodeRepository;
     private final UserClient userClient;
-    private final UserCategoryInterestRepository userCategoryInterestRepository;
 
     public ReactionServiceImpl(ReactionNodeRepository reactionNodeRepository, PostNodeRepository postNodeRepository,
-                               CommentNodeRepository commentNodeRepository, UserNodeRepository userNodeRepository, UserClient userClient, UserCategoryInterestRepository userCategoryInterestRepository) {
+                               CommentNodeRepository commentNodeRepository, UserNodeRepository userNodeRepository, UserClient userClient) {
         this.reactionNodeRepository = reactionNodeRepository;
         this.postNodeRepository = postNodeRepository;
         this.commentNodeRepository = commentNodeRepository;
         this.userNodeRepository = userNodeRepository;
         this.userClient = userClient;
-        this.userCategoryInterestRepository = userCategoryInterestRepository;
     }
 
     @Override
@@ -45,32 +43,62 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     private void updateInterestScore(UserNode user, PostNode post) {
+        boolean hasChanges = false;
+
         if (post.getCategories() != null) {
             for (CategoryNode category : post.getCategories()) {
                 UserCategoryInterest interest = user.getCategoryInterests().stream()
                         .filter(uci -> uci.getCategory().equals(category))
                         .findFirst()
-                        .orElse(null);
+                        .orElseGet(() -> {
+                            UserCategoryInterest newInterest = new UserCategoryInterest();
+                            newInterest.setUser(user);
+                            newInterest.setCategory(category);
+                            newInterest.setScore(0.0);
+                            newInterest.setLastUpdated(LocalDateTime.now());
+                            user.getCategoryInterests().add(newInterest);
+                            return newInterest;
+                        });
 
-                if (interest == null) {
-                    interest = new UserCategoryInterest();
-                    interest.setUser(user);
-                    interest.setCategory(category);
-                    interest.setScore(0.0);
-                    interest.setLastUpdated(LocalDateTime.now());
-                    user.getCategoryInterests().add(interest);
-                } else {
-                    calculateDecay(user, interest);
-                }
+                calculateDecay(interest);
 
                 interest.updateScore(1.0); // Adjust the interaction score as needed
+                hasChanges = true;
                 if (shouldUpdateInterest(interest)) {
                     interest.updateScore(1.0); // Example interaction score increment
                 }
             }
 
-            userNodeRepository.save(user);
+            // Check if any interests should be removed based on user activity
+            hasChanges |= removeUninterestedCategories(user);
+
+            if (hasChanges) {
+                userNodeRepository.save(user);
+            }
         }
+    }
+
+    private boolean removeUninterestedCategories(UserNode user) {
+        long timeThresholdDays = 30; // Adjust this value as needed
+        double relativeActivityThreshold = 0.7; // 70% of total interactions in other categories
+
+        LocalDateTime now = LocalDateTime.now();
+        long totalReactionsLast7Days = user.getCategoryInterests().stream()
+                .mapToLong(uci -> calculateReactionsInLastDays(uci, 7))
+                .sum();
+
+        return user.getCategoryInterests().removeIf(interest -> {
+            Duration duration = Duration.between(interest.getLastUpdated(), now);
+            long days = duration.toDays();
+            long reactionsLast7Days = calculateReactionsInLastDays(interest, 7);
+
+            return days > timeThresholdDays || (reactionsLast7Days / (double) totalReactionsLast7Days < (1 - relativeActivityThreshold));
+        });
+    }
+
+    private long calculateReactionsInLastDays(UserCategoryInterest interest, int days) {
+        LocalDateTime since = LocalDateTime.now().minusDays(days);
+        return reactionNodeRepository.countReactionsByCategorySince(interest.getCategory().getId(), since);
     }
 
     private boolean shouldUpdateInterest(UserCategoryInterest interest) {
@@ -84,7 +112,7 @@ public class ReactionServiceImpl implements ReactionService {
         return (interest.getScore() > reactionThreshold && days < timeThresholdDays);
     }
 
-    private void calculateDecay(UserNode user, UserCategoryInterest interest) {
+    private void calculateDecay(UserCategoryInterest interest) {
         LocalDateTime now = LocalDateTime.now();
         Duration duration = Duration.between(interest.getLastUpdated(), now);
         long days = duration.toDays();
@@ -93,8 +121,6 @@ public class ReactionServiceImpl implements ReactionService {
             double decayedScore = interest.getScore() * Math.pow(decayFactor, days);
             interest.setScore(decayedScore);
             interest.setLastUpdated(now);
-            user.getCategoryInterests().removeIf(uci -> uci.getCategory().equals(interest.getCategory()));
-            user.getCategoryInterests().add(interest);
         }
     }
 
