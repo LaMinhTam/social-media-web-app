@@ -4,11 +4,13 @@ server:
 spring:
   application:
     name: service-registry
+
 eureka:
   instance:
-    hostname: service-registry
+    hostname: ${EUREKA_HOSTNAME:service-registry-p3hn.onrender.com}
+    prefer-ip-address: true
   client:
     register-with-eureka: false
     fetch-registry: false
-    serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:https://service-registry-p3hn.onrender.com/eureka/}
