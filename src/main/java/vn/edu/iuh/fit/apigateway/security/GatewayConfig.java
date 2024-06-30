@@ -16,7 +16,7 @@ public class GatewayConfig {
         return builder.routes()
                 .route("auth-service", r -> r.path("/auth/**", "/oauth2/**")
                         .filters(f -> f.filter(filter))
-                        .uri("lb://auth-service"))
+                        .uri("https://auth-service-yl52.onrender.com"))
                 .route("user-service", r -> r.path("/friends/**", "/user/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://user-service"))
