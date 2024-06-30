@@ -67,6 +67,7 @@ const ChatModal = () => {
                 isAdmin={
                     currentConversation.owner_id === currentUserProfile.user_id
                 }
+                targetUser={anotherUser}
             ></ModalChatHeader>
             <ModalChatContent
                 isGroup={currentConversation.type === "GROUP" ? true : false}

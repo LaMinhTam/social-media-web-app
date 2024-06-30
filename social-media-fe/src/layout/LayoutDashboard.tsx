@@ -15,12 +15,16 @@ import CallType from "@/types/callType";
 import VideoCallDialog from "@/modules/conversation/modal/call/VideoCallDialog";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import IncomingCallDialog from "@/modules/conversation/modal/call/IncomingCallDialog";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
     const dispatch = useDispatch();
     const openCallDialog = useSelector(
         (state: RootState) => state.common.openCallDialog
+    );
+    const openIncomingCallDialog = useSelector(
+        (state: RootState) => state.common.openIncomingCallDialog
     );
     const triggerReFetchingRelationship = useSelector(
         (state: RootState) => state.common.triggerReFetchingRelationship
@@ -68,6 +72,12 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
                             openVideoCallDialog={openCallDialog}
                             dispatch={dispatch}
                         ></VideoCallDialog>
+                    )}
+                    {openIncomingCallDialog && (
+                        <IncomingCallDialog
+                            openIncomingCallDialog={openIncomingCallDialog}
+                            dispatch={dispatch}
+                        ></IncomingCallDialog>
                     )}
                     {children}
                 </div>

@@ -33,3 +33,7 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555; /* Color of the scroll thumb on hover */
 }
+
+.swal2-popup .swal2-image {
+    object-fit: contain;
+}

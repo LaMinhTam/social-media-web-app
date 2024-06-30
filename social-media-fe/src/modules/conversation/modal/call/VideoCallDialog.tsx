@@ -3,6 +3,7 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    DialogProps,
     DialogTitle,
     IconButton,
     styled,
@@ -17,6 +18,8 @@ import { useCall } from "@/contexts/call-context";
 import { CALL_STATE } from "@/constants/global";
 import { Dispatch } from "@reduxjs/toolkit";
 import { setOpenCallDialog } from "@/store/actions/commonSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -34,7 +37,8 @@ const VideoCallDialog = ({
     openVideoCallDialog: boolean;
     dispatch: Dispatch<any>;
 }) => {
-    const { call, setVideoInput, setVideoOutput, callState } = useCall();
+    const { call, setVideoInput, setVideoOutput, callState, stop, targetUser } =
+        useCall();
     const [loading, setLoading] = useState<boolean>(false);
     const [videoInputElement, setVideoInputElement] =
         useState<HTMLVideoElement | null>(null);
@@ -71,7 +75,8 @@ const VideoCallDialog = ({
         }
     }, [videoInputElement, videoOutputElement]);
 
-    const handleClose = () => {
+    const handleClose: DialogProps["onClose"] = (event, reason) => {
+        if (reason && reason === "backdropClick") return;
         dispatch(setOpenCallDialog(false));
     };
 
@@ -80,7 +85,7 @@ const VideoCallDialog = ({
             onClose={handleClose}
             aria-labelledby="customized-dialog-title"
             open={openVideoCallDialog}
-            onBackdropClick={handleClose}
+            disableEscapeKeyDown
         >
             <DialogTitle
                 sx={{
@@ -91,11 +96,15 @@ const VideoCallDialog = ({
                 }}
                 id="customized-dialog-title"
             >
-                Calling to ...
+                {callState === CALL_STATE.NO_CALL ||
+                    (callState === CALL_STATE.PROCESSING_CALL &&
+                        `Calling to ${targetUser?.name || "Unknown"}`)}
+                {callState === CALL_STATE.IN_CALL &&
+                    `Video call ${targetUser?.name || "Unknown"}`}
             </DialogTitle>
             <IconButton
                 aria-label="close"
-                onClick={handleClose}
+                onClick={() => dispatch(setOpenCallDialog(false))}
                 sx={{
                     position: "absolute",
                     right: 8,
@@ -105,21 +114,29 @@ const VideoCallDialog = ({
             >
                 <CloseIcon />
             </IconButton>
-            <DialogContent dividers className="w-[548px] h-full">
-                <div className="flex flex-col items-center justify-center">
+            <DialogContent dividers className="w-[548px] h-[350px] relative">
+                <div className="flex flex-col items-center justify-center h-[350px]">
                     <video
                         id="videoOutput"
                         ref={videoOutputRef}
                         autoPlay
                         playsInline
-                        className="w-full h-full"
+                        className={`${
+                            callState === CALL_STATE.IN_CALL
+                                ? "w-full h-full"
+                                : "hidden"
+                        }`}
                     ></video>
                     <video
                         id="videoInput"
                         ref={videoInputRef}
                         autoPlay
                         playsInline
-                        className="w-full h-full"
+                        className={`${
+                            callState === CALL_STATE.IN_CALL
+                                ? "absolute top-0 right-0 w-1/4 max-w-xs h-1/4 max-h-20"
+                                : "w-full h-full"
+                        }`}
                     ></video>
                 </div>
             </DialogContent>
@@ -138,6 +155,9 @@ const VideoCallDialog = ({
                     color="inherit"
                     variant="outlined"
                     className="rounded-full bg-darkRed text-lite hover:bg-darkRed hover:text-lite"
+                    onClick={() => {
+                        stop();
+                    }}
                 >
                     <CallEndIcon />
                 </Button>

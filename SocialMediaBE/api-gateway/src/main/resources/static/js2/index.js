@@ -192,6 +192,7 @@ function incomingCall(message) {
 			onicecandidate : onIceCandidate,
 			onerror : onError
 		}
+		console.log("Incoming call option", options)
 		webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
 				function(error) {
 					if (error) {
@@ -221,6 +222,7 @@ function onOfferIncomingCall(error, offerSdp) {
 		callResponse : 'accept',
 		sdpOffer : offerSdp
 	};
+	console.log("onOfferIncomingCall", response)
 	sendMessage(response);
 }
 

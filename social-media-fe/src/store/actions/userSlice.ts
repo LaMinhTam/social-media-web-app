@@ -1,4 +1,5 @@
-import { ListFriendResponse, Member } from "@/types/userType";
+import { Member } from "@/types/conversationType";
+import { ListFriendResponse } from "@/types/userType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type FriendType = {

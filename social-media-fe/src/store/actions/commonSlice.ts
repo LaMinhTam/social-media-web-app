@@ -4,12 +4,14 @@ type CommonType = {
     triggerReFetchingRelationship: boolean;
     showChatModal: boolean;
     openCallDialog: boolean;
+    openIncomingCallDialog: boolean;
 };
 
 const initialState: CommonType = {
     triggerReFetchingRelationship: true,
     showChatModal: false,
     openCallDialog: false,
+    openIncomingCallDialog: false,
 };
 
 const commonSlice = createSlice({
@@ -28,6 +30,9 @@ const commonSlice = createSlice({
         setOpenCallDialog(state, action: PayloadAction<boolean>) {
             state.openCallDialog = action.payload;
         },
+        setOpenIncomingCallDialog(state, action: PayloadAction<boolean>) {
+            state.openIncomingCallDialog = action.payload;
+        },
     },
 });
 
@@ -35,5 +40,6 @@ export const {
     setTriggerReFetchingRelationship,
     setShowChatModal,
     setOpenCallDialog,
+    setOpenIncomingCallDialog,
 } = commonSlice.actions;
 export default commonSlice.reducer;

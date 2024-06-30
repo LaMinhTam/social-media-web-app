@@ -1,14 +1,22 @@
 import { CALL_STATE, CALL_WS_URL, REGISTER_STATE } from "@/constants/global";
-import { setOpenCallDialog } from "@/store/actions/commonSlice";
+import { findUserById } from "@/services/search.service";
+import {
+    setOpenCallDialog,
+    setOpenIncomingCallDialog,
+} from "@/store/actions/commonSlice";
 import { RootState } from "@/store/configureStore";
 import CallType from "@/types/callType";
+import { Member } from "@/types/conversationType";
 import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { WebRtcPeer } from "kurento-utils";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const CallContext = React.createContext<CallType>({} as CallType);
+var webRtcPeer: WebRtcPeer | null;
+var socket: WebSocket | null;
 
 export function CallProvider(
     props: JSX.IntrinsicAttributes & React.ProviderProps<CallType>
@@ -23,6 +31,7 @@ export function CallProvider(
     const [callState, setCallState] = React.useState<string>(
         CALL_STATE.NO_CALL
     );
+    const [isAccepted, setIsAccepted] = React.useState<boolean>(false);
     const [isIncomingCall, setIsIncomingCall] = React.useState<boolean>(false);
     const [inComingCallId, setInComingCallId] = React.useState<number>(-1);
     const [registerState, setRegisterState] = React.useState<number>(0);
@@ -31,24 +40,23 @@ export function CallProvider(
     );
     const [videoOutput, setVideoOutput] =
         React.useState<HTMLVideoElement | null>(null);
-    const [webRtcPeer, setWebRtcPeer] = React.useState<WebRtcPeer | null>(null);
-    const [socket, setSocket] = React.useState<WebSocket | null>(null);
+    const [targetUser, setTargetUser] = React.useState<Member | null>(null);
     useEffect(() => {
-        const ws = new WebSocket(CALL_WS_URL);
+        socket = new WebSocket(CALL_WS_URL);
         console.log("Attempting to open WebSocket connection...");
-        ws.onopen = () => {
+        socket.onopen = () => {
             console.log("WebSocket kurento connection opened");
             setIsReady(true);
         };
 
-        ws.onclose = (event) => {
+        socket.onclose = (event) => {
             console.log("WebSocket kurento connection closed: ", event);
         };
 
-        ws.onerror = (error) => {
+        socket.onerror = (error) => {
             console.log("WebSocket kurento error: ", error);
         };
-        ws.onmessage = (message) => {
+        socket.onmessage = (message) => {
             const parsedMessage = JSON.parse(message.data);
             console.info("Received message: " + message.data);
             switch (parsedMessage.id) {
@@ -88,16 +96,15 @@ export function CallProvider(
             }
         };
 
-        setSocket(ws);
-
         return () => {
-            ws.close();
+            socket?.close();
         };
     }, []);
 
     useEffect(() => {
         if (isReady && decryptedData) {
             register(decryptedData.user_id);
+            setIsReady(false);
         }
     }, [isReady]);
 
@@ -115,14 +122,13 @@ export function CallProvider(
                 onicecandidate: onIceCandidate,
                 onerror: onError,
             };
-            console.log("useEffect ~ options:", options);
-            const webRtcPeer = WebRtcPeer.WebRtcPeerSendrecv(
+            webRtcPeer = WebRtcPeer.WebRtcPeerSendrecv(
                 options,
                 function (error) {
                     if (error) {
                         return console.error(error);
                     }
-                    webRtcPeer.generateOffer(onOfferIncomingCall);
+                    webRtcPeer?.generateOffer(onOfferIncomingCall);
                 }
             );
         }
@@ -154,7 +160,6 @@ export function CallProvider(
         videoInput: HTMLVideoElement,
         videoOutput: HTMLVideoElement
     ) => {
-        console.log("run call()");
         const options = {
             localVideo: videoInput,
             remoteVideo: videoOutput,
@@ -162,16 +167,15 @@ export function CallProvider(
             onerror: onError,
         };
         setCallState(CALL_STATE.PROCESSING_CALL);
-        const webRtcPeer = WebRtcPeer.WebRtcPeerSendrecv(
+        webRtcPeer = WebRtcPeer.WebRtcPeerSendrecv(
             options,
             function (error: any) {
                 if (error) {
                     return console.error(error);
                 }
-                webRtcPeer.generateOffer(onOfferCall);
+                webRtcPeer?.generateOffer(onOfferCall);
             }
         );
-        setWebRtcPeer(webRtcPeer);
     };
 
     const onOfferCall = (error: any, offerSdp: any) => {
@@ -186,40 +190,58 @@ export function CallProvider(
         sendMessage(message);
     };
 
-    const incomingCall = (message: any) => {
-        console.info("Incoming call from: " + message.from);
-        // If bussy just reject without disturbing user
+    const incomingCall = async (message: any) => {
+        // If busy just reject without disturbing user
         if (callState != CALL_STATE.NO_CALL) {
             var response = {
                 id: "incomingCallResponse",
                 from: message.from,
                 callResponse: "reject",
-                message: "bussy",
+                message: "busy",
             };
             return sendMessage(response);
         }
 
-        setCallState(CALL_STATE.PROCESSING_CALL);
-        if (
-            confirm(
-                "User " +
-                    message.from +
-                    " is calling you. Do you accept the call?"
-            )
-        ) {
-            dispatch(setOpenCallDialog(true));
-            setIsIncomingCall(true);
-            setInComingCallId(message.from);
-        } else {
-            var response = {
-                id: "incomingCallResponse",
-                from: message.from,
-                callResponse: "reject",
-                message: "user declined",
-            };
-            sendMessage(response);
-            stop(false);
-        }
+        // Find user details
+        const user = await findUserById(message.from);
+        if (user) setTargetUser(user);
+        const imageUrl =
+            "https://ddk.1cdn.vn/2023/05/13/image.daidoanket.vn-images-upload-vanmt-05132023-_img_2173.jpg";
+        // user?.image_url || "https://source.unsplash.com/random";
+
+        Swal.fire({
+            title: "Incoming Call",
+            text: `You have an incoming call from ${
+                user ? user.name : "Unknown Caller"
+            }. Do you want to accept it?`,
+            icon: "question",
+            imageUrl: imageUrl,
+            imageWidth: 400,
+            imageHeight: 200,
+            imageAlt: "Custom image",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, accept it!",
+            cancelButtonText: "No, reject it!",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setCallState(CALL_STATE.PROCESSING_CALL);
+                dispatch(setOpenCallDialog(true));
+                setIsIncomingCall(true);
+                setInComingCallId(message.from);
+            } else {
+                console.log("Call rejected");
+                var response = {
+                    id: "incomingCallResponse",
+                    from: message.from,
+                    callResponse: "reject",
+                    message: "user declined",
+                };
+                sendMessage(response);
+                stop();
+            }
+        });
     };
 
     const onOfferIncomingCall = (error: any, offerSdp: any) => {
@@ -259,11 +281,10 @@ export function CallProvider(
                 : "Unknown reason for call rejection.";
             console.log(errorMessage);
             toast.error(errorMessage);
-            stop(false);
+            stop();
+            dispatch(setOpenCallDialog(false));
         } else {
             setCallState(CALL_STATE.IN_CALL);
-            console.log("Call response message:", message);
-            console.log("Call accepted by peer. Processing call");
             webRtcPeer?.processAnswer(message.sdpAnswer, function (error) {
                 if (error) return console.error(error);
             });
@@ -282,13 +303,13 @@ export function CallProvider(
         });
     }
 
-    const stop = (value: boolean) => {
+    const stop = (message?: any) => {
         setCallState(CALL_STATE.NO_CALL);
         if (webRtcPeer) {
             webRtcPeer.dispose();
-            setWebRtcPeer(null);
-
-            if (!value) {
+            webRtcPeer = null;
+            dispatch(setOpenCallDialog(false));
+            if (!message) {
                 var msg = {
                     id: "stop",
                 };
@@ -305,6 +326,12 @@ export function CallProvider(
         setVideoInput,
         setVideoOutput,
         callState,
+        stop,
+        targetUserId,
+        targetUser,
+        setTargetUser,
+        isAccepted,
+        setIsAccepted,
     };
 
     return (

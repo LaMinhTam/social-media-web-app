@@ -1,7 +1,9 @@
 import {
+    Button,
     Dialog,
     DialogActions,
     DialogContent,
+    DialogProps,
     DialogTitle,
     IconButton,
     styled,
@@ -10,6 +12,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import CallIcon from "@mui/icons-material/Call";
 import React, { useState } from "react";
+import Image from "next/image";
+import { Dispatch } from "@reduxjs/toolkit";
+import { setOpenIncomingCallDialog } from "@/store/actions/commonSlice";
+import { useCall } from "@/contexts/call-context";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -20,22 +26,23 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 const IncomingCallDialog = ({
     openIncomingCallDialog,
-    setOpenIncomingCallDialog,
+    dispatch,
 }: {
     openIncomingCallDialog: boolean;
-    setOpenIncomingCallDialog: (open: boolean) => void;
+    dispatch: Dispatch<any>;
 }) => {
-    const [loading, setLoading] = useState<boolean>(false);
-    const handleClose = () => {
-        setOpenIncomingCallDialog(false);
+    const handleClose: DialogProps["onClose"] = (event, reason) => {
+        if (reason && reason === "backdropClick") return;
+        dispatch(setOpenIncomingCallDialog(false));
     };
+    const { targetUser, setIsAccepted } = useCall();
 
     return (
         <BootstrapDialog
             onClose={handleClose}
             aria-labelledby="customized-dialog-title"
             open={openIncomingCallDialog}
-            onBackdropClick={handleClose}
+            disableEscapeKeyDown
         >
             <DialogTitle
                 sx={{
@@ -46,11 +53,11 @@ const IncomingCallDialog = ({
                 }}
                 id="customized-dialog-title"
             >
-                ... is calling
+                {targetUser?.name} is calling you
             </DialogTitle>
             <IconButton
                 aria-label="close"
-                onClick={handleClose}
+                onClick={() => dispatch(setOpenIncomingCallDialog(false))}
                 sx={{
                     position: "absolute",
                     right: 8,
@@ -61,26 +68,40 @@ const IncomingCallDialog = ({
                 <CloseIcon />
             </IconButton>
             <DialogContent dividers className="w-[548px] h-full">
-                <video
-                    src=""
-                    className="object-cover w-full h-[300px] bg-strock rounded shadow-md"
-                ></video>
+                <Image
+                    src={
+                        targetUser?.image_url ||
+                        "https://source.unsplash.com/random"
+                    }
+                    alt={targetUser?.name || "Unknown"}
+                    width={548}
+                    height={350}
+                    className="w-[548px] h-[350px] object-cover rounded-lg"
+                ></Image>
             </DialogContent>
             <DialogActions className="flex justify-center gap-2">
-                <IconButton
-                    type="button"
-                    color="inherit"
-                    className="rounded-full bg-darkRed text-lite hover:bg-darkRed hover:text-lite"
+                <Button
+                    onClick={() => {
+                        setIsAccepted(true);
+                        dispatch(setOpenIncomingCallDialog(false));
+                    }}
+                    variant="contained"
+                    color="success"
+                    startIcon={<CallIcon />}
                 >
-                    <CallEndIcon />
-                </IconButton>
-                <IconButton
-                    type="button"
-                    color="inherit"
-                    className="rounded-full bg-strock text-lite hover:bg-darkRed hover:text-lite"
+                    Accept
+                </Button>
+                <Button
+                    onClick={() => {
+                        setIsAccepted(false);
+                        dispatch(setOpenIncomingCallDialog(false));
+                    }}
+                    variant="contained"
+                    color="error"
+                    startIcon={<CallEndIcon />}
                 >
-                    <CallIcon />
-                </IconButton>
+                    Reject
+                </Button>
             </DialogActions>
         </BootstrapDialog>
     );

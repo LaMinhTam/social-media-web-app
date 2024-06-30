@@ -12,7 +12,7 @@ import React from "react";
 import { OnlineStatus } from "@/types/commonType";
 import Image from "next/image";
 import { setCurrentConversation } from "@/store/actions/conversationSlice";
-import { ConversationResponse } from "@/types/conversationType";
+import { ConversationResponse, Member } from "@/types/conversationType";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupSetting from "./group/GroupSetting";
 import VideoCallDialog from "./call/VideoCallDialog";
@@ -28,6 +28,7 @@ const ModalChatHeader = ({
     avatar,
     isAdmin,
     isGroup,
+    targetUser,
 }: {
     userId: number;
     username: string;
@@ -36,8 +37,9 @@ const ModalChatHeader = ({
     avatar: string;
     isAdmin: boolean;
     isGroup: boolean;
+    targetUser: Member;
 }) => {
-    const { setTargetUserId } = useCall();
+    const { setTargetUserId, setTargetUser } = useCall();
     return (
         <>
             <div className="z-50 flex-shrink-0 p-2 shadow-md">
@@ -114,7 +116,7 @@ const ModalChatHeader = ({
                             onClick={() => {
                                 setTargetUserId(userId);
                                 dispatch(setOpenCallDialog(true));
-                                // register(userId);
+                                setTargetUser(targetUser);
                             }}
                         >
                             <VideocamIcon />
