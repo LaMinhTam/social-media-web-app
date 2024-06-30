@@ -3,9 +3,3 @@ spring:
     name: api-gateway
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL:https://config-server-rcab.onrender.com}"
-server:
-  ssl:
-    key-store: classpath:keystore.jks
-    key-store-password: kurento
-    key-store-type: JKS
-    key-alias: kurento-selfsigned
