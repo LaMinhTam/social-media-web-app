@@ -5,4 +5,4 @@ spring:
     import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8889}"
 logging:
   level:
-    org.springframework.data.neo4j.cypher.deprecation: ERROR,
+    org.springframework.data.neo4j.cypher.deprecation: ERROR
