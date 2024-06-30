@@ -13,7 +13,7 @@ management:
 
 spring:
   neo4j:
-    uri: bolt://localhost:7687/friend_db
+    uri: neo4j+s://d227dd4a.databases.neo4j.io
     authentication:
       username: neo4j
-      password: 12345678
+      password: 27q2I0_Lhc144m96JvGCFxPe6dDq5qCjfqWXlRwcYZ0

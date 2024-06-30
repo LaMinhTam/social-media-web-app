@@ -11,15 +11,14 @@ eureka:
 spring:
   data:
     mongodb:
-      port: 27017
-      host: localhost
-      database: chat_db
-      authentication-database: admin
-      uri: mongodb://root:123456@localhost:27017/test?authSource=admin&authMechanism=SCRAM-SHA-1
+      uri: mongodb+srv://mongobasic:Social123456789Media@cluster0.oiyfqvw.mongodb.net/chat_db?retryWrites=true&w=majority&appName=Cluster0
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: 123456
+    host: octopus.rmq3.cloudamqp.com
+    port: 5671
+    username: jripffqi
+    password: FU4X3xuxkVca33eee0zB3UomHrvN6_x_
+    virtual-host: jripffqi
+    ssl:
+      enabled: true
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

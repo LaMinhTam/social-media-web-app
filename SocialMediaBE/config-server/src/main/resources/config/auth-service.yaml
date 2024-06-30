@@ -14,15 +14,13 @@ management:
 spring:
   data:
     redis:
-      database: 0
-      host: localhost
-      port: 6379
-      timeout: 60000
-      password: 123456
+      host: redis-14434.c292.ap-southeast-1-1.ec2.redns.redis-cloud.com
+      port: 14434
+      password: QSXXcWgl2sserlbefUsJlestoMv5fuF9
   datasource:
-    url: jdbc:mysql://localhost:3306/auth_db?serverTimezone=UTC&createDatabaseIfNotExist=true
-    username: root
-    password: 123456
+    url: jdbc:mysql://uzwn5xabb6g4leoj:ztk0GbYx1HKJYFR5xyLw@bucjeknhu545oao2934p-mysql.services.clever-cloud.com:3306/bucjeknhu545oao2934p
+    username: uzwn5xabb6g4leoj
+    password: ztk0GbYx1HKJYFR5xyLw
   jpa:
     hibernate:
       ddl-auto: update

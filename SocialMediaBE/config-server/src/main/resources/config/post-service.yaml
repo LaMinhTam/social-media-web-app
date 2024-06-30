@@ -11,18 +11,14 @@ eureka:
 spring:
   data:
     mongodb:
-      port: 27017
-      host: localhost
-      database: post_db
-      authentication-database: admin
-      uri: mongodb://root:123456@localhost:27017/test?authSource=admin&authMechanism=SCRAM-SHA-1
+      uri: mongodb+srv://mongobasic:Social123456789Media@cluster0.oiyfqvw.mongodb.net/post_db?retryWrites=true&w=majority&appName=Cluster0
     elasticsearch:
       cluster-name: elasticsearch
       cluster-nodes: localhost:9200
   neo4j:
-    uri: bolt://localhost:7687/friend_db
+    uri: neo4j+s://d227dd4a.databases.neo4j.io
     authentication:
       username: neo4j
-      password: 12345678
+      password: 27q2I0_Lhc144m96JvGCFxPe6dDq5qCjfqWXlRwcYZ0
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
