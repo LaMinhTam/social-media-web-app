@@ -3,4 +3,11 @@ server:
 
 spring:
   profiles:
-    active: native
+    active: git
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/LaMinhTam/config-social-media-repo.git
+          clone-on-start: true
