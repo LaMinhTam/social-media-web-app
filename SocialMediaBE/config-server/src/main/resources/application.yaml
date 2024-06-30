@@ -1,6 +1,0 @@
-server:
-  port: 8889
-
-spring:
-  profiles:
-    active: native
