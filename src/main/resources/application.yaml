@@ -2,4 +2,4 @@ spring:
   application:
     name: api-gateway
   config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:https://config-server-rcab.onrender.com}"
+    import: "optional:configserver:${CONFIG_SERVER_URL:https://config-server-q064.onrender.com}"
