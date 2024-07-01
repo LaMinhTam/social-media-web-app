@@ -2,172 +2,6 @@
 version: "3.8"
 
 services:
-    proxy:
-        image: nginx:latest
-        container_name: nginx-con
-        ports:
-            - "80:80"
-        volumes:
-            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-        networks:
-            - backend
-        depends_on:
-            - service-registry
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: 256M
-                reservations:
-                    memory: 128M
-
-    mysql:
-        image: mysql:latest
-        container_name: db-mysql-con
-        restart: always
-        environment:
-            - MYSQL_USER=admin
-            - MYSQL_PASSWORD=123456
-            - MYSQL_ROOT_PASSWORD=123456
-        volumes:
-            - mysql-data:/var/lib/mysql
-            - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-        ports:
-            - "3306:3306"
-        networks:
-            - db-mysql-net
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.50"
-                    memory: 512M
-                reservations:
-                    memory: 256M
-
-    adminer:
-        image: adminer
-        container_name: adminer-con
-        restart: always
-        ports:
-            - "8080:8080"
-        networks:
-            - db-mysql-net
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: 256M
-                reservations:
-                    memory: 128M
-
-    mongodb:
-        image: mongo:latest
-        container_name: db-mongodb-con
-        restart: always
-        ports:
-            - "27017:27017"
-        environment:
-            - MONGO_INITDB_ROOT_USERNAME=root
-            - MONGO_INITDB_ROOT_PASSWORD=123456
-        volumes:
-            - mongodb-data:/data/db
-            - ./database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
-        networks:
-            - db-mongodb-net
-
-    mongo-express:
-        image: mongo-express
-        container_name: mongo-express-con
-        restart: always
-        ports:
-            - 8081:8081
-        environment:
-            - ME_CONFIG_MONGODB_SERVER=mongodb
-            - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-            - ME_CONFIG_MONGODB_ADMINPASSWORD=123456
-        networks:
-            - db-mongodb-net
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: 256M
-                reservations:
-                    memory: 128M
-
-    neo4j:
-        image: neo4j:latest
-        container_name: neo4j-con
-        restart: always
-        ports:
-            - "7474:7474"
-            - "7687:7687"
-        environment:
-            - NEO4J_AUTH=neo4j/12345678
-            - NEO4J_dbms_memory_pagecache_size=1G
-            - NEO4J_dbms_memory_heap_max__size=512M
-        volumes:
-            - neo4j-data:/data
-        networks:
-            - backend
-            - db-neo4j-net
-
-    zipkin:
-        image: openzipkin/zipkin
-        container_name: zipkin-con
-        restart: always
-        ports:
-            - "9411:9411"
-        networks:
-            - backend
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: 256M
-                reservations:
-                    memory: 128M
-
-    redis:
-        image: redis:latest
-        container_name: redis-con
-        restart: always
-        ports:
-            - "6379:6379"
-        environment:
-            - REDIS_PASSWORD=123456
-            - REDIS_PORT=6379
-            - REDIS_DATABASES=16
-        networks:
-            - db-redis-net
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: 256M
-                reservations:
-                    memory: 128M
-
-    rabbitmq:
-        image: rabbitmq:management
-        container_name: rabbitmq-con
-        restart: always
-        ports:
-            - "5672:5672"
-            - "15672:15672"
-        environment:
-            - RABBITMQ_DEFAULT_USER=admin
-            - RABBITMQ_DEFAULT_PASS=123456
-        networks:
-            - rabbitmq-net
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.50"
-                    memory: 512M
-                reservations:
-                    memory: 256M
-
     kurento:
         image: kurento/kurento-media-server:latest
         container_name: kurento-con
@@ -192,12 +26,6 @@ services:
             - "8761:8761"
         networks:
             - backend
-        depends_on:
-            - mysql
-            - redis
-            - rabbitmq
-            - neo4j
-            - mongodb
         deploy:
             resources:
                 limits:
@@ -222,7 +50,6 @@ services:
         ports:
             - "8889:8889"
         environment:
-            - SPRING_PROFILES_ACTIVE=native
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
         networks:
             - backend
@@ -243,15 +70,8 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - SPRING_DATA_REDIS_DATABASE=0
-            - SPRING_DATA_REDIS_HOST=redis
-            - SPRING_DATA_REDIS_PORT=6379
-            - SPRING_DATA_REDIS_TIMEOUT=60000
-            - SPRING_DATA_REDIS_PASSWORD=123456
-            - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
         networks:
             - backend
-            - db-redis-net
         depends_on:
             service-registry:
                 condition: service_healthy
@@ -272,25 +92,11 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true
-            - SPRING_DATASOURCE_USERNAME=root
-            - SPRING_DATASOURCE_PASSWORD=123456
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_JPA_SHOW_SQL=false
-            - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
-            - JWT_EXPIRATION=86400
-            - SPRING_DATA_REDIS_DATABASE=0
-            - SPRING_DATA_REDIS_HOST=redis
-            - SPRING_DATA_REDIS_PORT=6379
-            - SPRING_DATA_REDIS_TIMEOUT=60000
-            - SPRING_DATA_REDIS_PASSWORD=123456
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
-            - db-mysql-net
-            - db-redis-net
         deploy:
             resources:
                 limits:
@@ -308,15 +114,11 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - SPRING_NEO4J_URI=bolt://neo4j:7687
-            - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
-            - SPRING_NEO4J_AUTHENTICATION_PASSWORD=12345678
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
-            - db-neo4j-net
 
     chat-service:
         image: laminhtam/social-media-chat-service:latest
@@ -327,23 +129,11 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - SPRING_DATA_MONGODB_PORT=27017
-            - SPRING_DATA_MONGODB_HOST=db-mongodb-con
-            - SPRING_DATA_MONGODB_DATABASE=chat_db
-            - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
-            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
-            - SPRING_RABBITMQ_HOST=rabbitmq
-            - SPRING_RABBITMQ_PORT=5672
-            - SPRING_RABBITMQ_USERNAME=admin
-            - SPRING_RABBITMQ_PASSWORD=123456
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
-            - db-mongodb-net
-            - rabbitmq-net
-            - db-redis-net
 
     post-service:
         image: laminhtam/social-media-post-service:latest
@@ -354,21 +144,11 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - SPRING_DATA_MONGODB_PORT=27017
-            - SPRING_DATA_MONGODB_HOST=db-mongodb-con
-            - SPRING_DATA_MONGODB_DATABASE=post_db
-            - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
-            - SPRING_DATA_MONGODB_URI=mongodb://root:123456@mongodb:27017/admin
-            - SPRING_NEO4J_URI=bolt://localhost:7687/friend_db
-            - SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
-            - SPRING_NEO4J_AUTHENTICATION_PASSWORD=12345678
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
-            - db-mongodb-net
-            - db-neo4j-net
 
     notification-service:
         image: laminhtam/social-media-notification-service:latest
@@ -379,24 +159,11 @@ services:
         environment:
             - CONFIG_SERVER_URL=http://config-server:8889
             - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
-            - JWT_SECRET=04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
-            - KURENTO_WS_URL=ws://kurento-con:8888/kurento
-            - SPRING_DATA_REDIS_DATABASE=0
-            - SPRING_DATA_REDIS_HOST=redis
-            - SPRING_DATA_REDIS_PORT=6379
-            - SPRING_DATA_REDIS_TIMEOUT=60000
-            - SPRING_DATA_REDIS_PASSWORD=123456
-            - SPRING_RABBITMQ_HOST=rabbitmq
-            - SPRING_RABBITMQ_PORT=5672
-            - SPRING_RABBITMQ_USERNAME=admin
-            - SPRING_RABBITMQ_PASSWORD=123456
         depends_on:
             service-registry:
                 condition: service_healthy
         networks:
             - backend
-            - db-redis-net
-            - rabbitmq-net
 
     # nextjs14-social-media-fe:
     #     image: dinhthong17/nextjs14-social-media-fe:latest
@@ -407,15 +174,6 @@ services:
     #     networks:
     #         - frontend
 
-volumes:
-    mysql-data:
-    mongodb-data:
-    neo4j-data:
 networks:
-    db-mysql-net:
-    db-mongodb-net:
-    db-neo4j-net:
     backend:
-    db-redis-net:
-    rabbitmq-net:
     frontend:

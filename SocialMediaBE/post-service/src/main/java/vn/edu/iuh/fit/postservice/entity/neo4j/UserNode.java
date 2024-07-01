@@ -32,6 +32,8 @@ public class UserNode {
     private Set<UserNode> following = new HashSet<>();
     @Relationship(type = "REACH", direction = Relationship.Direction.OUTGOING)
     private Set<PostNode> reach = new HashSet<>();
+    @Relationship(type = "INTERESTED_IN", direction = Relationship.Direction.OUTGOING)
+    private Set<UserCategoryInterest> categoryInterests;
 
     @Override
     public boolean equals(Object o) {

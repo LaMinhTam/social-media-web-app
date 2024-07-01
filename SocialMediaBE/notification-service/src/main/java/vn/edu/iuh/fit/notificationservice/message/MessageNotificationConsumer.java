@@ -79,7 +79,7 @@ public class MessageNotificationConsumer {
             notifyMembers.removeAll(request.message().deletedBy());
         }
 
-        ReplyMessageDTO replyMessage = new ReplyMessageDTO(request.message().replyToMessageId(), "This message has been revoked", null, senderUserDetail.user_id());
+        ReplyMessageDTO replyMessage = new ReplyMessageDTO(request.message().replyToMessageId(), "This message has been revoked", null, senderUserDetail.user_id(), request.message().type());
 
         for (Long memberId : notifyMembers) {
             simpMessagingTemplate.convertAndSendToUser(memberId.toString(), "/revoke",

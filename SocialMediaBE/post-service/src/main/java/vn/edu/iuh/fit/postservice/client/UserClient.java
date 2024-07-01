@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import vn.edu.iuh.fit.postservice.dto.UserDetail;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class UserClient {
         this.webClient = userWebClient;
     }
 
-    public List<UserDetail> getUsersByIds(List<Long> ids) {
+    public List<UserDetail> getUsersByIds(Collection<Long> ids) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/user")
                         .queryParam("ids", String.join(",", ids.stream().map(String::valueOf).toList()))
@@ -30,7 +31,7 @@ public class UserClient {
     }
 
 
-    public Map<Long, UserDetail> getUsersByIdsMap(List<Long> ids) {
+    public Map<Long, UserDetail> getUsersByIdsMap(Collection<Long> ids) {
         return getUsersByIds(ids).stream().collect(Collectors.toMap(UserDetail::user_id, Function.identity()));
     }
 

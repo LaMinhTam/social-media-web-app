@@ -29,63 +29,62 @@ public class CustomPostNodeRepositoryImpl implements CustomPostNodeRepository {
         Collection<Map<String, Object>> results = neo4jClient.query((
                         """
                                 MATCH (currentUser:UserNode {userId: $userId})
-                                MATCH (u:UserNode)-[:AUTHORED_BY]->(p:PostNode)
+                                OPTIONAL MATCH (u:UserNode)-[:AUTHORED_BY]->(p:PostNode)
                                 OPTIONAL MATCH (currentUser)-[:FOLLOW]->(following:UserNode)-[:AUTHORED_BY]->(p)
                                 OPTIONAL MATCH (currentUser)-[:REACH]->(p)
                                 OPTIONAL MATCH (p)<-[:REACTION]-(r:ReactionNode)
                                 OPTIONAL MATCH (p)-[:SHARE_OF]->(original:PostNode)
                                 OPTIONAL MATCH (p)<-[:AUTHORED_BY]-(author:UserNode)
                                 OPTIONAL MATCH (original)<-[:AUTHORED_BY]-(originalAuthor:UserNode)
-
-                                WITH p, u.userId AS userId, COUNT(r) AS reactionCount,\s
-                                     COLLECT(DISTINCT author.userId) AS authors,\s
-                                     original,\s
+                                                                
+                                WITH p, u.userId AS userId, COUNT(r) AS reactionCount,
+                                     COLLECT(DISTINCT author.userId) AS authors,
+                                     original,
                                      COLLECT(DISTINCT originalAuthor.userId) AS originalAuthors,
                                      CASE WHEN following IS NOT NULL THEN true ELSE false END AS isFollowed,
                                      CASE WHEN (currentUser)-[:REACH]->(p) THEN true ELSE false END AS isAlreadyReached,
-                                     duration.inDays(datetime(p.createdAt), datetime()).days AS daysSinceCreation
-
-                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, isAlreadyReached, daysSinceCreation,
-                                     CASE
-                                       WHEN reactionCount > 0 THEN 1.0 * reactionCount
-                                       ELSE 0
-                                     END AS baseScore,
+                                     duration.inDays(datetime(p.createdAt), datetime()).days AS daysSinceCreation,
+                                     CASE WHEN COUNT(r) > 0 THEN 1.0 * COUNT(r) ELSE 0 END AS baseScore
+                                                                
+                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, isAlreadyReached, daysSinceCreation, baseScore,
                                      CASE
                                        WHEN daysSinceCreation <= 1 THEN 1.5
                                        WHEN daysSinceCreation <= 3 THEN 1.3
                                        WHEN daysSinceCreation <= 6 THEN 1.1
                                        WHEN daysSinceCreation <= 7 THEN 1.0
-                                       ELSE 0.8 * (1.0 - (daysSinceCreation - 7) * 0.05) // Decay linearly for simplicity
+                                       ELSE 0.8 * (1.0 - (daysSinceCreation - 7) * 0.05)
                                      END AS recencyMultiplier
-
-                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, isAlreadyReached, daysSinceCreation,\s
-                                     baseScore, recencyMultiplier,
-                                     (baseScore * recencyMultiplier) AS baseFinalScore,
-                                     CASE\s
-                                       WHEN isFollowed AND isAlreadyReached THEN (baseScore * recencyMultiplier * 1.5 * 0.8)
-                                       WHEN isFollowed THEN (baseScore * recencyMultiplier * 2.0)
-                                       WHEN isAlreadyReached THEN (baseScore * recencyMultiplier * 0.8)
-                                       ELSE (baseScore * recencyMultiplier)
+                                                                
+                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, isAlreadyReached, daysSinceCreation,
+                                     baseScore, recencyMultiplier, (baseScore * recencyMultiplier) AS baseFinalScore
+                                                                
+                                OPTIONAL MATCH (p)-[:BELONG_TO]->(category:CategoryNode)<-[interest:INTERESTED_IN]-(currentUser)
+                                WITH p, userId, reactionCount, authors, original, originalAuthors, isFollowed, isAlreadyReached, daysSinceCreation,
+                                     baseScore, recencyMultiplier, baseFinalScore,
+                                     COALESCE(interest.score, 0) AS interestScore,
+                                     CASE
+                                       WHEN isFollowed AND isAlreadyReached THEN (baseFinalScore * COALESCE(interest.score, 0) * 1.5 * 0.8)
+                                       WHEN isFollowed THEN (baseFinalScore * COALESCE(interest.score, 0) * 2.0)
+                                       WHEN isAlreadyReached THEN (baseFinalScore * COALESCE(interest.score, 0) * 0.8)
+                                       ELSE (baseFinalScore * COALESCE(interest.score, 0))
                                      END AS finalScore
-
+                                                                
                                 ORDER BY finalScore DESC
-
                                 SKIP $skip
                                 LIMIT $limit
-
                                 RETURN COLLECT(DISTINCT p {
-                                  .*,\s
+                                  .*,
                                   authors: authors,
-                                  originalPost: CASE\s
-                                    WHEN original IS NOT NULL\s
+                                  originalPost: CASE
+                                    WHEN original IS NOT NULL
                                     THEN original {
-                                      .*,\s
+                                      .*,
                                       authors: originalAuthors,
-                                      createdAt: original.createdAt,\s
-                                      postId: original.postId,\s
-                                      updatedAt: original.updatedAt\s
-                                    }\s
-                                    ELSE NULL\s
+                                      createdAt: original.createdAt,
+                                      postId: original.postId,
+                                      updatedAt: original.updatedAt
+                                    }
+                                    ELSE NULL
                                   END
                                 }) AS posts;
                                 """
