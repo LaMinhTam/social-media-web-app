@@ -1,9 +1,6 @@
 import { CALL_STATE, CALL_WS_URL, REGISTER_STATE } from "@/constants/global";
 import { findUserById } from "@/services/search.service";
-import {
-    setOpenCallDialog,
-    setOpenIncomingCallDialog,
-} from "@/store/actions/commonSlice";
+import { setOpenCallDialog } from "@/store/actions/commonSlice";
 import { RootState } from "@/store/configureStore";
 import CallType from "@/types/callType";
 import { Member } from "@/types/conversationType";
@@ -191,7 +188,6 @@ export function CallProvider(
     };
 
     const incomingCall = async (message: any) => {
-        // If busy just reject without disturbing user
         if (callState != CALL_STATE.NO_CALL) {
             var response = {
                 id: "incomingCallResponse",
@@ -206,8 +202,7 @@ export function CallProvider(
         const user = await findUserById(message.from);
         if (user) setTargetUser(user);
         const imageUrl =
-            "https://ddk.1cdn.vn/2023/05/13/image.daidoanket.vn-images-upload-vanmt-05132023-_img_2173.jpg";
-        // user?.image_url || "https://source.unsplash.com/random";
+            user?.image_url || "https://source.unsplash.com/random";
 
         Swal.fire({
             title: "Incoming Call",
@@ -280,7 +275,7 @@ export function CallProvider(
                 ? message.message
                 : "Unknown reason for call rejection.";
             console.log(errorMessage);
-            toast.error(errorMessage);
+            toast.error("Call not accepted by peer. Closing call");
             stop();
             dispatch(setOpenCallDialog(false));
         } else {
@@ -332,6 +327,7 @@ export function CallProvider(
         setTargetUser,
         isAccepted,
         setIsAccepted,
+        webRtcPeer,
     };
 
     return (

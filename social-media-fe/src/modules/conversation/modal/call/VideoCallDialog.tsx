@@ -18,8 +18,8 @@ import { useCall } from "@/contexts/call-context";
 import { CALL_STATE } from "@/constants/global";
 import { Dispatch } from "@reduxjs/toolkit";
 import { setOpenCallDialog } from "@/store/actions/commonSlice";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/configureStore";
+import MicOffIcon from "@mui/icons-material/MicOff";
+import VideocamOffIcon from "@mui/icons-material/VideocamOff";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -37,13 +37,25 @@ const VideoCallDialog = ({
     openVideoCallDialog: boolean;
     dispatch: Dispatch<any>;
 }) => {
-    const { call, setVideoInput, setVideoOutput, callState, stop, targetUser } =
-        useCall();
+    const {
+        call,
+        setVideoInput,
+        setVideoOutput,
+        callState,
+        stop,
+        targetUser,
+        webRtcPeer,
+        // toggleVideo,
+        // toggleMic,
+    } = useCall();
     const [loading, setLoading] = useState<boolean>(false);
     const [videoInputElement, setVideoInputElement] =
         useState<HTMLVideoElement | null>(null);
     const [videoOutputElement, setVideoOutputElement] =
         useState<HTMLVideoElement | null>(null);
+
+    const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+    const [isMicEnabled, setIsMicEnabled] = useState(true);
 
     const videoInputRef = useCallback((node: HTMLVideoElement) => {
         if (node !== null) {
@@ -80,6 +92,30 @@ const VideoCallDialog = ({
         dispatch(setOpenCallDialog(false));
     };
 
+    const handleToggleVideo = () => {
+        console.log("handleToggleVideo");
+        setIsVideoEnabled(!isVideoEnabled);
+        if (isVideoEnabled && webRtcPeer) {
+            const videoTrack = webRtcPeer.getLocalStream().getVideoTracks()[0];
+            if (videoTrack) videoTrack.enabled = false;
+        } else {
+            const videoTrack = webRtcPeer?.getLocalStream().getVideoTracks()[0];
+            if (videoTrack) videoTrack.enabled = true;
+        }
+    };
+
+    const handleToggleMic = () => {
+        console.log("handleToggleMic");
+        setIsMicEnabled(!isMicEnabled);
+        if (isMicEnabled && webRtcPeer) {
+            const audioTrack = webRtcPeer.getLocalStream().getAudioTracks()[0];
+            if (audioTrack) audioTrack.enabled = false;
+        } else {
+            const audioTrack = webRtcPeer?.getLocalStream().getAudioTracks()[0];
+            if (audioTrack) audioTrack.enabled = true;
+        }
+    };
+
     return (
         <BootstrapDialog
             onClose={handleClose}
@@ -104,7 +140,7 @@ const VideoCallDialog = ({
             </DialogTitle>
             <IconButton
                 aria-label="close"
-                onClick={() => dispatch(setOpenCallDialog(false))}
+                onClick={() => stop()}
                 sx={{
                     position: "absolute",
                     right: 8,
@@ -146,8 +182,13 @@ const VideoCallDialog = ({
                     variant="outlined"
                     className="rounded-full"
                     color="inherit"
+                    onClick={handleToggleVideo}
                 >
-                    <VideoCameraBackIcon />
+                    {!isVideoEnabled ? (
+                        <VideocamOffIcon />
+                    ) : (
+                        <VideoCameraBackIcon />
+                    )}
                     <KeyboardArrowUpIcon />
                 </Button>
                 <Button
@@ -166,8 +207,9 @@ const VideoCallDialog = ({
                     variant="outlined"
                     className="rounded-full"
                     color="inherit"
+                    onClick={handleToggleMic}
                 >
-                    <MicIcon />
+                    {!isMicEnabled ? <MicOffIcon /> : <MicIcon />}
                     <KeyboardArrowUpIcon />
                 </Button>
             </DialogActions>

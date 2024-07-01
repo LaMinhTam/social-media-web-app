@@ -59,9 +59,18 @@ const ChatFeature = ({
                         : file.type.includes("video")
                         ? MESSAGE_TYPE.VIDEO
                         : MESSAGE_TYPE.FILE;
+                    let content = "";
+                    if (messageType === MESSAGE_TYPE.IMAGE) {
+                        content = "Image";
+                    } else if (messageType === MESSAGE_TYPE.VIDEO) {
+                        content = "Video";
+                    } else if (messageType === MESSAGE_TYPE.FILE) {
+                        content = `FILE`;
+                    }
                     const chatMessage = {
                         conversation_id: conversationId,
-                        content: `${imageUrl};${file.name};${file.size}`,
+                        // content: `${imageUrl};${file.name};${file.size}`,
+                        content: content,
                         type: messageType,
                     };
                     stompClient.send(

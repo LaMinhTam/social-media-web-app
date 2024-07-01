@@ -1,3 +1,4 @@
+import { WebRtcPeer } from "kurento-utils";
 import { Member } from "./conversationType";
 
 type CallType = {
@@ -14,6 +15,7 @@ type CallType = {
     setTargetUser: (user: Member) => void;
     isAccepted: boolean;
     setIsAccepted: (value: boolean) => void;
+    webRtcPeer: WebRtcPeer | null;
 };
 
 export default CallType;

@@ -37,3 +37,75 @@
 .swal2-popup .swal2-image {
     object-fit: contain;
 }
+
+.participant {
+    border-radius: 4px;
+    /* border: 2px groove; */
+    margin-left: 5;
+    margin-right: 5;
+    width: 150;
+    text-align: center;
+    overflow: hide;
+    float: left;
+    padding: 5px;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 0 200px rgba(255, 255, 255, 0.5),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 200px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+    /*Transition*/
+    -webkit-transition: all 0.3s linear;
+    -moz-transition: all 0.3s linear;
+    -o-transition: all 0.3s linear;
+    transition: all 0.3s linear;
+}
+
+.participant:before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: -1;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+}
+
+.participant:hover {
+    opacity: 1;
+    background-color: 0A33B6;
+    -webkit-transition: all 0.5s linear;
+    transition: all 0.5s linear;
+}
+
+.participant video,
+.participant.main video {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.participant span {
+    color: #555;
+}
+
+.participant.main {
+    width: 20%;
+    margin: 0 auto;
+}
+
+.participant.main video {
+    height: auto;
+}
+
+.animate {
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-fill-mode: both;
+    -moz-animation-duration: 0.5s;
+    -moz-animation-fill-mode: both;
+    -o-animation-duration: 0.5s;
+    -o-animation-fill-mode: both;
+    -ms-animation-duration: 0.5s;
+    -ms-animation-fill-mode: both;
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+}

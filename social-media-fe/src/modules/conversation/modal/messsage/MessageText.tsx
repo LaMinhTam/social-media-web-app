@@ -51,8 +51,7 @@ const MessageText = ({
             const formattedMessage = messageContent.replace(
                 regex,
                 function (url) {
-                    let linkJoinGroup = url.split("=")[1];
-                    return `<a href="/join/group?groupId=${linkJoinGroup}" target="_blank" class="underline text-lite">${url}</a>`;
+                    return `<a href="${url}" target="_blank" class="underline text-lite">${url}</a>`;
                 }
             );
             setMessageFormat(formattedMessage);

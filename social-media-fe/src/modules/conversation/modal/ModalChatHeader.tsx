@@ -1,5 +1,6 @@
 import {
     setOpenCallDialog,
+    setOpenGroupCallDialog,
     setShowChatModal,
 } from "@/store/actions/commonSlice";
 import { IconButton, Popover, Typography } from "@mui/material";
@@ -8,7 +9,7 @@ import CallIcon from "@mui/icons-material/Call";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CloseIcon from "@mui/icons-material/Close";
-import React from "react";
+import React, { useEffect } from "react";
 import { OnlineStatus } from "@/types/commonType";
 import Image from "next/image";
 import { setCurrentConversation } from "@/store/actions/conversationSlice";
@@ -18,7 +19,9 @@ import GroupSetting from "./group/GroupSetting";
 import VideoCallDialog from "./call/VideoCallDialog";
 import { formatOnlineTime } from "@/utils/conversation/messages/handleGroupMessage";
 import { useCall } from "@/contexts/call-context";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
+import GroupCallDialog from "./call/GroupCallDialog";
 
 const ModalChatHeader = ({
     userId,
@@ -40,6 +43,16 @@ const ModalChatHeader = ({
     targetUser: Member;
 }) => {
     const { setTargetUserId, setTargetUser } = useCall();
+    const openGroupCallDialog = useSelector(
+        (state: RootState) => state.common.openGroupCallDialog
+    );
+    const currentConversation = useSelector(
+        (state: RootState) => state.conversation.currentConversation
+    );
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
+
     return (
         <>
             <div className="z-50 flex-shrink-0 p-2 shadow-md">
@@ -114,9 +127,13 @@ const ModalChatHeader = ({
                             size="small"
                             color="inherit"
                             onClick={() => {
-                                setTargetUserId(userId);
-                                dispatch(setOpenCallDialog(true));
-                                setTargetUser(targetUser);
+                                if (isGroup) {
+                                    dispatch(setOpenGroupCallDialog(true));
+                                } else {
+                                    setTargetUserId(userId);
+                                    dispatch(setOpenCallDialog(true));
+                                    setTargetUser(targetUser);
+                                }
                             }}
                         >
                             <VideocamIcon />
@@ -141,6 +158,15 @@ const ModalChatHeader = ({
                     </div>
                 </div>
             </div>
+
+            {openGroupCallDialog && (
+                <GroupCallDialog
+                    name={currentUserProfile.name || "Unknown"}
+                    conversation={currentConversation}
+                    openGroupCallDialog={openGroupCallDialog}
+                    dispatch={dispatch}
+                ></GroupCallDialog>
+            )}
         </>
     );
 };

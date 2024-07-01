@@ -23,6 +23,7 @@ export const GIF_URL_SEARCH_ENDPOINT = `https://api.giphy.com/v1/gifs/search`;
 export const STICKER_URL_SEARCH_ENDPOINT = `https://api.giphy.com/v1/stickers/search`;
 
 export const CALL_WS_URL = `wss://${HOST_NAME}:8060/websocket/call`;
+export const CALL_GROUP_WS_URL = `wss://${HOST_NAME}:8060/websocket/groupcall`;
 
 export const MESSAGE_TYPE = {
     TEXT: `TEXT`,
