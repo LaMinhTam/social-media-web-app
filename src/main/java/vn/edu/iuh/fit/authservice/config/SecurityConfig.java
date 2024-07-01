@@ -88,7 +88,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup", "/auth/login", "/oauth2/**")
+                        .requestMatchers("/auth/signup", "/auth/login", "/oauth2/**", "/actuator/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
