@@ -15,13 +15,6 @@
     </properties>
 
     <modules>
-        <module>config-server</module>
-        <module>api-gateway</module>
-        <module>service-registry</module>
-        <module>auth-service</module>
-        <module>chat-service</module>
-        <module>user-service</module>
         <module>notification-service</module>
-        <module>post-service</module>
     </modules>
 </project>
