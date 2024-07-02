@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: post-service
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:https://config-server-q064.onrender.com}"
+logging:
+  level:
+    org.springframework.data.neo4j.cypher.deprecation: ERROR
