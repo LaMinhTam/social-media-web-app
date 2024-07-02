@@ -31,7 +31,7 @@ public class GatewayConfig {
                         .uri("http://34.227.22.174"))
                 .route("chat-service", r -> r.path("/conversations/**", "/messages/**")
                         .filters(f -> f.filter(filter))
-                        .uri("lb://chat-service"))
+                        .uri("https://chat-service-lmve.onrender.com"))
                 .route("post-service", r -> r.path("/posts/**", "/comments/**", "/reactions/**", "/user-wall/**")
                         .filters(f -> f.filter(filter))
                         .uri("lb://post-service"))
