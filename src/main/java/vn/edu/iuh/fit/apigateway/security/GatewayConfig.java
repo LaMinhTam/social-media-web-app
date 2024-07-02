@@ -19,7 +19,7 @@ public class GatewayConfig {
                         .uri("https://auth-service-xssb.onrender.com"))
                 .route("user-service", r -> r.path("/friends/**", "/user/**")
                         .filters(f -> f.filter(filter))
-                        .uri("lb://user-service"))
+                        .uri("https://user-service-hz6u.onrender.com"))
                 .route("notification-service", r -> r.path("/websocket/**")
                         .filters(f -> f.rewritePath("/websocket/(?<remains>.*)", "/${remains}")
                                 .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
