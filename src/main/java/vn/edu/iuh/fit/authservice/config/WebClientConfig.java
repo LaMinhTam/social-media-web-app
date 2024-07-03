@@ -17,7 +17,7 @@ public class WebClientConfig {
     @Bean
     public WebClient userWebClient() {
         return WebClient.builder()
-                .baseUrl("http://user-service")
+                .baseUrl("https://user-service-hz6u.onrender.com")
                 .filter(filterFunction)
                 .build();
     }
@@ -25,7 +25,7 @@ public class WebClientConfig {
     @Bean
     public WebClient userWallWebClient() {
         return WebClient.builder()
-                .baseUrl("http://post-service")
+                .baseUrl("https://post-service-cqfq.onrender.com")
                 .filter(filterFunction)
                 .build();
     }
