@@ -16,10 +16,10 @@ public class GatewayConfig {
         return builder.routes()
                 .route("auth-service", r -> r.path("/auth/**", "/oauth2/**")
                         .filters(f -> f.filter(filter))
-                        .uri("https://auth-service-xssb.onrender.com"))
+                        .uri("lb://auth-service"))
                 .route("user-service", r -> r.path("/friends/**", "/user/**")
                         .filters(f -> f.filter(filter))
-                        .uri("https://user-service-hz6u.onrender.com"))
+                        .uri("lbs://user-service"))
                 .route("notification-service", r -> r.path("/websocket/**")
                         .filters(f -> f.rewritePath("/websocket/(?<remains>.*)", "/${remains}")
                                 .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
@@ -31,10 +31,10 @@ public class GatewayConfig {
                         .uri("http://34.227.22.174"))
                 .route("chat-service", r -> r.path("/conversations/**", "/messages/**")
                         .filters(f -> f.filter(filter))
-                        .uri("https://chat-service-lmve.onrender.com"))
+                        .uri("lbs://chat-service"))
                 .route("post-service", r -> r.path("/posts/**", "/comments/**", "/reactions/**", "/user-wall/**")
                         .filters(f -> f.filter(filter))
-                        .uri("https://post-service-cqfq.onrender.com"))
+                        .uri("lbs://post-service"))
                 .build();
     }
 
