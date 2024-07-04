@@ -17,16 +17,14 @@ public class WebClientConfig {
     @Bean
     public WebClient userWebClient() {
         return WebClient.builder()
-                .baseUrl("http://user-service")
-                .filter(filterFunction)
+                .baseUrl("https://user-service-hz6u.onrender.com")
                 .build();
     }
 
     @Bean
     public WebClient chatWebClient() {
         return WebClient.builder()
-                .baseUrl("http://chat-service")
-                .filter(filterFunction)
+                .baseUrl("https://chat-service-lmve.onrender.com")
                 .build();
     }
 }
