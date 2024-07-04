@@ -1,6 +1,11 @@
 package vn.edu.iuh.fit.userservice.service.impl;
 
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Transactional;
 import vn.edu.iuh.fit.userservice.entity.User;
 import vn.edu.iuh.fit.userservice.exception.AppException;
 import vn.edu.iuh.fit.userservice.model.UserModel;
@@ -18,29 +23,54 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public User createUser(Long id, String name, String email, String imageUrl, String cover) {
         return userRepository.save(new User(id, name, email, imageUrl, cover));
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public UserModel getUserById(Long userId) {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new AppException(404, "User not found"));
         return new UserModel(user.getUserId(), user.getName(), user.getEmail(), user.getImageUrl(), user.getCover());
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public List<UserModel> searchUser(String keyword) {
         List<User> users = userRepository.findByKeyword(keyword);
         return UserModel.convertToUserModel(users);
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public List<UserModel> getUsersByIds(List<Long> ids) {
         List<User> users = userRepository.findByUserIdIn(ids);
         return UserModel.convertToUserModel(users);
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public UserModel updateUser(Long userId, String name, String email, String s, String cover) {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new AppException(404, "User not found"));
         user.setName(name);

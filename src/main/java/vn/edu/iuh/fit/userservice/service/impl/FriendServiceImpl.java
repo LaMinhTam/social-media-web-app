@@ -1,7 +1,11 @@
 package vn.edu.iuh.fit.userservice.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import vn.edu.iuh.fit.userservice.dto.FriendStatus;
 import vn.edu.iuh.fit.userservice.dto.UserDTO;
 import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
@@ -31,6 +35,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public FriendRelationship sendFriendRequest(Long senderId, Long receiverId) {
         if (senderId.equals(receiverId)) {
             throw new AppException(400, "Cannot send friend request to yourself");
@@ -62,6 +71,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public FriendRelationship revokeFriendRequest(Long senderId, Long receiverId, Long friendRequestId) {
         userRepository.findByUserId(senderId).orElseThrow(() -> new AppException(404, "User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new AppException(404, "User not found"));
@@ -77,6 +91,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public FriendRelationship acceptFriendRequest(Long receiverId, Long senderId, Long friendRequestId) {
         User sender = userRepository.findByUserId(senderId).orElseThrow(() -> new AppException(404, "User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new AppException(404, "User not found"));
@@ -99,6 +118,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public FriendRelationship removeFriend(Long senderId, Long receiverId, Long friendRequestId) {
         userRepository.findByUserId(senderId).orElseThrow(() -> new AppException(404, "User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new AppException(404, "User not found"));
@@ -115,6 +139,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public FriendRelationship blockFriendRequest(Long senderId, Long receiverId) {
         User sender = userRepository.findByUserId(senderId).orElseThrow(() -> new AppException(404, "User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new AppException(404, "User not found"));
@@ -136,6 +165,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public FriendRelationship unblockFriendRequest(Long senderId, Long receiverId, Long friendRequestId) {
         userRepository.findByUserId(senderId).orElseThrow(() -> new AppException(404, "User not found"));
         User receiver = userRepository.findByUserId(receiverId).orElseThrow(() -> new AppException(404, "User not found"));
@@ -152,6 +186,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public UserDTO getFriendByType(Long userId, int type) {
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new AppException(404, "User not found"));
 
@@ -178,6 +217,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public List<FriendRelationship> recommendFriends(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(404, "User not found"));
 
@@ -206,6 +250,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Retryable(
+            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 5000)
+    )
     public List<UserModel> getFriend(Long userId) {
         return friendRepository.getFriend(userId);
     }
