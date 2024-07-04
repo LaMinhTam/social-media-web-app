@@ -27,6 +27,11 @@ public class PostController {
         return ResponseEntity.ok(postService.findPostsByUserId(id));
     }
 
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostDetail> getPost(@PathVariable("postId") String postId) {
+        return ResponseEntity.ok(postService.findPostById(postId));
+    }
+
     @GetMapping("/new-feed")
     public ResponseEntity<Map<String, PostDetail>> getNewFeed(
             @RequestHeader("sub") Long id,

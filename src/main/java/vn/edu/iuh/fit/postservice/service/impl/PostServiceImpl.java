@@ -173,6 +173,12 @@ public class PostServiceImpl implements PostService {
         return postNodeRepository.save(postNode).getPostId();
     }
 
+    @Override
+    public PostDetail findPostById(String postId) {
+        PostNode postNode = postNodeRepository.findById(postId).orElseThrow(() -> new AppException(404, "Post not found"));
+        return null;
+    }
+
     public Map<String, PostDetail> bindPostDetail(List<PostDTO> postNodes) {
         List<String> postIds = collectPostIds(postNodes);
         Set<Long> authorIds = collectPostDTOAuthorIds(postNodes);
