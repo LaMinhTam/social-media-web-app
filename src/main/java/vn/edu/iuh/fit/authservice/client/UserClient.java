@@ -18,6 +18,6 @@ public class UserClient {
                 .bodyValue(requestCreateUser)
                 .retrieve()
                 .bodyToMono(RequestCreateUser.class)
-                .block();
+                .subscribe();
     }
 }

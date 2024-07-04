@@ -7,18 +7,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
-    private final LoadBalancedExchangeFilterFunction filterFunction;
-
-    public WebClientConfig(LoadBalancedExchangeFilterFunction filterFunction) {
-        this.filterFunction = filterFunction;
-    }
-
-
     @Bean
     public WebClient userWebClient() {
         return WebClient.builder()
                 .baseUrl("https://user-service-hz6u.onrender.com")
-                .filter(filterFunction)
                 .build();
     }
 
@@ -26,7 +18,6 @@ public class WebClientConfig {
     public WebClient userWallWebClient() {
         return WebClient.builder()
                 .baseUrl("https://post-service-cqfq.onrender.com")
-                .filter(filterFunction)
                 .build();
     }
 }

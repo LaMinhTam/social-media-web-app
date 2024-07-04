@@ -18,6 +18,6 @@ public class UserWallClient {
                 .bodyValue(id)
                 .retrieve()
                 .bodyToMono(RequestCreateUser.class)
-                .block();
+                .subscribe();
     }
 }
