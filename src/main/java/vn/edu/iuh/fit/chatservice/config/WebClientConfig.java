@@ -22,8 +22,7 @@ public class WebClientConfig {
     @Bean
     public WebClient userWebClient() {
         return WebClient.builder()
-                .baseUrl("http://user-service")
-                .filter(filterFunction)
+                .baseUrl("https://user-service-hz6u.onrender.com")
                 .build();
     }
 
@@ -38,9 +37,8 @@ public class WebClientConfig {
                 .build();
 
         return WebClient.builder()
-                .baseUrl("http://notification-service")
+                .baseUrl("http://34.227.22.174")
                 .exchangeStrategies(strategies)
-                .filter(filterFunction)
                 .build();
     }
 }
