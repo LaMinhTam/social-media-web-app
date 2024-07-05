@@ -1,6 +1,10 @@
 package vn.edu.iuh.fit.postservice.service.impl;
 
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import vn.edu.iuh.fit.postservice.client.UserClient;
 import vn.edu.iuh.fit.postservice.dto.PostDTO;
 import vn.edu.iuh.fit.postservice.dto.PostDetail;
@@ -39,6 +43,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public List<PostDetail> findPostsByUserId(Long userId) {
         List<PostNode> postNodes = postNodeRepository.findByAuthorsUserId(userId);
         List<String> postIdsToQuery = collectPostIdsToQuery(postNodes);
@@ -91,6 +96,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public String savePost(Long userId, List<Long> coAuthor, String content, List<String> media, Set<Category> categories) {
         Post post = new Post(content, media);
         post = postRepository.save(post);
@@ -139,12 +145,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public Map<String, PostDetail> findUserWall(Long userId, int page, int size) {
         List<PostDTO> postNodes = postNodeRepository.findUserWall(userId, page, size);
         return bindPostDetail(postNodes);
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public Map<String, PostDetail> findNewFeed(Long userId, int page, int size) {
         List<PostDTO> postNodes = postNodeRepository.findNewFeed(userId, page, size);
         Thread thread = new Thread(() -> {
@@ -161,6 +169,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public String sharePost(Long userId, String s, String content) {
         PostNode originalPostNode = postNodeRepository.findById(s).orElseThrow(() -> new AppException(404, "Post not found"));
         Post post = new Post(content);
@@ -174,6 +183,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public PostDetail findPostById(String postId) {
         PostNode postNode = postNodeRepository.findById(postId).orElseThrow(() -> new AppException(404, "Post not found"));
         return null;

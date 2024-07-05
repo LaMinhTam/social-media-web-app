@@ -1,6 +1,10 @@
 package vn.edu.iuh.fit.postservice.service.impl;
 
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import vn.edu.iuh.fit.postservice.client.UserClient;
 import vn.edu.iuh.fit.postservice.dto.SortStrategy;
 import vn.edu.iuh.fit.postservice.dto.CommentDetailDTO;
@@ -41,6 +45,7 @@ public class CommentServiceImpl implements CommentService {
 
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public String saveComment(Long author, String postId, String content, List<String> media, List<Long> tags, String parentCommentId) {
         Comment comment = saveCommentToMongo(content, media, author, tags);
         PostNode postNode = postNodeRepository.findById(postId).orElseThrow(() -> new AppException(404, "Post not found"));
@@ -91,6 +96,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public List<CommentDetailDTO> getCommentsByPostId(String postId, SortStrategy sortStrategy, int page, int size) {
         List<String> commentIds = extractCommentIdsFromPost(postId);
         Map<String, Comment> commentMap = fetchCommentsByIds(commentIds);

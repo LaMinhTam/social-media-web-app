@@ -1,6 +1,10 @@
 package vn.edu.iuh.fit.postservice.service.impl;
 
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import vn.edu.iuh.fit.postservice.client.UserClient;
 import vn.edu.iuh.fit.postservice.dto.UserDetail;
 import vn.edu.iuh.fit.postservice.entity.neo4j.*;
@@ -30,6 +34,7 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public boolean reactToPost(String postId, Long userId, ReactionType reactionType) {
         PostNode post = postNodeRepository.findById(postId)
                 .orElseThrow(() -> new AppException(404, "Post not found"));
@@ -125,6 +130,7 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public boolean reactToComment(String commentId, Long userId, ReactionType reactionType) {
         CommentNode comment = commentNodeRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(404, "Comment not found"));
@@ -135,6 +141,7 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public Map<ReactionType, List<UserDetail>> getPostReaction(Long id, String postId) {
         PostNode post = postNodeRepository.findById(postId)
                 .orElseThrow(() -> new AppException(404, "Post not found"));
@@ -143,6 +150,7 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     @Override
+    @Retryable(value = {TransactionSystemException.class, DataAccessResourceFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 5000))
     public Map<ReactionType, List<UserDetail>> getCommentReaction(Long id, String commentId) {
         CommentNode comment = commentNodeRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(404, "Comment not found"));
