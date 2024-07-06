@@ -26,14 +26,15 @@ public class ConversationSettings {
         this.isConfirmNewMember = false;
         this.isRestrictedMessaging = false;
         this.isAllowDeputySendMessages = false;
+        this.isJoinByLink = false;
         this.linkToJoinGroup = "";
-        this.isAllowMemberToChangeGroupInfo = false;
-        this.isAllowDeputyToInviteMember = false;
-        this.isAllowMemberToInviteMember = false;
-        this.isAllowDeputyRemoveMember = false;
-        this.isAllowDeputyChangeGroupInfo = false;
-        this.isAllowMemberToPinMessage = false;
-        this.isAllowDeputyPromoteMember = false;
+        this.isAllowMemberToChangeGroupInfo = true;
+        this.isAllowDeputyToInviteMember = true;
+        this.isAllowMemberToInviteMember = true;
+        this.isAllowDeputyRemoveMember = true;
+        this.isAllowDeputyChangeGroupInfo = true;
+        this.isAllowMemberToPinMessage = true;
+        this.isAllowDeputyPromoteMember = true;
         this.isAllowDeputyDemoteMember = false;
     }
 
