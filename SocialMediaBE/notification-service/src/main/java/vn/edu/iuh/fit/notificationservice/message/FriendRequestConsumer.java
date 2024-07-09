@@ -25,26 +25,34 @@ public class FriendRequestConsumer {
     @RabbitListener(queues = "friend-request-queue")
     public void notifyFriendRequest(FriendRequestDTO request) {
         FriendRequestNotification friendRequestNotification = new FriendRequestNotification(request.id(), request.type());
-        switch (request.type()) {
-            case "SEND":
-                Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(List.of(request.target()));
-                UserDetail senderUserDetail = userDetails.get(request.source());
-                friendRequestNotification.setUserId(senderUserDetail.user_id());
-                friendRequestNotification.setEmail(senderUserDetail.email());
-                friendRequestNotification.setName(senderUserDetail.name());
-                friendRequestNotification.setImageUrl(senderUserDetail.image_url());
-                break;
-            case "REVOKE":
-                break;
-            case "ACCEPT":
-                break;
-            default:
-                break;
-        }
+        String recipient = determineRecipient(request);
+        UserDetail userDetail = getUserDetail(recipient);
+
+        friendRequestNotification.setUserId(userDetail.user_id());
+        friendRequestNotification.setEmail(userDetail.email());
+        friendRequestNotification.setName(userDetail.name());
+        friendRequestNotification.setImageUrl(userDetail.image_url());
+
         simpMessagingTemplate.convertAndSendToUser(
-                request.target().toString(),
+                recipient,
                 "/friend-request",
                 friendRequestNotification
         );
+    }
+
+    private String determineRecipient(FriendRequestDTO request) {
+        return switch (request.type()) {
+            case "SEND", "REVOKE" -> request.target().toString();
+            case "ACCEPT" -> request.source().toString();
+            default ->
+                // Handle any other cases or default behavior
+                    request.target().toString();
+        };
+    }
+
+    private UserDetail getUserDetail(String recipient) {
+        Long userId = Long.parseLong(recipient);
+        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(List.of(userId));
+        return userDetails.get(userId);
     }
 }
