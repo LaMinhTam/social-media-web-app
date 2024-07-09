@@ -6,12 +6,14 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
+import vn.edu.iuh.fit.userservice.dto.FriendRequestDTO;
 import vn.edu.iuh.fit.userservice.dto.FriendStatus;
 import vn.edu.iuh.fit.userservice.dto.UserDTO;
 import vn.edu.iuh.fit.userservice.entity.FriendRelationship;
 import vn.edu.iuh.fit.userservice.entity.FriendType;
 import vn.edu.iuh.fit.userservice.entity.User;
 import vn.edu.iuh.fit.userservice.exception.AppException;
+import vn.edu.iuh.fit.userservice.message.FriendRequestNotificationProducer;
 import vn.edu.iuh.fit.userservice.model.UserModel;
 import vn.edu.iuh.fit.userservice.model.UserRelationship;
 import vn.edu.iuh.fit.userservice.repository.FriendRepository;
@@ -27,11 +29,12 @@ public class FriendServiceImpl implements FriendService {
 
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
-
+    private final FriendRequestNotificationProducer friendRequestNotificationProducer;
     @Autowired
-    public FriendServiceImpl(UserRepository userRepository, FriendRepository friendRepository) {
+    public FriendServiceImpl(UserRepository userRepository, FriendRepository friendRepository, FriendRequestNotificationProducer friendRequestNotificationProducer) {
         this.userRepository = userRepository;
         this.friendRepository = friendRepository;
+        this.friendRequestNotificationProducer = friendRequestNotificationProducer;
     }
 
     @Override
@@ -66,7 +69,7 @@ public class FriendServiceImpl implements FriendService {
 
         userRepository.save(sender);
         userRepository.save(receiver);
-
+        friendRequestNotificationProducer.sendFriendRequestNotification(new FriendRequestDTO(savedFriendRelationship.getId(), receiverId, senderId, "SEND"));
         return savedFriendRelationship;
     }
 
@@ -86,7 +89,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         friendRepository.deleteById(friendRequest.getId());
-
+        friendRequestNotificationProducer.sendFriendRequestNotification(new FriendRequestDTO(friendRequestId, receiverId, senderId, "REVOKE"));
         return friendRequest;
     }
 
@@ -113,6 +116,7 @@ public class FriendServiceImpl implements FriendService {
         friendRepository.updateByIdAndStatus(friendRequest.getId(), FriendType.ACCEPTED);
         userRepository.save(sender);
         userRepository.save(receiver);
+        friendRequestNotificationProducer.sendFriendRequestNotification(new FriendRequestDTO(friendRequestId, receiverId, senderId, "ACCEPT"));
 
         return friendRequest;
     }
