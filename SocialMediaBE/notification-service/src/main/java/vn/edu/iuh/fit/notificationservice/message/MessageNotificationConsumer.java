@@ -27,7 +27,7 @@ public class MessageNotificationConsumer {
     }
 
     private void sendMessageToMembers(MessageNotificationPayload request, Set<Long> userIds, List<Long> notifyMembers, String destination) {
-        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(new ArrayList<>(userIds));
+        Map<Long, UserDetail> userDetails = userClient.getUsersByIdsMap(userIds);
         UserDetail senderUserDetail = userDetails.get(request.message().senderId());
         List<UserDetail> targetUserDetail = UserDetail.getUserDetailsFromMap(request.message(), userDetails);
         Map<Long, UserDetail> readByUserDetail = UserDetail.getReadByUserDetailMap(request.conversation().getReadBy(), userDetails);

@@ -1,0 +1,37 @@
+
+“
+java:S11923"PDefine a constant instead of duplicating this literal "User not found" 14 times.(Â‚¾ñ8œƒ­‰2J$636353d8-2626-4922-a401-b926243c8f25
+œ
+java:S1192V"YDefine a constant instead of duplicating this literal "Friend request not found" 7 times.(«¢óß8œƒ­‰2J$422df474-24e8-43c7-8124-811ad08d6456
+u
+java:S1874*"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8±ƒ­‰2J$0402e661-b5c6-4803-bca0-d51352d4514a
+u
+java:S1874N"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8³ƒ­‰2J$30282408-1d7c-4711-b603-65a4a88e1038
+w
+java:S2201S"/The return value of "orElseThrow" must be used.(•Áºùÿÿÿÿ8Ğñ­‰2J$1b99ecc8-6f29-4eb9-a3b2-8c1f3f1906c4
+u
+java:S1874b"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8µƒ­‰2J$9881cff5-a1f2-45cd-8eb5-60b2e32482e8
+u
+java:S1874~"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8¹ƒ­‰2J$91dc7356-7a68-42f5-b848-5bb6da225575
+x
+java:S2201ƒ"/The return value of "orElseThrow" must be used.(•Áºùÿÿÿÿ8˜Ğñ­‰2J$eb57e271-2134-4e9f-8d29-fb16ea7718ec
+v
+java:S1874“"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8¼ƒ­‰2J$ae14bd37-da78-4831-8c3c-fb863d72a32c
+v
+java:S1874­"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8²Ğñ­‰2J$5b5b6c57-270d-4e85-8a7b-e223fb3886ef
+x
+java:S2201²"/The return value of "orElseThrow" must be used.(•Áºùÿÿÿÿ8ŸĞñ­‰2J$881c48de-efee-41d9-8317-e53c9d6e1734
+P
+java:S1874Â"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8Î¸ô­‰2
+
+java:S1854æ"8Remove this useless assignment to local variable "user".(ÿ“Ê±úÿÿÿÿ8¹ƒ­‰2J$99cffa72-a5ca-4dca-b03c-c20eb0341183
+P
+java:S1874á"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8Ô¸ô­‰2
+r
+java:S1481æ")Remove this unused "user" local variable.(ÿ“Ê±úÿÿÿÿ8ºƒ­‰2J$91282d44-4f83-4c8c-894f-3ba12446c069
+o
+java:S1168ı"+Return an empty collection instead of null.(¥¹ï8°Ğñ­‰2J$1766e150-3cbb-4926-9376-08207d11e153
+	java:S125è"<This block of commented-out lines of code should be removed.(ø¨É8»ƒ­‰2J$8aa58131-f197-4069-9731-63360cecbea6
+	java:S125ü"<This block of commented-out lines of code should be removed.(ÂÅ¬ş8¼ƒ­‰2J$deaba6a8-4c61-47f8-a45b-e54f91e46de5
+P
+java:S1874‚"-Remove this use of "value"; it is deprecated.(§Œ·àşÿÿÿÿ8Ù¸ô­‰2

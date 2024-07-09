@@ -14,12 +14,14 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfiguration {
     @Bean
     public Declarables directBindings() {
+        Queue friendRequestQueue = new Queue("friend-request-queue", true);
         Queue messageNotificationQueue = new Queue("message-notification-queue", true);
         Queue readMessageNotificationQueue = new Queue("read-message-notification-queue", true);
         Queue conversationNotificationQueue = new Queue("conversation-notification-queue", true);
         Queue revokeReplyNotificationQueue = new Queue("revoke-reply-notification-queue", true);
 
         return new Declarables(
+                friendRequestQueue,
                 messageNotificationQueue,
                 readMessageNotificationQueue,
                 conversationNotificationQueue,
