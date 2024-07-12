@@ -106,4 +106,17 @@ public class AuthController {
         authService.setTokenToBlackList(refreshToken, sub);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestHeader("sub") Long sub, @RequestBody ResetPasswordRequest request) {
+        User user = userRepository.findById(sub)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + sub));
+        if(!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password is incorrect.");
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new ApiResponse(true, "Password reset successfully."));
+    }
 }
