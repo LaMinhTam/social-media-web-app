@@ -3,3 +3,7 @@ spring:
     name: auth-service
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL:https://config-server-q064.onrender.com}"
+  datasource:
+    url: jdbc:mysql://database-1.chkcqqkkejc9.ap-southeast-1.rds.amazonaws.com/auth_db
+    username: root
+    password: newmysqlcloud

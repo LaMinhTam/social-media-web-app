@@ -109,14 +109,22 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestHeader("sub") Long sub, @RequestBody ResetPasswordRequest request) {
+        if (request.oldPassword() == null || request.oldPassword().isEmpty() ||
+                request.newPassword() == null || request.newPassword().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords cannot be null or empty.");
+        }
+
         User user = userRepository.findById(sub)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + sub));
-        if(!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password is incorrect.");
         }
+
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
         return ResponseEntity.ok(new ApiResponse(true, "Password reset successfully."));
     }
+
 }
