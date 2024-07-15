@@ -206,7 +206,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                             const unreadCount =
                                 unreadCounts[conversation.conversation_id] || 0;
                             let lastMessageContent = handleRenderLastMessage(
-                                conversation.last_message
+                                conversation.last_message || ""
                             );
 
                             return (
@@ -245,14 +245,16 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                                     <Typography className="line-clamp-1">
                                                         {lastMessageContent}
                                                     </Typography>
-                                                    <Typography className="flex-shrink-0">
-                                                        &sdot;{" "}
-                                                        {formatOnlineTime(
-                                                            conversation
-                                                                .last_message
-                                                                .created_at
-                                                        )}
-                                                    </Typography>
+                                                    {conversation.last_message && (
+                                                        <Typography className="flex-shrink-0">
+                                                            &sdot;{" "}
+                                                            {formatOnlineTime(
+                                                                conversation
+                                                                    .last_message
+                                                                    .created_at
+                                                            )}
+                                                        </Typography>
+                                                    )}
                                                 </Box>
                                             </Box>
                                             <Box className="pr-3">

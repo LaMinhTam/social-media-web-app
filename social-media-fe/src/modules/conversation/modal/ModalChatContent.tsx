@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import ModalChatMessage from "./messsage/ModalChatMessage";
 import { MessageResponse } from "@/types/conversationType";
 import { handleGetListMessage } from "@/services/conversation.service";
@@ -12,7 +12,7 @@ import { groupMessages } from "@/utils/conversation/messages/handleGroupMessage"
 import { v4 as uuidv4 } from "uuid";
 import handleFormatNotificationMessage from "@/utils/conversation/messages/handleFormatNotificationMessage";
 import Image from "next/image";
-import { Box, Tooltip } from "@mui/material";
+import { Box, CircularProgress, Tooltip } from "@mui/material";
 const ModalChatContent = ({
     conversationId,
     messages,
@@ -40,6 +40,7 @@ const ModalChatContent = ({
     const [isEnd, setIsEnd] = React.useState(false);
     const [autoScroll, setAutoScroll] = React.useState(true);
     const groupedMessages = groupMessages(Object.values(messages));
+    const progress = useSelector((state: RootState) => state.common.progress);
     const handleScroll = async () => {
         if (chatContentRef.current?.scrollTop === 0) {
             setLoading(true);
@@ -156,6 +157,14 @@ const ModalChatContent = ({
                                 </div>
                             );
                         })}
+                        {progress > 0 && (
+                            <div className="flex items-center justify-center">
+                                <CircularProgress
+                                    variant="determinate"
+                                    value={progress}
+                                />
+                            </div>
+                        )}
                         <div className="flex items-center justify-end gap-x-2">
                             {lastGroup &&
                                 lastMessageOfGroup.read_by &&

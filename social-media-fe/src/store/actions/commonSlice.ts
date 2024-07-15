@@ -5,6 +5,7 @@ type CommonType = {
     showChatModal: boolean;
     openCallDialog: boolean;
     openGroupCallDialog: boolean;
+    progress: number;
 };
 
 const initialState: CommonType = {
@@ -12,6 +13,7 @@ const initialState: CommonType = {
     showChatModal: false,
     openCallDialog: false,
     openGroupCallDialog: false,
+    progress: 0,
 };
 
 const commonSlice = createSlice({
@@ -33,6 +35,9 @@ const commonSlice = createSlice({
         setOpenGroupCallDialog(state, action: PayloadAction<boolean>) {
             state.openGroupCallDialog = action.payload;
         },
+        setProgress(state, action: PayloadAction<number>) {
+            state.progress = action.payload;
+        },
     },
 });
 
@@ -41,5 +46,6 @@ export const {
     setShowChatModal,
     setOpenCallDialog,
     setOpenGroupCallDialog,
+    setProgress,
 } = commonSlice.actions;
 export default commonSlice.reducer;

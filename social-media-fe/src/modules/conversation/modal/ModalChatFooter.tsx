@@ -8,8 +8,6 @@ import { Client } from "stompjs";
 import { getAccessToken } from "@/utils/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
-import CloseIcon from "@mui/icons-material/Close";
-import { Member } from "@/types/conversationType";
 import {
     setIsReplying,
     setMessageReply,

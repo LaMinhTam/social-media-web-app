@@ -56,7 +56,7 @@ const ChatModal = () => {
         return null;
     }
     return (
-        <div className="w-[382px] h-[467px] rounded-lg flex flex-col">
+        <div className="w-[382px] h-[467px] rounded-lg flex flex-col bg-lite">
             <ModalChatHeader
                 userId={anotherUser?.user_id}
                 isGroup={currentConversation.type === "GROUP" ? true : false}

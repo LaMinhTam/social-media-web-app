@@ -15,7 +15,7 @@ const ListImage = () => {
             <Box className="p-4 mt-4 rounded-lg shadow-md bg-lite">
                 <Grid container justifyContent={"space-between"}>
                     <Typography variant="h6" className="font-bold">
-                        Ảnh
+                        Photos
                     </Typography>
                     <Button
                         type="button"
@@ -25,7 +25,7 @@ const ListImage = () => {
                             textTransform: "none",
                         }}
                     >
-                        Xem tất cả ảnh
+                        See all photos
                     </Button>
                 </Grid>
                 <ImageList

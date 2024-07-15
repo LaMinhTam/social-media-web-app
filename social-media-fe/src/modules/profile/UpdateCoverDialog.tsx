@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -19,7 +20,13 @@ import {
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { PopupState } from "material-ui-popup-state/hooks";
 import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
+import Image from "next/image";
+import { handleUpdateProfile } from "@/services/profile.service";
+import { setCurrentUserProfile } from "@/store/actions/profileSlice";
+import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
+import { getAccessToken } from "@/utils/auth";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -28,26 +35,31 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
         padding: theme.spacing(1),
     },
 }));
-const ChangeAvatarDialog = ({
-    popupState,
-    openChangeAvatarDialog,
-    setOpenChangeAvatarDialog,
-    currentAvatar,
-    conversationId,
+const UpdateCoverDialog = ({
+    openUpdateCoverDialog,
+    setOpenUpdateCoverDialog,
+    type = "cover",
 }: {
-    popupState: PopupState;
-    openChangeAvatarDialog: boolean;
-    setOpenChangeAvatarDialog: (open: boolean) => void;
-    currentAvatar: string;
-    conversationId: string;
+    openUpdateCoverDialog: boolean;
+    setOpenUpdateCoverDialog: (open: boolean) => void;
+    type?: string;
 }) => {
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
+    const dispatch = useDispatch();
     const [file, setFile] = React.useState<File>({} as File);
     const [loading, setLoading] = React.useState<boolean>(false);
     const [imageUrl, setImageUrl] = React.useState<string>("");
-    const dispatch = useDispatch();
+    const progress = useSelector((state: RootState) => state.common.progress);
     const handleClose = () => {
-        setOpenChangeAvatarDialog(false);
+        setOpenUpdateCoverDialog(false);
     };
+    const accessToken = getAccessToken();
+    const initImage =
+        type === "cover"
+            ? currentUserProfile.cover
+            : currentUserProfile.image_url;
     const onChangeAvatar = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -71,17 +83,34 @@ const ChangeAvatarDialog = ({
                 process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_NAME || ""
             );
             formData.append("public_id", file.name);
-            formData.append("folder", `conversation/${conversationId}`);
+            formData.append("folder", `user/${currentUserProfile.user_id}`);
             const imageUrl = await handleUploadFile(formData, dispatch);
             if (imageUrl) {
-                const res = await handleChangeGroupAvatar(
-                    conversationId,
-                    imageUrl
-                );
-                if (res) {
-                    setOpenChangeAvatarDialog(false);
-                    popupState.close();
-                    toast.success("Change avatar successfully");
+                const data = {
+                    name: currentUserProfile.name,
+                    image_url:
+                        type === "avatar"
+                            ? imageUrl
+                            : currentUserProfile.image_url,
+                    cover:
+                        type === "cover" ? imageUrl : currentUserProfile.cover,
+                };
+                const response = await handleUpdateProfile(data);
+                if (response) {
+                    toast.success(
+                        `Update ${
+                            type === "cover" ? "cover" : "avatar"
+                        } successfully!`
+                    );
+                    dispatch(setCurrentUserProfile(response));
+                    saveUserInfoToCookie(response, accessToken || "");
+                    setOpenUpdateCoverDialog(false);
+                } else {
+                    toast.error(
+                        `Update ${
+                            type === "cover" ? "cover" : "avatar"
+                        } failed!`
+                    );
                 }
             }
             setLoading(false);
@@ -91,7 +120,7 @@ const ChangeAvatarDialog = ({
         <BootstrapDialog
             onClose={handleClose}
             aria-labelledby="customized-dialog-title"
-            open={openChangeAvatarDialog}
+            open={openUpdateCoverDialog}
             onBackdropClick={handleClose}
         >
             <DialogTitle
@@ -103,7 +132,7 @@ const ChangeAvatarDialog = ({
                 }}
                 id="customized-dialog-title"
             >
-                Change group avatar
+                Update cover
             </DialogTitle>
             <IconButton
                 aria-label="close"
@@ -121,19 +150,31 @@ const ChangeAvatarDialog = ({
                 <Grid container spacing={2}>
                     <Grid item xs={12}>
                         <Typography variant="body1" fontWeight={600}>
-                            Current avatar
+                            Current {type}
                         </Typography>
-                        <Box className="w-full h-[300px] rounded-lg bg-strock">
-                            <img
-                                src={imageUrl ? imageUrl : currentAvatar}
-                                alt="current avatar"
-                                className="object-scale-down w-full h-full rounded-lg"
-                            />
+                        <Box className="w-full h-[300px] rounded-lg bg-strock relative flex items-center justify-center">
+                            {progress > 0 ? (
+                                <div className="flex items-center justify-center">
+                                    <CircularProgress
+                                        variant="determinate"
+                                        value={progress}
+                                    />
+                                </div>
+                            ) : (
+                                <Image
+                                    src={imageUrl ? imageUrl : initImage}
+                                    layout="fill"
+                                    sizes="100%"
+                                    objectFit="cover"
+                                    alt="current cover"
+                                    className="rounded-lg"
+                                />
+                            )}
                         </Box>
                     </Grid>
                     <Grid item xs={12}>
                         <Typography variant="body1" fontWeight={600}>
-                            Change avatar
+                            Change {type}
                         </Typography>
                         <input
                             type="file"
@@ -163,4 +204,4 @@ const ChangeAvatarDialog = ({
     );
 };
 
-export default ChangeAvatarDialog;
+export default UpdateCoverDialog;

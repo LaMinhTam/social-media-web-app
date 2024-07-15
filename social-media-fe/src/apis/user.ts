@@ -112,6 +112,22 @@ const revokeFriendRequest = async (
     }
 };
 
+const updateProfile = async (data: {
+    name: string;
+    image_url: string;
+    cover: string;
+}) => {
+    try {
+        const response: AxiosResponse<Member> = await axiosPrivate.put(
+            apiRoutes.user.updateProfile,
+            data
+        );
+        return response;
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 export const USER = {
     getMe,
     findUserById,
@@ -121,4 +137,5 @@ export const USER = {
     acceptFriendRequest,
     removeFriend,
     revokeFriendRequest,
+    updateProfile,
 };

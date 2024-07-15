@@ -3,6 +3,7 @@ import MessageFeatureDialog from "@/modules/conversation/modal/messsage/MessageF
 import useClickOutSide from "@/hooks/useClickOutSide";
 import useHover from "@/hooks/useHover";
 import {
+    handleDeleteFile,
     handleDeleteMessage,
     handleReactionMessage,
     handleRevokeMessage,

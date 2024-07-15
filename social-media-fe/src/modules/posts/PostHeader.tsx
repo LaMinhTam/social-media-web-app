@@ -4,7 +4,10 @@ import React from "react";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AssistantPhotoIcon from "@mui/icons-material/AssistantPhoto";
+import { useDispatch } from "react-redux";
+import { setOpenCreatePostDialog } from "@/store/actions/postSlice";
 const PostHeader = () => {
+    const dispatch = useDispatch();
     return (
         <Box className="p-4 rounded-lg shadow-md bg-lite">
             <div className="flex items-center justify-center gap-x-2">
@@ -15,8 +18,11 @@ const PostHeader = () => {
                     className="object-cover w-10 h-10 rounded-full"
                     alt="profile"
                 ></Image>
-                <div className="w-full h-[48px] cursor-pointer bg-text6 flex items-center justify-start px-4 rounded-full">
-                    <span>Bạn đang suy nghĩ gì?</span>
+                <div
+                    onClick={() => dispatch(setOpenCreatePostDialog(true))}
+                    className="w-full h-[48px] cursor-pointer bg-text6 flex items-center justify-start px-4 rounded-full"
+                >
+                    <span>What's on your mind?</span>
                 </div>
             </div>
             <hr className="w-full h-[1px] mt-6 bg-text4" />
@@ -29,7 +35,7 @@ const PostHeader = () => {
                 >
                     <VideoCameraFrontIcon></VideoCameraFrontIcon>
                     <Typography className="font-semibold">
-                        Video trực tiếp
+                        Live video
                     </Typography>
                 </Button>
                 <Button
@@ -39,7 +45,9 @@ const PostHeader = () => {
                     className="flex items-center normal-case gap-x-2"
                 >
                     <InsertPhotoIcon></InsertPhotoIcon>
-                    <Typography className="font-semibold">Ảnh/Video</Typography>
+                    <Typography className="font-semibold">
+                        Photo/video
+                    </Typography>
                 </Button>
                 <Button
                     type="button"
@@ -49,7 +57,7 @@ const PostHeader = () => {
                 >
                     <AssistantPhotoIcon></AssistantPhotoIcon>
                     <Typography className="font-semibold">
-                        Sự kiện trong đời
+                        Live event
                     </Typography>
                 </Button>
             </div>

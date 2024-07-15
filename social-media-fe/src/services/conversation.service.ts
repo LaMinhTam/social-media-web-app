@@ -1,6 +1,13 @@
 import axios from "@/apis/axios";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import { setProgress } from "@/store/actions/commonSlice";
 import { GroupSettings } from "@/types/conversationType";
+import {
+    generateSHA1,
+    generateSignature,
+} from "@/utils/conversation/file/generateSignature";
+import { Dispatch } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 export const handleCreateConversation = async (
     type: string,
     members: number[],
@@ -360,11 +367,27 @@ export const handleRejectJoinGroupRequest = async (
     }
 };
 
-export const handleUploadFile = async (formData: FormData) => {
+export const handleUploadFile = async (
+    formData: FormData,
+    dispatch: Dispatch<any>
+) => {
     try {
         const response = await axios.post(
             `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
-            formData
+            formData,
+            {
+                onUploadProgress: (progressEvent) => {
+                    if (typeof progressEvent.total === "number") {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
+                        dispatch(setProgress(percentCompleted));
+                    } else {
+                        toast.warn("Total size is undefined.");
+                        dispatch(setProgress(0));
+                    }
+                },
+            }
         );
         const imageUrl = response.data.secure_url;
         if (imageUrl) {
@@ -372,5 +395,42 @@ export const handleUploadFile = async (formData: FormData) => {
         }
     } catch (error) {
         console.error("Error uploading file:", error);
+    }
+};
+
+export const handleDeleteFile = async (fileUrl: string) => {
+    try {
+        const urlParts = fileUrl.split("/");
+        const fileName = urlParts[urlParts.length - 1];
+        const [publicId] = fileName.split(".");
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const timestamp = new Date().getTime();
+        const signature = generateSHA1(
+            generateSignature(
+                publicId,
+                process.env.NEXT_PUBLIC_CLOUDINARY_API_SECRET as string,
+                timestamp
+            )
+        );
+
+        const response = await axios.post(
+            `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
+            {
+                public_id: publicId,
+                timestamp,
+                api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+                signature,
+            }
+        );
+        console.log("handleDeleteFile ~ response:", response);
+
+        // Check the response
+        if (response.data.result === "ok") {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error("Error deleting file:", error);
     }
 };

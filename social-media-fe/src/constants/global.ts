@@ -101,3 +101,9 @@ export const REGISTER_STATE = {
     REGISTERING: 1,
     REGISTERED: 2,
 };
+
+export const SORT_STRATEGY = {
+    NEWEST: "NEWEST",
+    OLDEST: "OLDEST",
+    POPULAR: "POPULAR",
+};

@@ -14,6 +14,7 @@ const user = {
     acceptFriendRequest: `/friends/accept`,
     removeFriend: `/friends/remove`,
     recallFriendRequest: `/friends/revoke`,
+    updateProfile: "/user",
 };
 
 const conversation = {
@@ -62,10 +63,27 @@ const conversation = {
         `/conversations/reject-pending-member?conversation_id=${conversation_id}&requester_id=${request_id}&waiting_member_id=${userId}`,
 };
 
+const post = {
+    newFeed: (page: number, size: number) =>
+        `/posts/new-feed?page=${page}&size=${size}`,
+    createPost: "/posts",
+    sharePost: "/posts/share",
+    reactionPost: "/reactions/post",
+    reactionPostDetail: (id: string) => `/reactions/post/detail/${id}`,
+    commentPost: "/comments",
+    commentOnPost: (
+        id: string,
+        page: number,
+        size: number,
+        sortStrategy: string
+    ) => `/comments/${id}?page=${page}&size=${size}&sort=${sortStrategy}`,
+};
+
 const apiRoutes = {
     auth,
     user,
     conversation,
+    post,
 };
 
 export default apiRoutes;

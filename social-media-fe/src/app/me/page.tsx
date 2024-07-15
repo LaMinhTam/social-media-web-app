@@ -2,9 +2,8 @@
 import LayoutDashboard from "@/layout/LayoutDashboard";
 import RequiredAuthLayout from "@/layout/RequiredAuthLayout";
 import { Grid } from "@mui/material";
-import React, { useEffect } from "react";
+import React from "react";
 import Header from "@/modules/profile/Header";
-import Post from "@/modules/posts/Post";
 import PostHeader from "@/modules/posts/PostHeader";
 import PostFilter from "@/modules/posts/PostFilter";
 import ListImage from "@/modules/profile/ListImage";
@@ -33,11 +32,6 @@ const Profile = () => {
                                 <div className="overflow-x-hidden overflow-y-auto basis-0 grow">
                                     <PostHeader></PostHeader>
                                     <PostFilter></PostFilter>
-                                    {Array.from({ length: 5 }).map(
-                                        (_, index) => (
-                                            <Post key={index}></Post>
-                                        )
-                                    )}
                                 </div>
                             </Grid>
                         </Grid>

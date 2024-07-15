@@ -11,7 +11,7 @@ const PostFilter = () => {
         <Box className="p-4 mt-4 rounded-lg shadow-md bg-lite">
             <Box className="flex items-center justify-between">
                 <Typography className="font-semibold" variant="h6">
-                    Bài viết
+                    Posts
                 </Typography>
                 <Box className="flex items-center justify-center gap-x-2">
                     <Button
@@ -23,7 +23,7 @@ const PostFilter = () => {
                         }}
                     >
                         <TuneSharpIcon></TuneSharpIcon>
-                        <Typography>Bộ lọc</Typography>
+                        <Typography>Filters</Typography>
                     </Button>
                     <Button
                         type="button"
@@ -34,7 +34,7 @@ const PostFilter = () => {
                         }}
                     >
                         <SettingsIcon></SettingsIcon>
-                        <Typography>Quản lý bài viết</Typography>
+                        <Typography>Manager posts</Typography>
                     </Button>
                 </Box>
             </Box>
@@ -49,9 +49,7 @@ const PostFilter = () => {
         }`}
                 >
                     <MenuIcon></MenuIcon>
-                    <Typography className="font-semibold">
-                        Xem theo danh sách
-                    </Typography>
+                    <Typography className="font-semibold">List view</Typography>
                 </button>
                 <button
                     className={`flex items-center justify-center w-full max-w-[280px] h-[60px] 
@@ -62,9 +60,7 @@ const PostFilter = () => {
         }`}
                 >
                     <GridViewIcon></GridViewIcon>
-                    <Typography className="font-semibold">
-                        Chế độ xem lưới
-                    </Typography>
+                    <Typography className="font-semibold">Grid view</Typography>
                 </button>
             </Box>
         </Box>

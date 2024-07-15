@@ -7,7 +7,7 @@ const ListFriend = () => {
         <Box className="p-4 mt-4 rounded-lg shadow-md bg-lite">
             <Grid container justifyContent={"space-between"}>
                 <Typography variant="h6" className="font-bold">
-                    Bạn bè
+                    Friends
                 </Typography>
                 <Button
                     type="button"
@@ -17,7 +17,7 @@ const ListFriend = () => {
                         textTransform: "none",
                     }}
                 >
-                    Xem tất cả bạn bè
+                    See all friends
                 </Button>
             </Grid>
             <Grid container spacing={2}>
