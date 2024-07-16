@@ -107,6 +107,7 @@ public class ConversationServiceImpl implements ConversationService {
         Message lastMessage = messages.get(conversation.getId().toHexString());
         MessageDetailDTO messageDetailDTO = (lastMessage != null) ? MessageDetailDTO.createMessageDetailDTO(lastMessage, userModels) : null;
         Map<Long, UserDetail> userDetailMap = conversation.getMembers().stream()
+                .filter(memberId -> userModels.get(memberId) != null)
                 .collect(Collectors.toMap(memberId -> memberId, userModels::get));
         return new ConversationDTO(conversation, userDetailMap, userId, messageDetailDTO);
     }
