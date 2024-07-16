@@ -45,8 +45,6 @@ const VideoCallDialog = ({
         stop,
         targetUser,
         webRtcPeer,
-        // toggleVideo,
-        // toggleMic,
     } = useCall();
     const [loading, setLoading] = useState<boolean>(false);
     const [videoInputElement, setVideoInputElement] =

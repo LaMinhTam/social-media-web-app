@@ -6,11 +6,13 @@ const Information = ({
     handleCalculateTotalReaction,
     handleRenderReactionMessage,
     setOpenViewPostReactionDialog,
+    onCommentClick,
 }: {
     postReaction: { [key: string]: number };
     handleCalculateTotalReaction: number;
     handleRenderReactionMessage: (key: string) => string;
     setOpenViewPostReactionDialog: (value: boolean) => void;
+    onCommentClick: () => void;
 }) => {
     return (
         <div className="flex items-center justify-between mt-4">
@@ -32,7 +34,8 @@ const Information = ({
                         );
                     })}
                 <Typography className="ml-2">
-                    {handleCalculateTotalReaction}
+                    {handleCalculateTotalReaction !== 0 &&
+                        handleCalculateTotalReaction}
                 </Typography>
             </Button>
             <Button
@@ -40,8 +43,9 @@ const Information = ({
                 variant="text"
                 color="inherit"
                 className="normal-case"
+                onClick={onCommentClick}
             >
-                <Typography>24 comments</Typography>
+                <Typography>comments</Typography>
             </Button>
         </div>
     );

@@ -270,7 +270,7 @@ export function CallProvider(
 
     const callResponse = (message: any) => {
         if (message.response != "accepted") {
-            console.info("Call not accepted by peer. Closing call");
+            console.info("Calling user not online");
             var errorMessage = message.message
                 ? message.message
                 : "Unknown reason for call rejection.";

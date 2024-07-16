@@ -3,8 +3,15 @@ import React from "react";
 import HomeIcon from "@mui/icons-material/Home";
 import PeopleOutlineRoundedIcon from "@mui/icons-material/PeopleOutlineRounded";
 import { usePathname, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { setTriggerFetchingPost } from "@/store/actions/postSlice";
+import { RootState } from "@/store/configureStore";
 
 const DashboardTab = ({ showSearch }: { showSearch: boolean }) => {
+    const triggerFetchingPost = useSelector(
+        (state: RootState) => state.post.triggerFetchingPost
+    );
+    const dispatch = useDispatch();
     const pathname = usePathname();
     const router = useRouter();
     const [currentTab, setCurrentTab] = React.useState(pathname);
@@ -24,7 +31,10 @@ const DashboardTab = ({ showSearch }: { showSearch: boolean }) => {
         flex-shrink-0 hover:text-secondary ${
             currentTab === "/" ? "border-b-4 border-secondary" : ""
         }`}
-                onClick={() => router.push("/")}
+                onClick={() => {
+                    dispatch(setTriggerFetchingPost(!triggerFetchingPost));
+                    router.push("/");
+                }}
             >
                 <HomeIcon
                     className={`w-8 h-8 ${

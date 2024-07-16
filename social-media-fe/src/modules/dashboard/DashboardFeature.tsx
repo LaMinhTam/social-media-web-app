@@ -20,15 +20,26 @@ import { db } from "@/constants/firebaseConfig";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import { useRouter } from "next/navigation";
-import { saveAccessToken, saveRefreshToken, saveUser } from "@/utils/auth";
+import {
+    getRefreshToken,
+    saveAccessToken,
+    saveRefreshToken,
+    saveUser,
+} from "@/utils/auth";
 import MoreIcon from "@mui/icons-material/MoreVert";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import ResetPasswordDialog from "../profile/ResetPasswordDialog";
+import NotificationModal from "@/components/modal/NotificationModal";
 const DashboardFeature = () => {
     const router = useRouter();
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
+    const refreshToken = getRefreshToken();
+    const [openResetPasswordDialog, setOpenResetPasswordDialog] =
+        useState<boolean>(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
@@ -54,6 +65,28 @@ const DashboardFeature = () => {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
+    const handleLogout = async () => {
+        try {
+            console.log("refreshToken", refreshToken);
+            const response = await SOCIAL_MEDIA_API.AUTH.logout(
+                refreshToken ?? ""
+            );
+            if (response.status === 200) {
+                console.log("Logout successfully");
+                handleMenuClose();
+                saveAccessToken("");
+                saveRefreshToken("");
+                saveUser("");
+                router.push("/signin");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    const notifications = useSelector(
+        (state: RootState) => state.common.notifications
+    );
+
     const menuId = "primary-search-account-menu";
     const renderMenu = (
         <Menu
@@ -70,21 +103,18 @@ const DashboardFeature = () => {
                 <AccountCircle />
                 <Typography>{currentUserProfile.name}</Typography>
             </MenuItem>
-            <MenuItem className="flex items-center justify-between gap-x-3 w-[360px]">
+            <MenuItem
+                className="flex items-center justify-between gap-x-3 w-[360px]"
+                onClick={() => setOpenResetPasswordDialog(true)}
+            >
                 <div className="flex items-center justify-center gap-x-3">
-                    <DarkModeIcon />
-                    <Typography>Dark/Light</Typography>
+                    <RestartAltIcon />
+                    <Typography>Reset Password</Typography>
                 </div>
                 <ToggleButtonGroup />
             </MenuItem>
             <MenuItem
-                onClick={() => {
-                    handleMenuClose();
-                    saveAccessToken("");
-                    saveRefreshToken("");
-                    saveUser("");
-                    router.push("/signin");
-                }}
+                onClick={handleLogout}
                 className="flex items-center justify-start gap-x-3 w-[360px]"
             >
                 <LogoutIcon />
@@ -146,18 +176,50 @@ const DashboardFeature = () => {
                     </>
                 )}
             </PopupState>
-            <MenuItem>
-                <IconButton
-                    size="large"
-                    aria-label="show 17 new notifications"
-                    color="inherit"
-                >
-                    <Badge badgeContent={17} color="error">
-                        <NotificationsIcon />
-                    </Badge>
-                </IconButton>
-                <p>Notifications</p>
-            </MenuItem>
+            <PopupState
+                variant="popover"
+                popupId="notification-popup-popover-mobile"
+            >
+                {(popupState) => (
+                    <>
+                        <MenuItem {...bindTrigger(popupState)}>
+                            <IconButton
+                                size="large"
+                                aria-label="show 17 new notifications"
+                                color="inherit"
+                            >
+                                {notifications && notifications.length > 0 ? (
+                                    <Badge
+                                        badgeContent={notifications.length}
+                                        color="error"
+                                    >
+                                        <NotificationsIcon />
+                                    </Badge>
+                                ) : (
+                                    <NotificationsIcon />
+                                )}
+                            </IconButton>
+                            <p>Notifications</p>
+                        </MenuItem>
+                        <Popover
+                            {...bindPopover(popupState)}
+                            anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "center",
+                            }}
+                            transformOrigin={{
+                                vertical: "top",
+                                horizontal: "center",
+                            }}
+                        >
+                            <NotificationModal
+                                popupState={popupState}
+                            ></NotificationModal>
+                        </Popover>
+                    </>
+                )}
+            </PopupState>
+
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
                     size="large"
@@ -251,16 +313,52 @@ const DashboardFeature = () => {
                         </div>
                     )}
                 </PopupState>
-                <IconButton
-                    size="large"
-                    aria-label="show 17 new notifications"
-                    color="inherit"
-                    className="flex items-center justify-center w-10 h-10 bg-strock hover:text-primary"
+                <PopupState
+                    variant="popover"
+                    popupId="notification-popup-popover"
                 >
-                    <Badge badgeContent={17} color="error">
-                        <NotificationsIcon />
-                    </Badge>
-                </IconButton>
+                    {(popupState) => (
+                        <div>
+                            <IconButton
+                                {...bindTrigger(popupState)}
+                                size="large"
+                                aria-label="show 4 new mails"
+                                color={popupState.isOpen ? "info" : "inherit"}
+                                className={`flex items-center justify-center w-10 h-10 hover:text-primary ${
+                                    popupState.isOpen
+                                        ? "bg-secondary bg-opacity-5"
+                                        : "bg-strock"
+                                }`}
+                            >
+                                {notifications && notifications.length > 0 ? (
+                                    <Badge
+                                        badgeContent={notifications.length}
+                                        color="error"
+                                    >
+                                        <NotificationsIcon />
+                                    </Badge>
+                                ) : (
+                                    <NotificationsIcon />
+                                )}
+                            </IconButton>
+                            <Popover
+                                {...bindPopover(popupState)}
+                                anchorOrigin={{
+                                    vertical: "bottom",
+                                    horizontal: "center",
+                                }}
+                                transformOrigin={{
+                                    vertical: "top",
+                                    horizontal: "center",
+                                }}
+                            >
+                                <NotificationModal
+                                    popupState={popupState}
+                                ></NotificationModal>
+                            </Popover>
+                        </div>
+                    )}
+                </PopupState>
                 <IconButton
                     size="large"
                     edge="end"
@@ -288,6 +386,12 @@ const DashboardFeature = () => {
             </Box>
             {renderMenu}
             {renderMobileMenu}
+            {openResetPasswordDialog && (
+                <ResetPasswordDialog
+                    openResetPasswordDialog={openResetPasswordDialog}
+                    setOpenResetPasswordDialog={setOpenResetPasswordDialog}
+                />
+            )}
         </>
     );
 };

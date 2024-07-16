@@ -15,6 +15,7 @@ import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
     setOpenCreatePostDialog,
+    setPage,
     setTriggerFetchingPost,
 } from "@/store/actions/postSlice";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
@@ -45,6 +46,8 @@ const CreatePostDialog = ({
     const triggerFetchingPost = useSelector(
         (state: RootState) => state.post.triggerFetchingPost
     );
+    const posts = useSelector((state: RootState) => state.post.posts);
+    const page = useSelector((state: RootState) => state.post.page);
     const dispatch = useDispatch();
     const [openTagPeopleDialog, setOpenTagPeopleDialog] = React.useState(false);
     const [content, setContent] = React.useState("");
@@ -90,6 +93,10 @@ const CreatePostDialog = ({
             listFiles.forEach((file) => URL.revokeObjectURL(file.name));
             setListFiles([]);
             setTaggedPersons([]);
+            const currentSizeOfPage = Object.keys(posts).length / page;
+            if (currentSizeOfPage === 5) {
+                dispatch(setPage(page + 1));
+            }
             dispatch(setTriggerFetchingPost(!triggerFetchingPost));
             handleClose();
         }

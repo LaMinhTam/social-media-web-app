@@ -3,6 +3,8 @@ const auth = {
     login: "/auth/login",
     refresh: "/auth/refresh",
     userDetails: "/auth/user/me",
+    logout: "/auth/logout",
+    resetPassword: "/auth/reset-password",
 };
 
 const user = {
@@ -15,6 +17,9 @@ const user = {
     removeFriend: `/friends/remove`,
     recallFriendRequest: `/friends/revoke`,
     updateProfile: "/user",
+    userWall: (id: number, size: number, page: number) =>
+        `/user-wall/${id}?page=${page}&size=${size}`,
+    followUser: (id: number) => `/user-wall/follow/${id}`,
 };
 
 const conversation = {
@@ -77,6 +82,8 @@ const post = {
         size: number,
         sortStrategy: string
     ) => `/comments/${id}?page=${page}&size=${size}&sort=${sortStrategy}`,
+    reactionToComment: "/reactions/comment",
+    reactionCommentDetail: (id: string) => `/reactions/comment/detail/${id}`,
 };
 
 const apiRoutes = {

@@ -18,6 +18,7 @@ import {
     setTriggerReFetchingRelationship,
 } from "@/store/actions/commonSlice";
 import { setUserClicked } from "@/store/actions/userSlice";
+import { useRouter } from "next/navigation";
 
 export default function UserCard({
     user,
@@ -26,6 +27,7 @@ export default function UserCard({
     user: FriendRequestData;
     type?: string;
 }) {
+    const router = useRouter();
     const dispatch = useDispatch();
     const triggerReFetchingRelationship = useSelector(
         (state: RootState) => state.common.triggerReFetchingRelationship
@@ -35,26 +37,26 @@ export default function UserCard({
     const topBtnContent = (type: string) => {
         switch (type) {
             case "friend":
-                return "Xem trang cá nhân";
+                return "View profile";
             case "receive":
-                return "Chấp nhận";
+                return "Accept";
             case "request":
-                return "Xem trang cá nhân";
+                return "View profile";
             default:
-                return "Xem trang cá nhân";
+                return "View profile";
         }
     };
 
     const bottomBtnContent = (type: string) => {
         switch (type) {
             case "friend":
-                return "Nhắn tin";
+                return "Chat";
             case "receive":
-                return "Xóa";
+                return "Reject";
             case "request":
-                return "Hủy";
+                return "Cancel";
             default:
-                return "Nhắn tin";
+                return "Chat";
         }
     };
 
@@ -62,7 +64,7 @@ export default function UserCard({
         setBtnTopLoading(true);
         switch (type) {
             case "friend":
-                console.log("friend");
+                router.push(`/profile/${user.user_id}`);
                 setBtnTopLoading(false);
                 return;
             case "receive":
@@ -78,9 +80,11 @@ export default function UserCard({
                 );
                 return;
             case "request":
+                router.push(`/profile/${user.user_id}`);
                 setBtnTopLoading(false);
                 return;
             default:
+                router.push(`/profile/${user.user_id}`);
                 return;
         }
     };
@@ -149,7 +153,7 @@ export default function UserCard({
                         ))}
                     </Box>
                     <Typography variant="body2" color="text.secondary">
-                        2 bạn chung
+                        2 mutual friends
                     </Typography>
                 </Box>
             </CardContent>

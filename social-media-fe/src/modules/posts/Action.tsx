@@ -4,7 +4,13 @@ import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import ShareSharpIcon from "@mui/icons-material/ShareSharp";
 import ReactionPicker from "@/components/common/ReactionPicker";
+import { useDispatch } from "react-redux";
+import {
+    setOpenSharePostDialog,
+    setPostShareId,
+} from "@/store/actions/postSlice";
 const Action = ({
+    postId,
     hoverRef,
     isHovered,
     handleClick,
@@ -12,6 +18,7 @@ const Action = ({
     currentReaction,
     onCommentClick,
 }: {
+    postId: string;
     hoverRef: React.RefObject<HTMLDivElement>;
     isHovered: boolean;
     handleClick: () => void;
@@ -22,6 +29,7 @@ const Action = ({
     } | null;
     onCommentClick: () => void;
 }) => {
+    const dispatch = useDispatch();
     return (
         <Box
             sx={{
@@ -85,6 +93,10 @@ const Action = ({
                 color="inherit"
                 className="normal-case gap-x-2"
                 fullWidth
+                onClick={() => {
+                    dispatch(setPostShareId(postId));
+                    dispatch(setOpenSharePostDialog(true));
+                }}
             >
                 <ShareSharpIcon></ShareSharpIcon>
                 <Typography>Share</Typography>

@@ -17,28 +17,25 @@ import {
     setCurrentPostData,
     setOpenPostDialog,
 } from "@/store/actions/postSlice";
+import handleRenderAuthor from "@/utils/posts/handleRenderAuthor";
 
-const Post = ({ data }: { data: PostData }) => {
-    let authors = "";
+const Post = ({
+    data,
+    setStoredPostReaction,
+}: {
+    data: PostData;
+    setStoredPostReaction?: React.Dispatch<
+        React.SetStateAction<{
+            [key: string]: number;
+        }>
+    >;
+}) => {
+    let authors = handleRenderAuthor(data.authors);
+    let shareAuthors = handleRenderAuthor(data.share_post?.authors ?? []);
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
-    if (data.authors.length > 2) {
-        data.authors.forEach((author, index) => {
-            if (index < 2) {
-                authors += author.name + ", ";
-            }
-        });
-        authors =
-            authors.slice(0, -2) +
-            " và " +
-            (data.authors.length - 2) +
-            " người khác";
-    } else if (data.authors.length === 2) {
-        authors = data.authors[0].name + " và " + data.authors[1].name;
-    } else {
-        authors = data.authors[0].name;
-    }
+
     const dispatch = useDispatch();
     const openPostDialog = useSelector(
         (state: RootState) => state.post.openPostDialog
@@ -55,6 +52,8 @@ const Post = ({ data }: { data: PostData }) => {
         name: string;
         emoji: string;
     } | null>(null);
+    const [triggerFetchReaction, setTriggerFetchReaction] =
+        React.useState(false);
     const handleClick = () => {
         if (currentReaction) {
             handleReactionClick(
@@ -90,7 +89,15 @@ const Post = ({ data }: { data: PostData }) => {
     };
 
     useEffect(() => {
+        if (data.reactions) {
+            setPostReaction(data.reactions);
+            setTriggerFetchReaction(!triggerFetchReaction);
+        }
+    }, [data]);
+
+    useEffect(() => {
         async function fetchPostReactions() {
+            console.log("Run fetchPostReactions");
             const response = await handleGetPostReactionDetail(data.post_id);
             if (response) {
                 const reaction = Object.keys(response).find((key) => {
@@ -101,7 +108,6 @@ const Post = ({ data }: { data: PostData }) => {
                         return key;
                     }
                 });
-                console.log("reaction ~ reaction:", reaction);
                 if (reaction) {
                     setCurrentReaction({
                         name: reaction,
@@ -112,13 +118,19 @@ const Post = ({ data }: { data: PostData }) => {
             }
         }
         fetchPostReactions();
-    }, []);
+    }, [triggerFetchReaction]);
 
     const handleCalculateTotalReaction = useMemo(() => {
         return Object.keys(postReaction).reduce((total, key) => {
             return total + postReaction[key];
         }, 0);
-    }, [currentReaction]);
+    }, [postReaction]);
+
+    useEffect(() => {
+        if (setStoredPostReaction) {
+            setStoredPostReaction(postReaction);
+        }
+    }, [postReaction]);
 
     if (!data) return null;
     return (
@@ -128,7 +140,31 @@ const Post = ({ data }: { data: PostData }) => {
                 <div className="mt-4">
                     <Typography>{data.content}</Typography>
                 </div>
-                <Media media={data.media}></Media>
+                {data.media && data.media.length > 0 && (
+                    <Media media={data.media}></Media>
+                )}
+                {data.share_post && (
+                    <Box
+                        sx={{
+                            border: "2px solid #ccc",
+                            borderRadius: "10px",
+                            padding: "10px",
+                            marginTop: "10px",
+                        }}
+                    >
+                        <Header
+                            authors={shareAuthors}
+                            create_at={data.share_post.create_at}
+                        ></Header>
+                        <div className="mt-4">
+                            <Typography>{data.share_post.content}</Typography>
+                        </div>
+                        {data.share_post.media &&
+                            data.share_post.media.length > 0 && (
+                                <Media media={data.share_post.media}></Media>
+                            )}
+                    </Box>
+                )}
                 <Information
                     postReaction={postReaction}
                     handleCalculateTotalReaction={handleCalculateTotalReaction}
@@ -136,9 +172,21 @@ const Post = ({ data }: { data: PostData }) => {
                     setOpenViewPostReactionDialog={
                         setOpenViewPostReactionDialog
                     }
+                    onCommentClick={() => {
+                        if (!openPostDialog) {
+                            dispatch(setOpenPostDialog(true));
+                            dispatch(
+                                setCurrentPostData({
+                                    ...data,
+                                    reactions: postReaction,
+                                })
+                            );
+                        }
+                    }}
                 ></Information>
                 <hr />
                 <Action
+                    postId={data.post_id}
                     hoverRef={hoverRef}
                     isHovered={isHovered}
                     handleClick={handleClick}

@@ -1,5 +1,5 @@
 import { Member } from "@/types/conversationType";
-import PostResponse, { PostData } from "@/types/postType";
+import PostResponse, { CommentData, PostData } from "@/types/postType";
 import { FriendRequestData } from "@/types/userType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
@@ -10,6 +10,11 @@ type PostSlice = {
     triggerFetchingPost: boolean;
     openPostDialog: boolean;
     currentPostData: PostData | null;
+    replyComment: CommentData;
+    content: string;
+    openSharePostDialog: boolean;
+    postShareId: string;
+    page: number;
 };
 
 const initialState: PostSlice = {
@@ -19,6 +24,11 @@ const initialState: PostSlice = {
     triggerFetchingPost: false,
     openPostDialog: false,
     currentPostData: null,
+    replyComment: {} as CommentData,
+    content: "",
+    openSharePostDialog: false,
+    postShareId: "",
+    page: 1,
 };
 
 const postSlice = createSlice({
@@ -43,6 +53,21 @@ const postSlice = createSlice({
         setCurrentPostData: (state, action: PayloadAction<PostData>) => {
             state.currentPostData = action.payload;
         },
+        setReplyComment: (state, action: PayloadAction<CommentData>) => {
+            state.replyComment = action.payload;
+        },
+        setContent: (state, action: PayloadAction<string>) => {
+            state.content = action.payload;
+        },
+        setOpenSharePostDialog: (state, action: PayloadAction<boolean>) => {
+            state.openSharePostDialog = action.payload;
+        },
+        setPostShareId: (state, action: PayloadAction<string>) => {
+            state.postShareId = action.payload;
+        },
+        setPage: (state, action: PayloadAction<number>) => {
+            state.page = action.payload;
+        },
     },
 });
 
@@ -53,5 +78,10 @@ export const {
     setTriggerFetchingPost,
     setOpenPostDialog,
     setCurrentPostData,
+    setReplyComment,
+    setContent,
+    setOpenSharePostDialog,
+    setPostShareId,
+    setPage,
 } = postSlice.actions;
 export default postSlice.reducer;

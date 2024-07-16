@@ -52,7 +52,15 @@ const TagPeopleDialogContent = ({
     }, [searchValue, selectedPersons, relationshipUsers.friends]);
 
     return (
-        <Box>
+        <Box
+            sx={{
+                width: "100%",
+                maxHeight: "400px",
+                overflowY: "auto",
+                overflowX: "hidden",
+                p: 2,
+            }}
+        >
             <SearchInput
                 placeholder="Search..."
                 inputProps={{

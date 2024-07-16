@@ -9,6 +9,11 @@ import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import onMessageReceived from "@/utils/socket/onMessageReceived";
+import {
+    setNotifications,
+    setTriggerReFetchingRelationship,
+} from "@/store/actions/commonSlice";
+import { toast } from "react-toastify";
 
 const SocketContext = React.createContext<SocketType>({} as SocketType);
 
@@ -22,8 +27,14 @@ export function SocketProvider(
     const showChatModal = useSelector(
         (state: RootState) => state.common.showChatModal
     );
+    const triggerReFetchingRelationship = useSelector(
+        (state: RootState) => state.common.triggerReFetchingRelationship
+    );
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
+    );
+    const notifications = useSelector(
+        (state: RootState) => state.common.notifications
     );
     const [triggerScrollChat, setTriggerScrollChat] = useState<boolean>(false);
     const [messageRefs, setMessageRefs] = useState<any>({});
@@ -84,7 +95,8 @@ export function SocketProvider(
                         setMessages((prev: MessageResponse) => ({
                             ...prev,
                             [payloadData.message_id]: {
-                                ...payloadData,
+                                ...messages[payloadData.message_id],
+                                reactions: payloadData.reactions,
                             },
                         }));
                     }
@@ -121,6 +133,89 @@ export function SocketProvider(
                     `/user/${decryptedData.user_id}/friend-status`,
                     function (payload) {
                         console.log("read", JSON.parse(payload.body));
+                    }
+                );
+                client.subscribe(
+                    `/user/${decryptedData.user_id}/friend-request`,
+                    function (payload) {
+                        console.log("read", JSON.parse(payload.body));
+                        const payloadData = JSON.parse(payload.body);
+                        dispatch(
+                            setTriggerReFetchingRelationship(
+                                !triggerReFetchingRelationship
+                            )
+                        );
+                        switch (payloadData.type) {
+                            case "ACCEPT":
+                                const notification = {
+                                    user: {
+                                        friend_request_id:
+                                            payloadData.friend_request_id,
+                                        user_id: payloadData.user_id,
+                                        name: payloadData.name,
+                                        email: payloadData.email,
+                                        image_url: payloadData.image_url,
+                                    },
+                                    message: "accepted your friend request",
+                                };
+                                dispatch(
+                                    setNotifications([
+                                        ...notifications,
+                                        notification,
+                                    ])
+                                );
+                                toast.info(
+                                    `${payloadData.name} accepted your friend request!`
+                                );
+                                break;
+                            case "SEND":
+                                const notificationSend = {
+                                    user: {
+                                        friend_request_id:
+                                            payloadData.friend_request_id,
+                                        user_id: payloadData.user_id,
+                                        name: payloadData.name,
+                                        email: payloadData.email,
+                                        image_url: payloadData.image_url,
+                                    },
+                                    message: "sent you a friend request",
+                                };
+                                dispatch(
+                                    setNotifications([
+                                        ...notifications,
+                                        notificationSend,
+                                    ])
+                                );
+                                toast.info(
+                                    `${payloadData.name} sent you a friend request`
+                                );
+                                break;
+                            case "REVOKE":
+                                const notificationRevoke = {
+                                    user: {
+                                        friend_request_id:
+                                            payloadData.friend_request_id,
+                                        user_id: payloadData.user_id,
+                                        name: payloadData.name,
+                                        email: payloadData.email,
+                                        image_url: payloadData.image_url,
+                                    },
+                                    message: "revoked friend request",
+                                };
+                                dispatch(
+                                    setNotifications([
+                                        ...notifications,
+                                        notificationRevoke,
+                                    ])
+                                );
+                                toast.info(
+                                    `${payloadData.name} revoked friend request`
+                                );
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                 );
             },

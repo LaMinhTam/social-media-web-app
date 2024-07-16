@@ -18,6 +18,17 @@ const createPost = async (data: {
     return response;
 };
 
+const sharePost = async (post_id: string, content: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.post(
+        apiRoutes.post.sharePost,
+        {
+            post_id,
+            content,
+        }
+    );
+    return response;
+};
+
 const getNewFeeds = async (page: number, size: number) => {
     const response: AxiosResponse<PostResponse> = await axiosPrivate.get(
         apiRoutes.post.newFeed(page, size)
@@ -68,6 +79,23 @@ const commentPost = async (data: {
     return response;
 };
 
+const reactionToComment = async (target: string, type: string) => {
+    const response: AxiosResponse<string> = await axiosPrivate.post(
+        apiRoutes.post.reactionToComment,
+        {
+            target,
+            type,
+        }
+    );
+    return response;
+};
+
+const reactionCommentDetail = async (id: string) => {
+    const response: AxiosResponse<ReactionPostDetailResponse> =
+        await axiosPrivate.get(apiRoutes.post.reactionCommentDetail(id));
+    return response;
+};
+
 export const POST = {
     createPost,
     getNewFeeds,
@@ -75,4 +103,7 @@ export const POST = {
     reactionPostDetail,
     commentOnPost,
     commentPost,
+    reactionToComment,
+    reactionCommentDetail,
+    sharePost,
 };

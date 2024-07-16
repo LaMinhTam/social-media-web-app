@@ -1,3 +1,4 @@
+import { NotificationType } from "@/types/commonType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type CommonType = {
@@ -6,6 +7,7 @@ type CommonType = {
     openCallDialog: boolean;
     openGroupCallDialog: boolean;
     progress: number;
+    notifications: NotificationType[];
 };
 
 const initialState: CommonType = {
@@ -14,6 +16,7 @@ const initialState: CommonType = {
     openCallDialog: false,
     openGroupCallDialog: false,
     progress: 0,
+    notifications: [],
 };
 
 const commonSlice = createSlice({
@@ -38,6 +41,9 @@ const commonSlice = createSlice({
         setProgress(state, action: PayloadAction<number>) {
             state.progress = action.payload;
         },
+        setNotifications(state, action: PayloadAction<NotificationType[]>) {
+            state.notifications = action.payload;
+        },
     },
 });
 
@@ -47,5 +53,6 @@ export const {
     setOpenCallDialog,
     setOpenGroupCallDialog,
     setProgress,
+    setNotifications,
 } = commonSlice.actions;
 export default commonSlice.reducer;

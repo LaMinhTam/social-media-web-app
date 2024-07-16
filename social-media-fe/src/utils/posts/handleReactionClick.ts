@@ -1,4 +1,7 @@
-import { handleCreateReaction } from "@/services/post.service";
+import {
+    handleCreateReaction,
+    handleReactionToComment,
+} from "@/services/post.service";
 import { Member } from "@/types/conversationType";
 
 interface Reaction {
@@ -15,10 +18,12 @@ const handleReactionClick = async (
     reactions: { [key: string]: any[] } | null,
     setReactions: (value: { [key: string]: any[] } | null) => void,
     currentUserProfile: Member,
-    postId: string
+    postId: string,
+    type?: string
 ) => {
-    if (currentReaction && currentReaction?.name === reaction.name) {
+    if (currentReaction && currentReaction.name === reaction.name) {
         setCurrentReaction(null);
+
         if (postReaction && postReaction[reaction.name] > 0) {
             const updatedPostReaction = {
                 ...postReaction,
@@ -29,6 +34,7 @@ const handleReactionClick = async (
             }
             setPostReaction(updatedPostReaction);
         }
+
         if (reactions && reactions[reaction.name]) {
             const index = reactions[reaction.name].findIndex(
                 (item) => item.user_id === currentUserProfile.user_id
@@ -38,34 +44,56 @@ const handleReactionClick = async (
                 if (reactions[reaction.name].length === 0) {
                     delete reactions[reaction.name];
                 }
+                setReactions({ ...reactions });
             }
         }
     } else {
-        setCurrentReaction(reaction);
-        if (postReaction) {
-            const updatedPostReaction = {
-                ...postReaction,
-                [reaction.name]: postReaction[reaction.name]
-                    ? postReaction[reaction.name] + 1
-                    : 1,
-            };
-            setPostReaction(updatedPostReaction);
-        } else {
-            setPostReaction({ [reaction.name]: 1 });
+        const newPostReaction = { ...postReaction };
+
+        if (currentReaction) {
+            newPostReaction[currentReaction.name] =
+                (newPostReaction[currentReaction.name] || 0) - 1;
+            if (newPostReaction[currentReaction.name] === 0) {
+                delete newPostReaction[currentReaction.name];
+            }
         }
+
+        newPostReaction[reaction.name] =
+            (newPostReaction[reaction.name] || 0) + 1;
+        setPostReaction(newPostReaction);
+
+        let updatedReactions = { ...reactions };
+
         if (reactions) {
-            const newReactions = reactions[reaction.name]
-                ? [...reactions[reaction.name], currentUserProfile]
-                : [currentUserProfile];
-            setReactions({
-                ...reactions,
-                [reaction.name]: newReactions,
+            Object.keys(reactions).forEach((key) => {
+                if (reactions[key].length > 0) {
+                    const index = reactions[key].findIndex(
+                        (item) => item.user_id === currentUserProfile.user_id
+                    );
+                    if (index > -1) {
+                        updatedReactions[key].splice(index, 1);
+                        if (updatedReactions[key].length === 0) {
+                            delete updatedReactions[key];
+                        }
+                    }
+                }
             });
-        } else {
-            setReactions({ [reaction.name]: [currentUserProfile] });
         }
+
+        const newReactions = reactions?.[reaction.name]
+            ? [...reactions[reaction.name], currentUserProfile]
+            : [currentUserProfile];
+        updatedReactions[reaction.name] = newReactions;
+
+        setReactions(updatedReactions);
+        setCurrentReaction(reaction);
     }
-    await handleCreateReaction(postId, reaction.name);
+
+    if (type === "comment") {
+        handleReactionToComment(postId, reaction.name);
+    } else {
+        handleCreateReaction(postId, reaction.name);
+    }
 };
 
 export default handleReactionClick;

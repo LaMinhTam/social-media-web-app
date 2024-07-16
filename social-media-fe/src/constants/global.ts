@@ -1,14 +1,14 @@
 export const HOST_NAME = "localhost";
-export const API_BASE_URL = `https://${HOST_NAME}:8060`;
+export const API_BASE_URL = `https://gateway-7pd7.onrender.com/`;
 
 export const APP_BASE_URL = `https://${HOST_NAME}:3000`;
 
-export const SOCKET_URL = `https://${HOST_NAME}:8060/websocket/ws`;
+export const SOCKET_URL = `https://gateway-7pd7.onrender.com/websocket/ws`;
 
 export const OAUTH2_REDIRECT_URI = `${APP_BASE_URL}/oauth2/redirect`;
 
 export const GOOGLE_AUTH_URL =
-    `http://${HOST_NAME}:9004/oauth2/authorize/google?redirect_uri=` +
+    `https://auth-service-xssb.onrender.com/oauth2/authorize/google?redirect_uri=` +
     OAUTH2_REDIRECT_URI;
 export const FACEBOOK_AUTH_URL =
     `http://${HOST_NAME}:9004/oauth2/authorize/facebook?redirect_uri=` +
@@ -22,8 +22,8 @@ export const STICKER_URL_TRENDING_ENDPOINT = `https://api.giphy.com/v1/stickers/
 export const GIF_URL_SEARCH_ENDPOINT = `https://api.giphy.com/v1/gifs/search`;
 export const STICKER_URL_SEARCH_ENDPOINT = `https://api.giphy.com/v1/stickers/search`;
 
-export const CALL_WS_URL = `wss://${HOST_NAME}:8060/websocket/call`;
-export const CALL_GROUP_WS_URL = `wss://${HOST_NAME}:8060/websocket/groupcall`;
+export const CALL_WS_URL = `wss://gateway-7pd7.onrender.com/websocket/call`;
+export const CALL_GROUP_WS_URL = `wss://gateway-7pd7.onrender.com/websocket/groupcall`;
 
 export const MESSAGE_TYPE = {
     TEXT: `TEXT`,

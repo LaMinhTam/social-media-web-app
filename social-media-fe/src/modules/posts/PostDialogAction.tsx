@@ -7,17 +7,23 @@ import {
     IconButton,
     TextareaAutosize,
     Tooltip,
+    Typography,
 } from "@mui/material";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import CloseIcon from "@mui/icons-material/Close";
-import React from "react";
+import React, { useEffect } from "react";
 import SendIcon from "@mui/icons-material/Send";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import Image from "next/image";
 import AddIcon from "@mui/icons-material/Add";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { CommentData } from "@/types/postType";
+import { setReplyComment } from "@/store/actions/postSlice";
+import { useDispatch } from "react-redux";
 const PostDialogAction = ({
+    replyComment,
     listImage,
     handleRemoveFile,
     handleFileChange,
@@ -32,7 +38,9 @@ const PostDialogAction = ({
     fileInputRef,
     emojiPickerRef,
     loading,
+    setOpenTagPeopleDialog,
 }: {
+    replyComment: CommentData;
     listImage: string[];
     handleRemoveFile: (index: number) => void;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -47,7 +55,21 @@ const PostDialogAction = ({
     fileInputRef: React.RefObject<HTMLInputElement>;
     emojiPickerRef: React.RefObject<HTMLDivElement>;
     loading: boolean;
+    setOpenTagPeopleDialog: (open: boolean) => void;
 }) => {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        if (replyComment && replyComment.author) {
+            setContent(`@${replyComment.author.name} `);
+        }
+    }, [replyComment]);
+
+    const onEnterPress = async (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            await onCreateComment();
+        }
+    };
     return (
         <DialogActions>
             {loading ? (
@@ -125,6 +147,63 @@ const PostDialogAction = ({
                             </Button>
                         </Box>
                     )}
+                    {replyComment && replyComment.author && (
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                mt: 1,
+                                position: "relative",
+                                mb: 1,
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    width: "100%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2,
+                                    }}
+                                >
+                                    <Image
+                                        src={replyComment.author.image_url}
+                                        alt={replyComment.author.name}
+                                        width={40}
+                                        height={40}
+                                        className="object-cover w-10 h-10 rounded-full"
+                                    ></Image>
+                                    <Typography>
+                                        {replyComment.author.name}
+                                    </Typography>
+                                </Box>
+                                <Typography>{replyComment.content}</Typography>
+                                <IconButton
+                                    size="small"
+                                    sx={{
+                                        position: "absolute",
+                                        top: 0,
+                                        right: 0,
+                                    }}
+                                    onClick={() => {
+                                        dispatch(
+                                            setReplyComment({} as CommentData)
+                                        );
+                                        setContent("");
+                                    }}
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                            </Box>
+                        </Box>
+                    )}
                     <TextareaAutosize
                         aria-label="empty textarea"
                         placeholder={`Comment as ${currentUserProfile.name}`}
@@ -132,6 +211,7 @@ const PostDialogAction = ({
                         maxRows={12}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
+                        onKeyDown={onEnterPress}
                         className="w-full p-2 pb-10 border-none rounded-lg outline-none resize-none bg-strock h-full max-h-[400px]"
                     />
                     <Box
@@ -187,6 +267,20 @@ const PostDialogAction = ({
                                             style={{ display: "none" }}
                                             onChange={handleFileChange}
                                         />
+                                    </Box>
+                                </Tooltip>
+                                <Tooltip title="Tag people">
+                                    <Box>
+                                        <IconButton
+                                            size="small"
+                                            color={"inherit"}
+                                            aria-label="Tag people"
+                                            onClick={() =>
+                                                setOpenTagPeopleDialog(true)
+                                            }
+                                        >
+                                            <PersonAddIcon />
+                                        </IconButton>
                                     </Box>
                                 </Tooltip>
                             </Box>

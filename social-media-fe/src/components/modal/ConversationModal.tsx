@@ -69,6 +69,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
             conversation.conversation_id,
             currentSize
         );
+        console.log("ConversationModal ~ data:", data);
         if (data) {
             dispatch(setShowChatModal(true));
             dispatch(setCurrentConversation(conversation));

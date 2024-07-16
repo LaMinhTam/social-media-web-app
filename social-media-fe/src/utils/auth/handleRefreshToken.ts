@@ -5,9 +5,9 @@ import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-
 import saveUserInfoToCookie from "./saveUserInfoToCookie";
 import { AxiosResponse } from "axios";
 
-import axios from "@/apis/axios";
 import apiRoutes from "@/apis";
 import { Member } from "@/types/conversationType";
+import { axiosInstance } from "@/apis/axios";
 
 export default async function handleRefreshToken(
     accessToken: string,
@@ -17,18 +17,15 @@ export default async function handleRefreshToken(
     try {
         if (accessToken && refreshToken) {
             const response = await SOCIAL_MEDIA_API.AUTH.refreshToken(
-                accessToken,
                 refreshToken
             );
             if (response.status === 200) {
-                const meResponse: AxiosResponse<Member> = await axios.get(
-                    apiRoutes.user.getMe,
-                    {
+                const meResponse: AxiosResponse<Member> =
+                    await axiosInstance.get(apiRoutes.user.getMe, {
                         headers: {
                             Authorization: `Bearer ${response.data.accessToken}`,
                         },
-                    }
-                );
+                    });
                 if (meResponse.status === 200) {
                     saveAccessToken(response.data.accessToken);
                     saveRefreshToken(response.data.refreshToken);
@@ -42,7 +39,7 @@ export default async function handleRefreshToken(
     } catch (error) {
         saveAccessToken("");
         saveRefreshToken("");
-        toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+        toast.error("Session expired, please login again");
         push("/signin");
     }
 }

@@ -10,6 +10,7 @@ export interface PostData {
     reactions?: {
         [key: string]: number;
     };
+    share_post?: PostData;
 }
 
 type PostResponse = {

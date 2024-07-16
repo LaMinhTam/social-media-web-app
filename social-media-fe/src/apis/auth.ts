@@ -3,12 +3,12 @@ import {
     RefreshTokenResponse,
     SignUpResponse,
 } from "@/types/authType";
-import axios, { axiosPrivate } from "./axios";
+import { axiosInstance, axiosPrivate } from "./axios";
 import apiRoutes from ".";
 import { AxiosResponse } from "axios";
 
 const createUser = async (name: string, email: string, password: string) => {
-    const response: AxiosResponse<SignUpResponse> = await axios.post(
+    const response: AxiosResponse<SignUpResponse> = await axiosInstance.post(
         apiRoutes.auth.signup,
         {
             name,
@@ -20,7 +20,7 @@ const createUser = async (name: string, email: string, password: string) => {
 };
 
 const login = async (email: string, password: string) => {
-    const response: AxiosResponse<LoginResponse> = await axios.post(
+    const response: AxiosResponse<LoginResponse> = await axiosInstance.post(
         apiRoutes.auth.login,
         {
             email,
@@ -31,11 +31,36 @@ const login = async (email: string, password: string) => {
 };
 
 const refreshOAuth2Token = async (refreshToken: string) => {
-    const response: AxiosResponse<RefreshTokenResponse> = await axios.post(
-        apiRoutes.auth.refresh,
-        {
-            refreshToken: refreshToken,
-        },
+    const response: AxiosResponse<RefreshTokenResponse> =
+        await axiosInstance.post(
+            apiRoutes.auth.refresh,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${refreshToken}`,
+                },
+            }
+        );
+    return response;
+};
+
+const refreshToken = async (refreshToken: string) => {
+    const response: AxiosResponse<RefreshTokenResponse> =
+        await axiosInstance.post(
+            apiRoutes.auth.refresh,
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${refreshToken}`,
+                },
+            }
+        );
+    return response;
+};
+const logout = async (refreshToken: string) => {
+    const response = await axiosInstance.post(
+        apiRoutes.auth.logout,
+        {},
         {
             headers: {
                 Authorization: `Bearer ${refreshToken}`,
@@ -45,19 +70,11 @@ const refreshOAuth2Token = async (refreshToken: string) => {
     return response;
 };
 
-const refreshToken = async (accessToken: string, refreshToken: string) => {
-    const response: AxiosResponse<RefreshTokenResponse> = await axios.post(
-        apiRoutes.auth.refresh,
-        {
-            accessToken,
-            refreshToken,
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${refreshToken}`,
-            },
-        }
-    );
+const resetPassword = async (oldPassword: string, newPassword: string) => {
+    const response = await axiosPrivate.post(apiRoutes.auth.resetPassword, {
+        oldPassword,
+        newPassword,
+    });
     return response;
 };
 
@@ -66,4 +83,6 @@ export const AUTH = {
     login,
     refreshToken,
     refreshOAuth2Token,
+    logout,
+    resetPassword,
 };

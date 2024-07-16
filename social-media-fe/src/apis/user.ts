@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 import apiRoutes from ".";
 import { axiosPrivate } from "./axios";
 import { Member } from "@/types/conversationType";
+import PostResponse from "@/types/postType";
 
 const getMe = async () => {
     const response: AxiosResponse<Member> = await axiosPrivate.get(
@@ -128,6 +129,20 @@ const updateProfile = async (data: {
     }
 };
 
+const getUserWall = async (userId: number, page: number, size: number) => {
+    const response: AxiosResponse<PostResponse> = await axiosPrivate.get(
+        apiRoutes.user.userWall(userId, size, page)
+    );
+    return response;
+};
+
+const followUser = async (userId: number) => {
+    const response: AxiosResponse<string> = await axiosPrivate.post(
+        apiRoutes.user.followUser(userId)
+    );
+    return response;
+};
+
 export const USER = {
     getMe,
     findUserById,
@@ -138,4 +153,6 @@ export const USER = {
     removeFriend,
     revokeFriendRequest,
     updateProfile,
+    getUserWall,
+    followUser,
 };

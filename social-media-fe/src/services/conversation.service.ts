@@ -1,4 +1,4 @@
-import axios from "@/apis/axios";
+import { axiosInstance } from "@/apis/axios";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import { setProgress } from "@/store/actions/commonSlice";
 import { GroupSettings } from "@/types/conversationType";
@@ -59,6 +59,7 @@ export const handleGetListMessage = async (id: string, size: number) => {
             id,
             size
         );
+        console.log("handleGetListMessage ~ response:", response);
         if (response?.status === 200) {
             return response.data;
         }
@@ -372,7 +373,7 @@ export const handleUploadFile = async (
     dispatch: Dispatch<any>
 ) => {
     try {
-        const response = await axios.post(
+        const response = await axiosInstance.post(
             `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
             formData,
             {
@@ -413,7 +414,7 @@ export const handleDeleteFile = async (fileUrl: string) => {
             )
         );
 
-        const response = await axios.post(
+        const response = await axiosInstance.post(
             `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
             {
                 public_id: publicId,

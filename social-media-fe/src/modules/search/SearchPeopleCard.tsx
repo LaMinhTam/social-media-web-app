@@ -45,15 +45,15 @@ const SearchPeopleCard = ({ user }: { user: Member }) => {
 
     const textContent = () => {
         if (isFriend) {
-            return "Nhắn tin";
+            return "Chat";
         } else if (isBlocked) {
-            return "Hủy chặn";
+            return "Revoke block";
         } else if (isReceiveRequest) {
-            return "Chấp nhận";
+            return "Accept friend request";
         } else if (isSendRequest) {
-            return "Hủy yêu cầu";
+            return "Revoke friend request";
         }
-        return "Thêm bạn bè";
+        return "Add friend";
     };
 
     const handleClicked = async () => {
@@ -112,7 +112,7 @@ const SearchPeopleCard = ({ user }: { user: Member }) => {
                                 {user.name}
                             </div>
                             <div className="w-full h-full mt-1 rounded bg-lite">
-                                Sống tại Thành phố Hồ Chí Minh
+                                Live in Ho Chi Minh City
                             </div>
                         </div>
                     </div>

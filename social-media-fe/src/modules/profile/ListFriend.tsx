@@ -1,8 +1,15 @@
+import { RootState } from "@/store/configureStore";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
+import { useSelector } from "react-redux";
 
-const ListFriend = () => {
+const ListFriend = ({ type = "me" }: { type?: string }) => {
+    const relationshipUsers = useSelector(
+        (state: RootState) => state.user.relationshipUsers
+    );
+    const router = useRouter();
     return (
         <Box className="p-4 mt-4 rounded-lg shadow-md bg-lite">
             <Grid container justifyContent={"space-between"}>
@@ -21,20 +28,31 @@ const ListFriend = () => {
                 </Button>
             </Grid>
             <Grid container spacing={2}>
-                {Array.from({ length: 9 }).map((_, index) => (
-                    <Grid item md={4} xs={4} key={index}>
-                        <Image
-                            src={`https://source.unsplash.com/random`}
-                            width={100}
-                            height={100}
-                            className="w-[100px] h-[100px] object-cover"
-                            alt="profile"
-                        ></Image>
-                        <Typography variant="body2" className="font-semibold">
-                            Thong Dinh
-                        </Typography>
-                    </Grid>
-                ))}
+                {type === "me" &&
+                    Object.keys(relationshipUsers).length > 0 &&
+                    Object.values(relationshipUsers.friends).map((user) => (
+                        <Grid item md={4} xs={4} key={user.user_id}>
+                            <Image
+                                src={user.image_url}
+                                width={100}
+                                height={100}
+                                className="w-[100px] h-[100px] object-cover cursor-pointer"
+                                alt="profile"
+                                onClick={() =>
+                                    router.push(`/user/${user.user_id}`)
+                                }
+                            ></Image>
+                            <Typography
+                                variant="body2"
+                                className="font-semibold cursor-pointer"
+                                onClick={() =>
+                                    router.push(`/user/${user.user_id}`)
+                                }
+                            >
+                                {user.name}
+                            </Typography>
+                        </Grid>
+                    ))}
             </Grid>
         </Box>
     );

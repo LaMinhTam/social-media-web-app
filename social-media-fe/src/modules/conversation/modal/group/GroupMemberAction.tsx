@@ -7,6 +7,7 @@ import {
 import { GroupSettings } from "@/types/conversationType";
 import { Button, Grid } from "@mui/material";
 import { PopupState } from "material-ui-popup-state/hooks";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const GroupMemberAction = ({
@@ -24,6 +25,7 @@ const GroupMemberAction = ({
     userId: number;
     conversationId: string;
 }) => {
+    const router = useRouter();
     const onRemoveMember = async () => {
         const response = await handleKickMember(conversationId, userId);
         if (response) {
@@ -56,7 +58,8 @@ const GroupMemberAction = ({
     };
 
     const onViewProfile = () => {
-        console.log("View profile");
+        popupState.close();
+        router.push(`/user/${userId}`);
     };
 
     return (

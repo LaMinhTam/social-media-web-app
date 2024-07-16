@@ -131,7 +131,7 @@ export default async function onMessageReceived(
 
             case NOTIFICATION_TYPE.GRANT_DEPUTY: {
                 const newDeputies = [
-                    ...currentConversation.deputies,
+                    ...currentConversation?.deputies,
                     payloadData.target_user_id[0].user_id,
                 ];
 

@@ -19,9 +19,9 @@ const ListFriend = ({
         <>
             <Box className="flex items-center justify-between">
                 <Typography variant="h6" fontWeight={600}>
-                    {type === "friend" && "Bạn bè"}
-                    {type === "receive" && "Lời mời kết bạn"}
-                    {type === "request" && "Lời mời đã gửi"}
+                    {type === "friend" && "Friends"}
+                    {type === "receive" && "Friend requests"}
+                    {type === "request" && "Sent requests"}
                 </Typography>
                 <Button
                     type="button"
@@ -30,7 +30,7 @@ const ListFriend = ({
                     variant="text"
                     onClick={() => router.push("/friends/request")}
                 >
-                    <Typography>Xem tất cả</Typography>
+                    <Typography>Watch all</Typography>
                 </Button>
             </Box>
             <Grid
@@ -57,7 +57,7 @@ const ListFriend = ({
                         endIcon={<ArrowDropDownIcon />}
                         onClick={() => setRandomNumber(randomNumber + 8)}
                     >
-                        Xem thêm
+                        View more
                     </Button>
                 </Box>
             )}

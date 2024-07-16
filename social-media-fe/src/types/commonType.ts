@@ -1,3 +1,5 @@
+import { FriendRequestData } from "./userType";
+
 export interface OnlineStatus {
     user_id: string;
     online: string;
@@ -13,4 +15,9 @@ export type UploadFileQueue = {
     size: number;
     progress: number;
     isSuccessful: boolean;
+};
+
+export type NotificationType = {
+    user: FriendRequestData;
+    message: string;
 };

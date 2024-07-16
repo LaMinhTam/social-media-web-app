@@ -4,7 +4,6 @@ import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import GifIcon from "@mui/icons-material/Gif";
 import LabelIcon from "@mui/icons-material/Label";
 import React, { useRef } from "react";
-import axios from "@/apis/axios";
 import { Client } from "stompjs";
 import { useDispatch } from "react-redux";
 import { MESSAGE_TYPE } from "@/constants/global";

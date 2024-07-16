@@ -14,7 +14,7 @@ const SearchResultPage = ({ children }: { children: React.ReactNode }) => {
         <RequiredAuthLayout>
             <LayoutDashboard>
                 <div className="fixed left-0 top-[64px] z-40 bottom-0">
-                    <LayoutSidebar title="Kết quả tìm kiếm" type="search">
+                    <LayoutSidebar title="Search result" type="search">
                         <SearchSession
                             query={q ?? ""}
                             pathname={pathname}
