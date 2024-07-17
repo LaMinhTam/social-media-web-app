@@ -57,7 +57,7 @@ const OAuth2RedirectHandler = () => {
         handleOAuth2();
     }, [token, error]);
 
-    return <Suspense>OAuth2</Suspense>;
+    return <Suspense></Suspense>;
 };
 
 export default OAuth2RedirectHandler;

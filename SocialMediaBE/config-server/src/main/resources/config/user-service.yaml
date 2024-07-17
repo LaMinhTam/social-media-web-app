@@ -1,0 +1,19 @@
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+spring:
+  neo4j:
+    uri: bolt://localhost:7687/friend_db
+    authentication:
+      username: neo4j
+      password: 12345678

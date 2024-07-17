@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: notification-service
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8889}"
+
+kurento:
+  ws:
+    url: "ws://localhost:8888/kurento"

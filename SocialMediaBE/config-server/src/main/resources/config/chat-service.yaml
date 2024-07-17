@@ -1,0 +1,25 @@
+server:
+  port: 8086
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+spring:
+  data:
+    mongodb:
+      port: 27017
+      host: localhost
+      database: chat_db
+      authentication-database: admin
+      uri: mongodb://root:123456@localhost:27017/test?authSource=admin&authMechanism=SCRAM-SHA-1
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: 123456
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
