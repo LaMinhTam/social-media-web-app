@@ -14,6 +14,7 @@ import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import { useRouter } from "next/navigation";
+import { DEFAULT_AVATAR } from "@/constants/global";
 const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
     const router = useRouter();
     const relationshipUsers = useSelector(
@@ -107,7 +108,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                         (_, index) => (
                                             <Image
                                                 key={index}
-                                                src={`https://source.unsplash.com/random`}
+                                                src={DEFAULT_AVATAR}
                                                 width={32}
                                                 height={32}
                                                 className="w-[32px] h-[32px] object-cover rounded-full 

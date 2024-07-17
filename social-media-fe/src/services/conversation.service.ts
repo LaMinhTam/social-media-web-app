@@ -1,7 +1,7 @@
 import { axiosInstance } from "@/apis/axios";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import { DEFAULT_AVATAR } from "@/constants/global";
 import { setProgress } from "@/store/actions/commonSlice";
-import { GroupSettings } from "@/types/conversationType";
 import {
     generateSHA1,
     generateSignature,
@@ -12,7 +12,7 @@ export const handleCreateConversation = async (
     type: string,
     members: number[],
     name = "default",
-    image = "https://source.unsplash.com/random"
+    image = DEFAULT_AVATAR
 ) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.createConversation(

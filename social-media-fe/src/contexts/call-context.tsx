@@ -1,4 +1,9 @@
-import { CALL_STATE, CALL_WS_URL, REGISTER_STATE } from "@/constants/global";
+import {
+    CALL_STATE,
+    CALL_WS_URL,
+    DEFAULT_AVATAR,
+    REGISTER_STATE,
+} from "@/constants/global";
 import { findUserById } from "@/services/search.service";
 import { setOpenCallDialog } from "@/store/actions/commonSlice";
 import { RootState } from "@/store/configureStore";
@@ -201,8 +206,7 @@ export function CallProvider(
         // Find user details
         const user = await findUserById(message.from);
         if (user) setTargetUser(user);
-        const imageUrl =
-            user?.image_url || "https://source.unsplash.com/random";
+        const imageUrl = user?.image_url || DEFAULT_AVATAR;
 
         Swal.fire({
             title: "Incoming Call",

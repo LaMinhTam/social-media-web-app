@@ -7,6 +7,7 @@ import handleFormatPostTime from "@/utils/posts/handleFormatPostTime";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
+import { DEFAULT_AVATAR } from "@/constants/global";
 
 const Header = ({
     authors,
@@ -35,7 +36,7 @@ const Header = ({
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-x-2">
                 <Image
-                    src={`https://source.unsplash.com/random`}
+                    src={DEFAULT_AVATAR}
                     width={40}
                     height={40}
                     className="object-cover w-10 h-10 rounded-full cursor-pointer"

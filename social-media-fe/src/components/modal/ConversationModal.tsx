@@ -37,7 +37,7 @@ import { handleRemoveUnreadMessage } from "@/utils/conversation/messages/handleR
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import CreateGroupDialog from "@/modules/conversation/modal/group/CreateGroupDialog";
 import handleGetLastUnreadMessageOfUser from "@/utils/conversation/messages/handleGetLastUnreadMessageOfUser";
-import { MESSAGE_TYPE } from "@/constants/global";
+import { DEFAULT_AVATAR, MESSAGE_TYPE } from "@/constants/global";
 import { formatOnlineTime } from "@/utils/conversation/messages/handleGroupMessage";
 import handleRenderLastMessage from "@/utils/conversation/messages/handleRenderLastMessage";
 
@@ -230,7 +230,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                                 conversation.type === "GROUP"
                                                     ? conversation.image
                                                     : user?.image_url ||
-                                                      "https://source.unsplash.com/random"
+                                                      DEFAULT_AVATAR
                                             }
                                             width={56}
                                             height={56}

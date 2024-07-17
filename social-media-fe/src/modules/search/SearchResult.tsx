@@ -1,3 +1,4 @@
+import { DEFAULT_AVATAR } from "@/constants/global";
 import { setSearchResult } from "@/store/actions/searchSlice";
 import { Member } from "@/types/conversationType";
 import { saveSearchResultToLocalStorage } from "@/utils/auth/handleLocalStorageSearch";
@@ -35,7 +36,7 @@ const SearchResult = ({
         >
             <div className="flex items-center justify-center gap-x-1">
                 <Image
-                    src={user.image_url ?? "https://source.unsplash.com/random"}
+                    src={user.image_url ?? DEFAULT_AVATAR}
                     width={40}
                     height={40}
                     className="object-cover w-10 h-10 rounded-full"

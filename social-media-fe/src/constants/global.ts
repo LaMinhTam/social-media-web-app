@@ -107,3 +107,5 @@ export const SORT_STRATEGY = {
     OLDEST: "OLDEST",
     POPULAR: "POPULAR",
 };
+
+export const DEFAULT_AVATAR = `https://res.cloudinary.com/didg9rn2d/image/upload/v1721183854/auv4cmrgm5kxdfcbqsvl.jpg`;

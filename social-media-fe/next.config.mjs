@@ -5,7 +5,8 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "source.unsplash.com",
+                hostname: "res.cloudinary.com",
+                pathname: "/didg9rn2d/**",
             },
         ],
     },
@@ -16,7 +17,7 @@ const nextConfig = {
                 headers: [
                     {
                         key: "Access-Control-Allow-Origin",
-                        value: "*",
+                        value: "http://0.0.0.0:3000",
                     },
                 ],
             },

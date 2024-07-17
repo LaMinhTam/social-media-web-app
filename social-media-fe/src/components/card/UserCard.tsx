@@ -19,6 +19,7 @@ import {
 } from "@/store/actions/commonSlice";
 import { setUserClicked } from "@/store/actions/userSlice";
 import { useRouter } from "next/navigation";
+import { DEFAULT_AVATAR } from "@/constants/global";
 
 export default function UserCard({
     user,
@@ -129,7 +130,7 @@ export default function UserCard({
     return (
         <Card sx={{ maxWidth: 250 }}>
             <Image
-                src={user.image_url || "https://source.unsplash.com/random"}
+                src={user.image_url || DEFAULT_AVATAR}
                 width="250"
                 height="222"
                 alt="avatar"
@@ -144,7 +145,7 @@ export default function UserCard({
                         {Array.from(Array(2)).map((_, index) => (
                             <Image
                                 key={index}
-                                src="https://source.unsplash.com/random"
+                                src={DEFAULT_AVATAR}
                                 width={16}
                                 height={16}
                                 alt="avatar"

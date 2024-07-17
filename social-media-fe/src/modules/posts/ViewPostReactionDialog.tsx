@@ -17,6 +17,7 @@ import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
 import { Member } from "@/types/conversationType";
 import { ReactionPostDetailResponse } from "@/types/postType";
+import { DEFAULT_AVATAR } from "@/constants/global";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -125,10 +126,7 @@ const ReactionItem = ({
             <Box className="flex items-center justify-between flex-1 gap-x-1">
                 <Box className="flex items-center gap-x-2">
                     <Image
-                        src={
-                            user?.image_url ??
-                            "https://source.unsplash.com/random"
-                        }
+                        src={user?.image_url ?? DEFAULT_AVATAR}
                         width={40}
                         height={40}
                         alt="avatar"

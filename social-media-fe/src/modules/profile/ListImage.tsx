@@ -1,3 +1,4 @@
+import { DEFAULT_AVATAR } from "@/constants/global";
 import {
     Box,
     Button,
@@ -36,7 +37,7 @@ const ListImage = () => {
                     {Array.from({ length: 9 }).map((_, index) => (
                         <ImageListItem key={index}>
                             <Image
-                                src={`https://source.unsplash.com/random`}
+                                src={DEFAULT_AVATAR}
                                 width={128}
                                 height={128}
                                 className="object-cover w-[128px] h-[128px] rounded"
