@@ -14,8 +14,9 @@ import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import { useRouter } from "next/navigation";
-import { DEFAULT_AVATAR } from "@/constants/global";
+import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/constants/global";
 import { PhotoProvider, PhotoView } from "react-photo-view";
+import { FriendRequestData } from "@/types/userType";
 const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
     const router = useRouter();
     const relationshipUsers = useSelector(
@@ -50,7 +51,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                             <PhotoProvider>
                                 <PhotoView src={data.cover}>
                                     <Image
-                                        src={data.cover}
+                                        src={data.cover || DEFAULT_COVER}
                                         width={1095}
                                         height={500}
                                         className="max-w-[1095px] h-[500px] rounded-lg object-cover"
@@ -75,7 +76,9 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                         </div>
                         <div>
                             <PhotoProvider>
-                                <PhotoView src={data.image_url}>
+                                <PhotoView
+                                    src={data.image_url || DEFAULT_AVATAR}
+                                >
                                     <Image
                                         src={data.image_url}
                                         width={168}
@@ -132,7 +135,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                     ).length > 0 &&
                                     Object.values(
                                         relationshipUsers.friends
-                                    ).map((user) => (
+                                    ).map((user: FriendRequestData) => (
                                         <Image
                                             key={user.user_id}
                                             src={user.image_url}

@@ -109,3 +109,4 @@ export const SORT_STRATEGY = {
 };
 
 export const DEFAULT_AVATAR = `https://res.cloudinary.com/didg9rn2d/image/upload/v1721183854/auv4cmrgm5kxdfcbqsvl.jpg`;
+export const DEFAULT_COVER = `https://res.cloudinary.com/didg9rn2d/image/upload/v1721185558/nhzyowlm1aldwymln1ku.jpg`;
