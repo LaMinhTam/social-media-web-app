@@ -27,6 +27,7 @@ import { handleUpdateProfile } from "@/services/profile.service";
 import { setCurrentUserProfile } from "@/store/actions/profileSlice";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
 import { getAccessToken } from "@/utils/auth";
+import { setProgress } from "@/store/actions/commonSlice";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -105,6 +106,7 @@ const UpdateCoverDialog = ({
                     dispatch(setCurrentUserProfile(response));
                     saveUserInfoToCookie(response, accessToken || "");
                     setOpenUpdateCoverDialog(false);
+                    dispatch(setProgress(0));
                 } else {
                     toast.error(
                         `Update ${
