@@ -68,8 +68,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     user.getId(),
                     oAuth2UserInfo.getName(),
                     oAuth2UserInfo.getEmail(),
-                    oAuth2UserInfo.getImageUrl(),
-                    "https://source.unsplash.com/random"
+                    "https://res.cloudinary.com/didg9rn2d/image/upload/v1721183854/auv4cmrgm5kxdfcbqsvl.jpg",
+                    "https://res.cloudinary.com/didg9rn2d/image/upload/v1721185558/nhzyowlm1aldwymln1ku.jpg"
             );
             userClient.createUser(requestCreateUser);
             userWallClient.createUser(user.getId());
