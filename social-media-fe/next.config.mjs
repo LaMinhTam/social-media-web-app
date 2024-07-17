@@ -5,7 +5,7 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "**",
+                hostname: "source.unsplash.com",
             },
         ],
     },
@@ -16,7 +16,7 @@ const nextConfig = {
                 headers: [
                     {
                         key: "Access-Control-Allow-Origin",
-                        value: "http://0.0.0.0:3000",
+                        value: "*",
                     },
                 ],
             },
