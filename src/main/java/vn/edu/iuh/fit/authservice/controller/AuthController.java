@@ -85,7 +85,7 @@ public class AuthController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/user/me")
                 .buildAndExpand(result.getId()).toUri();
-        userClient.createUser(new RequestCreateUser(result.getId(), signUpRequest.getName(), signUpRequest.getEmail(), "https://source.unsplash.com/random", "https://source.unsplash.com/random"));
+        userClient.createUser(new RequestCreateUser(result.getId(), signUpRequest.getName(), signUpRequest.getEmail(), "https://res.cloudinary.com/didg9rn2d/image/upload/v1721183854/auv4cmrgm5kxdfcbqsvl.jpg", "https://res.cloudinary.com/didg9rn2d/image/upload/v1721185558/nhzyowlm1aldwymln1ku.jpg"));
         userWallClient.createUser(result.getId());
         return ResponseEntity.created(location)
                 .body(new ApiResponse(true, "User registered successfully"));
