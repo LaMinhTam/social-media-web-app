@@ -25,3 +25,7 @@ w
 Gsrc/main/java/vn/edu/iuh/fit/chatservice/client/NotificationClient.java,d\1\d1b9a04db8db987bebe85a4e78fcd2ceabe1c140
 t
 Dsrc/main/java/vn/edu/iuh/fit/chatservice/config/WebClientConfig.java,0\0\005362aaac7f4f8f18de884696ecdad7581600e8
+§
+wSocialMediaBE/notification-service/src/main/java/vn/edu/iuh/fit/notificationservice/controller/WebSocketController.java,8\8\889b3aab81c5d481eee064f6dd51fe67c651d1f3
+¦
+vSocialMediaBE/notification-service/src/main/java/vn/edu/iuh/fit/notificationservice/message/FriendRequestConsumer.java,7\e\7e775d367f9a56e175fa544089d0e82169e73c34
