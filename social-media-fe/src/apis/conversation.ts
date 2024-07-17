@@ -9,12 +9,13 @@ import {
     PendingUser,
     ReactionResponse,
 } from "@/types/conversationType";
+import { DEFAULT_AVATAR } from "@/constants/global";
 
 const createConversation = async (
     type: string,
     members: number[],
     name = "default",
-    image = "https://source.unsplash.com/random"
+    image = DEFAULT_AVATAR
 ) => {
     const response: AxiosResponse<string> = await axiosPrivate.post(
         apiRoutes.conversation.create,

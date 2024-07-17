@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import handleFormatNotificationMessage from "@/utils/conversation/messages/handleFormatNotificationMessage";
 import Image from "next/image";
 import { Box, CircularProgress, Tooltip } from "@mui/material";
+import { DEFAULT_AVATAR } from "@/constants/global";
 const ModalChatContent = ({
     conversationId,
     messages,
@@ -186,7 +187,7 @@ const ModalChatContent = ({
                                                 <Image
                                                     src={
                                                         member.image_url ??
-                                                        "https://source.unsplash.com/random"
+                                                        DEFAULT_AVATAR
                                                     }
                                                     width={16}
                                                     height={16}

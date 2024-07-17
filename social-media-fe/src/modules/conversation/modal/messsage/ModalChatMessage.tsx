@@ -20,7 +20,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import RevokeMessageDialog from "./RevokeMessageDialog";
 import RemoveMessageDialog from "./RemoveMessageDialog";
-import { MESSAGE_TYPE } from "@/constants/global";
+import { DEFAULT_AVATAR, MESSAGE_TYPE } from "@/constants/global";
 import ReactionPicker from "@/components/common/ReactionPicker";
 import { RootState } from "@/store/configureStore";
 import ForwardMessageDialog from "./ForwardMessageDialog";
@@ -94,8 +94,7 @@ const ModalChatMessage = ({
                     {type === "receive" && (
                         <Image
                             src={
-                                message.user_detail.image_url ??
-                                "https://source.unsplash.com/random"
+                                message.user_detail.image_url ?? DEFAULT_AVATAR
                             }
                             width={32}
                             height={32}

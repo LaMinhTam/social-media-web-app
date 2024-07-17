@@ -14,6 +14,9 @@ import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import { useRouter } from "next/navigation";
+import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/constants/global";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import { FriendRequestData } from "@/types/userType";
 const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
     const router = useRouter();
     const relationshipUsers = useSelector(
@@ -45,13 +48,17 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                 <div className="w-full h-full max-w-[1080px] mx-auto">
                     <div className="relative">
                         <div>
-                            <Image
-                                src={data.cover}
-                                width={1095}
-                                height={500}
-                                className="max-w-[1095px] h-[500px] rounded-lg object-cover"
-                                alt="profile"
-                            ></Image>
+                            <PhotoProvider>
+                                <PhotoView src={data.cover}>
+                                    <Image
+                                        src={data.cover || DEFAULT_COVER}
+                                        width={1095}
+                                        height={500}
+                                        className="max-w-[1095px] h-[500px] rounded-lg object-cover"
+                                        alt="profile"
+                                    ></Image>
+                                </PhotoView>
+                            </PhotoProvider>
                             {type === "me" && (
                                 <Button
                                     type="button"
@@ -68,13 +75,19 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                             )}
                         </div>
                         <div>
-                            <Image
-                                src={data.image_url}
-                                width={168}
-                                height={168}
-                                className="w-[168px] h-[168px] object-cover rounded-full absolute bottom-[-140px] left-8"
-                                alt="profile"
-                            ></Image>
+                            <PhotoProvider>
+                                <PhotoView
+                                    src={data.image_url || DEFAULT_AVATAR}
+                                >
+                                    <Image
+                                        src={data.image_url}
+                                        width={168}
+                                        height={168}
+                                        className="w-[168px] h-[168px] object-cover rounded-full absolute bottom-[-140px] left-8"
+                                        alt="profile"
+                                    ></Image>
+                                </PhotoView>
+                            </PhotoProvider>
                             {type === "me" && (
                                 <IconButton
                                     color="info"
@@ -107,7 +120,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                         (_, index) => (
                                             <Image
                                                 key={index}
-                                                src={`https://source.unsplash.com/random`}
+                                                src={DEFAULT_AVATAR}
                                                 width={32}
                                                 height={32}
                                                 className="w-[32px] h-[32px] object-cover rounded-full 
@@ -122,7 +135,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                     ).length > 0 &&
                                     Object.values(
                                         relationshipUsers.friends
-                                    ).map((user) => (
+                                    ).map((user: FriendRequestData) => (
                                         <Image
                                             key={user.user_id}
                                             src={user.image_url}

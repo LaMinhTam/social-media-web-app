@@ -6,13 +6,14 @@ import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AssistantPhotoIcon from "@mui/icons-material/AssistantPhoto";
 import { useDispatch } from "react-redux";
 import { setOpenCreatePostDialog } from "@/store/actions/postSlice";
+import { DEFAULT_AVATAR } from "@/constants/global";
 const PostHeader = () => {
     const dispatch = useDispatch();
     return (
         <Box className="p-4 rounded-lg shadow-md bg-lite">
             <div className="flex items-center justify-center gap-x-2">
                 <Image
-                    src={`https://source.unsplash.com/random`}
+                    src={DEFAULT_AVATAR}
                     width={40}
                     height={40}
                     className="object-cover w-10 h-10 rounded-full"

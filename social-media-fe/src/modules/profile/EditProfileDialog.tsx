@@ -23,6 +23,7 @@ import { toast } from "react-toastify";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
 import { getAccessToken } from "@/utils/auth";
 import { setCurrentUserProfile } from "@/store/actions/profileSlice";
+import { setProgress } from "@/store/actions/commonSlice";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -95,6 +96,7 @@ const EditProfileDialog = ({
                 setOpenEditProfileDialog(false);
                 saveUserInfoToCookie(response, accessToken || "");
                 dispatch(setCurrentUserProfile(response));
+                dispatch(setProgress(0));
                 toast.success("Update profile successfully");
             }
             setLoading(false);
