@@ -1,19 +1,19 @@
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type SearchType = {
-    searchResult: UserResponse[];
+    searchResult: Member[];
 };
 
 const initialState: SearchType = {
-    searchResult: [] as UserResponse[],
+    searchResult: [] as Member[],
 };
 
 const searchSlice = createSlice({
     name: "search",
     initialState,
     reducers: {
-        setSearchResult(state, action: PayloadAction<UserResponse[]>) {
+        setSearchResult(state, action: PayloadAction<Member[]>) {
             state.searchResult = action.payload;
         },
     },

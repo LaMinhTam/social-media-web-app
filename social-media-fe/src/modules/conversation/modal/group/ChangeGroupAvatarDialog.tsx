@@ -19,6 +19,7 @@ import {
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { PopupState } from "material-ui-popup-state/hooks";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -43,6 +44,7 @@ const ChangeAvatarDialog = ({
     const [file, setFile] = React.useState<File>({} as File);
     const [loading, setLoading] = React.useState<boolean>(false);
     const [imageUrl, setImageUrl] = React.useState<string>("");
+    const dispatch = useDispatch();
     const handleClose = () => {
         setOpenChangeAvatarDialog(false);
     };
@@ -70,7 +72,7 @@ const ChangeAvatarDialog = ({
             );
             formData.append("public_id", file.name);
             formData.append("folder", `conversation/${conversationId}`);
-            const imageUrl = await handleUploadFile(formData);
+            const imageUrl = await handleUploadFile(formData, dispatch);
             if (imageUrl) {
                 const res = await handleChangeGroupAvatar(
                     conversationId,

@@ -26,7 +26,7 @@ const SearchSession = ({
                     router.push(`/search/top?q=${query}`);
                 }}
             >
-                <Typography className="font-medium">Tất cả</Typography>
+                <Typography className="font-medium">All </Typography>
             </Button>
             <Button
                 className="flex items-center justify-start w-full px-4 py-3 normal-case"
@@ -38,7 +38,7 @@ const SearchSession = ({
                     router.push(`/search/post?q=${query}`);
                 }}
             >
-                <Typography className="font-medium">Bài viết</Typography>
+                <Typography className="font-medium">Post</Typography>
             </Button>
             <Button
                 className="flex items-center justify-start w-full px-4 py-3 normal-case"
@@ -50,7 +50,7 @@ const SearchSession = ({
                     router.push(`/search/people?q=${query}`);
                 }}
             >
-                <Typography className="font-medium">Mọi người</Typography>
+                <Typography className="font-medium">People</Typography>
             </Button>
         </Box>
     );

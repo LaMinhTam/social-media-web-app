@@ -4,15 +4,18 @@ import apiRoutes from ".";
 import { OnlineResponse } from "@/types/commonType";
 import {
     ConversationResponse,
+    GroupSettings,
     MessageResponse,
+    PendingUser,
     ReactionResponse,
 } from "@/types/conversationType";
+import { DEFAULT_AVATAR } from "@/constants/global";
 
 const createConversation = async (
     type: string,
     members: number[],
     name = "default",
-    image = "https://source.unsplash.com/random"
+    image = DEFAULT_AVATAR
 ) => {
     const response: AxiosResponse<string> = await axiosPrivate.post(
         apiRoutes.conversation.create,
@@ -38,7 +41,7 @@ const getConversationDetail = async (id: string) => {
     return response;
 };
 
-const addMember = async (id: string, userId: number) => {
+const addMember = async (id: string, userId: string) => {
     const response: AxiosResponse<string> = await axiosPrivate.patch(
         apiRoutes.conversation.addMember(id, userId)
     );
@@ -101,9 +104,12 @@ const revokeDeputy = async (id: string, userId: number) => {
     return response;
 };
 
-const updateGroupSetting = async (id: string) => {
-    const response: AxiosResponse<string> = await axiosPrivate.patch(
-        apiRoutes.conversation.updateGroupSetting(id)
+const updateGroupSetting = async (id: string, settings: any) => {
+    const response: AxiosResponse<GroupSettings> = await axiosPrivate.patch(
+        apiRoutes.conversation.updateGroupSetting(id),
+        {
+            ...settings,
+        }
     );
     return response;
 };
@@ -180,6 +186,43 @@ const readMessage = async (messageId: string) => {
     return response;
 };
 
+const listPendingMembers = async (id: string) => {
+    const response: AxiosResponse<PendingUser[]> = await axiosPrivate.get(
+        apiRoutes.conversation.getPendingMembers(id)
+    );
+    return response;
+};
+
+const approveJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    const response: AxiosResponse<string> = await axiosPrivate.patch(
+        apiRoutes.conversation.approveMemberRequest(
+            conversation_id,
+            request_id,
+            userId
+        )
+    );
+    return response;
+};
+
+const rejectJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    const response: AxiosResponse<string> = await axiosPrivate.delete(
+        apiRoutes.conversation.rejectMemberRequest(
+            conversation_id,
+            request_id,
+            userId
+        )
+    );
+    return response;
+};
+
 export const CONVERSATION = {
     createConversation,
     getListConversation,
@@ -203,4 +246,7 @@ export const CONVERSATION = {
     deleteMessage,
     reactionMessage,
     readMessage,
+    listPendingMembers,
+    approveJoinGroupRequest,
+    rejectJoinGroupRequest,
 };

@@ -37,6 +37,9 @@ import { handleRemoveUnreadMessage } from "@/utils/conversation/messages/handleR
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import CreateGroupDialog from "@/modules/conversation/modal/group/CreateGroupDialog";
 import handleGetLastUnreadMessageOfUser from "@/utils/conversation/messages/handleGetLastUnreadMessageOfUser";
+import { DEFAULT_AVATAR, MESSAGE_TYPE } from "@/constants/global";
+import { formatOnlineTime } from "@/utils/conversation/messages/handleGroupMessage";
+import handleRenderLastMessage from "@/utils/conversation/messages/handleRenderLastMessage";
 
 const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -66,6 +69,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
             conversation.conversation_id,
             currentSize
         );
+        console.log("ConversationModal ~ data:", data);
         if (data) {
             dispatch(setShowChatModal(true));
             dispatch(setCurrentConversation(conversation));
@@ -202,6 +206,10 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                             );
                             const unreadCount =
                                 unreadCounts[conversation.conversation_id] || 0;
+                            let lastMessageContent = handleRenderLastMessage(
+                                conversation.last_message || ""
+                            );
+
                             return (
                                 <Box
                                     className="px-2"
@@ -222,7 +230,7 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                                 conversation.type === "GROUP"
                                                     ? conversation.image
                                                     : user?.image_url ||
-                                                      "https://source.unsplash.com/random"
+                                                      DEFAULT_AVATAR
                                             }
                                             width={56}
                                             height={56}
@@ -235,12 +243,19 @@ const ConversationModal = ({ popupState }: { popupState: PopupState }) => {
                                                     {conversation?.name}
                                                 </Typography>
                                                 <Box className="flex items-center justify-center gap-x-2">
-                                                    <Typography>
-                                                        Chao ban
+                                                    <Typography className="line-clamp-1">
+                                                        {lastMessageContent}
                                                     </Typography>
-                                                    <Typography>
-                                                        &sdot; 19 giờ
-                                                    </Typography>
+                                                    {conversation.last_message && (
+                                                        <Typography className="flex-shrink-0">
+                                                            &sdot;{" "}
+                                                            {formatOnlineTime(
+                                                                conversation
+                                                                    .last_message
+                                                                    .created_at
+                                                            )}
+                                                        </Typography>
+                                                    )}
                                                 </Box>
                                             </Box>
                                             <Box className="pr-3">

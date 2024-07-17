@@ -16,11 +16,10 @@ import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
-import { fetchingMe } from "@/services/profile.service";
-import axios from "@/apis/axios";
-import { UserResponse } from "@/types/userType";
 import { AxiosResponse } from "axios";
 import apiRoutes from "@/apis";
+import { Member } from "@/types/conversationType";
+import { axiosInstance } from "@/apis/axios";
 
 const schema = yup.object({
     email: yup
@@ -64,14 +63,12 @@ export default function SignInPage() {
                 data.password
             );
             if (response.status === 200) {
-                const meResponse: AxiosResponse<UserResponse> = await axios.get(
-                    apiRoutes.user.getMe,
-                    {
+                const meResponse: AxiosResponse<Member> =
+                    await axiosInstance.get(apiRoutes.user.getMe, {
                         headers: {
                             Authorization: `Bearer ${response.data.accessToken}`,
                         },
-                    }
-                );
+                    });
                 if (meResponse.status === 200) {
                     saveAccessToken(response.data.accessToken);
                     saveRefreshToken(response.data.refreshToken);

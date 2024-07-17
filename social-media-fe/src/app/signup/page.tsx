@@ -17,10 +17,10 @@ import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 import { toast } from "react-toastify";
 import { fetchingMe } from "@/services/profile.service";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
-import axios from "@/apis/axios";
-import { UserResponse } from "@/types/userType";
 import { AxiosResponse } from "axios";
 import apiRoutes from "@/apis";
+import { Member } from "@/types/conversationType";
+import { axiosInstance } from "@/apis/axios";
 
 const schema = yup.object({
     firstName: yup.string().required("First Name is required"),
@@ -80,8 +80,8 @@ export default function SignUpPage() {
                     data.password
                 );
                 if (loginResponse.status === 200) {
-                    const meResponse: AxiosResponse<UserResponse> =
-                        await axios.get(apiRoutes.user.getMe, {
+                    const meResponse: AxiosResponse<Member> =
+                        await axiosInstance.get(apiRoutes.user.getMe, {
                             headers: {
                                 Authorization: `Bearer ${loginResponse.data.accessToken}`,
                             },

@@ -1,8 +1,8 @@
 "use client";
 import apiRoutes from "@/apis";
-import axios from "@/apis/axios";
+import { axiosInstance } from "@/apis/axios";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
 import { AxiosResponse } from "axios";
@@ -22,8 +22,8 @@ const OAuth2RedirectHandler = () => {
                     const response =
                         await SOCIAL_MEDIA_API.AUTH.refreshOAuth2Token(token);
                     if (response.status === 200) {
-                        const meResponse: AxiosResponse<UserResponse> =
-                            await axios.get(apiRoutes.user.getMe, {
+                        const meResponse: AxiosResponse<Member> =
+                            await axiosInstance.get(apiRoutes.user.getMe, {
                                 headers: {
                                     Authorization: `Bearer ${response.data.accessToken}`,
                                 },

@@ -1,19 +1,19 @@
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ProfileType = {
-    currentUserProfile: UserResponse;
+    currentUserProfile: Member;
 };
 
 const initialState: ProfileType = {
-    currentUserProfile: {} as UserResponse,
+    currentUserProfile: {} as Member,
 };
 
 const profileSlice = createSlice({
     name: "profile",
     initialState,
     reducers: {
-        setCurrentUserProfile: (state, action: PayloadAction<UserResponse>) => {
+        setCurrentUserProfile: (state, action: PayloadAction<Member>) => {
             state.currentUserProfile = action.payload;
         },
     },

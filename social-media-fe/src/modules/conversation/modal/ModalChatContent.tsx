@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import ModalChatMessage from "./messsage/ModalChatMessage";
 import { MessageResponse } from "@/types/conversationType";
 import { handleGetListMessage } from "@/services/conversation.service";
@@ -11,6 +11,9 @@ import { useSocket } from "@/contexts/socket-context";
 import { groupMessages } from "@/utils/conversation/messages/handleGroupMessage";
 import { v4 as uuidv4 } from "uuid";
 import handleFormatNotificationMessage from "@/utils/conversation/messages/handleFormatNotificationMessage";
+import Image from "next/image";
+import { Box, CircularProgress, Tooltip } from "@mui/material";
+import { DEFAULT_AVATAR } from "@/constants/global";
 const ModalChatContent = ({
     conversationId,
     messages,
@@ -33,21 +36,12 @@ const ModalChatContent = ({
         (state: RootState) => state.conversation.currentConversation
     );
     const chatContentRef = useRef<HTMLDivElement>(null);
+    const observerRef = useRef<MutationObserver | null>(null);
     const [loading, setLoading] = React.useState(false);
     const [isEnd, setIsEnd] = React.useState(false);
-    useEffect(() => {
-        if (chatContentRef.current) {
-            chatContentRef.current.scrollTop =
-                chatContentRef.current.scrollHeight;
-        }
-    }, []);
-    useEffect(() => {
-        if (chatContentRef.current) {
-            chatContentRef.current.scrollTop =
-                chatContentRef.current.scrollHeight;
-        }
-    }, [triggerScrollChat]);
+    const [autoScroll, setAutoScroll] = React.useState(true);
     const groupedMessages = groupMessages(Object.values(messages));
+    const progress = useSelector((state: RootState) => state.common.progress);
     const handleScroll = async () => {
         if (chatContentRef.current?.scrollTop === 0) {
             setLoading(true);
@@ -71,6 +65,17 @@ const ModalChatContent = ({
             }
             setLoading(false);
         }
+        if (chatContentRef.current) {
+            if (
+                chatContentRef.current.scrollTop <
+                chatContentRef.current.scrollHeight -
+                    chatContentRef.current.clientHeight
+            ) {
+                setAutoScroll(false);
+            } else {
+                setAutoScroll(true);
+            }
+        }
     };
     useEffect(() => {
         groupedMessages.forEach((group) => {
@@ -84,6 +89,29 @@ const ModalChatContent = ({
             });
         });
     }, [groupedMessages, messageRefs, setMessageRefs]);
+    useEffect(() => {
+        if (chatContentRef.current) {
+            const observer = new MutationObserver(() => {
+                if (autoScroll) {
+                    chatContentRef.current!.scrollTop =
+                        chatContentRef.current!.scrollHeight;
+                }
+            });
+
+            observer.observe(chatContentRef.current, {
+                childList: true,
+                subtree: true,
+            });
+
+            observerRef.current = observer;
+
+            return () => {
+                if (observerRef.current) {
+                    observerRef.current.disconnect();
+                }
+            };
+        }
+    }, [groupedMessages, autoScroll, triggerScrollChat]);
     return (
         <div
             ref={chatContentRef}
@@ -92,44 +120,88 @@ const ModalChatContent = ({
             onScroll={() => !isEnd && handleScroll()}
         >
             {loading && <LoadingSpinner></LoadingSpinner>}
-            {groupedMessages.map((group, index) => (
-                <div key={uuidv4()}>
-                    <div className="mt-2 text-xs text-center text-gray-500">
-                        {group.formattedTime}
-                    </div>
-                    {group.data.map((message) => (
-                        <div
-                            className="relative"
-                            ref={messageRefs[message.message_id]}
-                            key={uuidv4()}
-                        >
-                            {message.type !== "NOTIFICATION" ? (
-                                <ModalChatMessage
-                                    message={message}
-                                    type={
-                                        message.user_detail.user_id ===
-                                        currentUserId
-                                            ? "send"
-                                            : "receive"
-                                    }
-                                    isGroup={isGroup}
-                                    isLastMessage={
-                                        group.data.indexOf(message) ===
-                                        group.data.length - 1
-                                    }
-                                />
-                            ) : (
-                                <div className="my-2 text-sm text-center text-text8">
-                                    {handleFormatNotificationMessage(
-                                        message,
-                                        currentUserId
+            {groupedMessages.map((group, index) => {
+                const lastGroup = groupedMessages.length - 1 === index;
+                const lastMessageOfGroup = group.data[group.data.length - 1];
+                return (
+                    <div key={uuidv4()}>
+                        <div className="mt-2 text-xs text-center text-gray-500">
+                            {group.formattedTime}
+                        </div>
+                        {group.data.map((message, index) => {
+                            return (
+                                <div
+                                    className="relative"
+                                    ref={messageRefs[message.message_id]}
+                                    key={uuidv4()}
+                                >
+                                    {message.type !== "NOTIFICATION" ? (
+                                        <ModalChatMessage
+                                            message={message}
+                                            type={
+                                                message.user_detail.user_id ===
+                                                currentUserId
+                                                    ? "send"
+                                                    : "receive"
+                                            }
+                                            isGroup={isGroup}
+                                        />
+                                    ) : (
+                                        <div className="my-2 text-sm text-center text-text8">
+                                            {handleFormatNotificationMessage(
+                                                message,
+                                                currentUserId,
+                                                currentConversation.settings
+                                            )}
+                                        </div>
                                     )}
                                 </div>
-                            )}
+                            );
+                        })}
+                        {progress > 0 && (
+                            <div className="flex items-center justify-center">
+                                <CircularProgress
+                                    variant="determinate"
+                                    value={progress}
+                                />
+                            </div>
+                        )}
+                        <div className="flex items-center justify-end gap-x-2">
+                            {lastGroup &&
+                                lastMessageOfGroup.read_by &&
+                                lastMessageOfGroup.read_by.length > 0 &&
+                                lastMessageOfGroup.read_by.map((member) => {
+                                    if (
+                                        member.user_id === currentUserId ||
+                                        currentUserId !==
+                                            lastMessageOfGroup.user_detail
+                                                .user_id
+                                    )
+                                        return null;
+                                    return (
+                                        <Tooltip
+                                            key={member.user_id}
+                                            title={member.name}
+                                        >
+                                            <Box className="flex items-center justify-end mt-2 cursor-pointer">
+                                                <Image
+                                                    src={
+                                                        member.image_url ??
+                                                        DEFAULT_AVATAR
+                                                    }
+                                                    width={16}
+                                                    height={16}
+                                                    alt="avatar"
+                                                    className="w-4 h-4 rounded-full"
+                                                />
+                                            </Box>
+                                        </Tooltip>
+                                    );
+                                })}
                         </div>
-                    ))}
-                </div>
-            ))}
+                    </div>
+                );
+            })}
         </div>
     );
 };

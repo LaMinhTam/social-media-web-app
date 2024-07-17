@@ -6,6 +6,7 @@ import CustomThemeProvider from "@/utils/theme/CustomThemeProvider";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import StoreProvider from "@/utils/providers/StoreProvider";
+import "sweetalert2/src/sweetalert2.scss";
 
 const manrope = Manrope({
     weight: ["400", "500", "600", "700"],

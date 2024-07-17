@@ -10,8 +10,10 @@ import {
     Member,
     MessageResponse,
 } from "@/types/conversationType";
+import { setShowChatModal } from "@/store/actions/commonSlice";
 
 export default async function onMessageReceived(
+    currentUserProfile: Member,
     payload: any,
     showChatModal: boolean,
     currentConversation: ConversationResponse,
@@ -50,6 +52,7 @@ export default async function onMessageReceived(
         }
     }
     if (payloadData.type === MESSAGE_TYPE.NOTIFICATION) {
+        console.log("payloadData:", payloadData);
         switch (payloadData.notification_type) {
             case NOTIFICATION_TYPE.CHANGE_GROUP_NAME: {
                 const newCurrentConversation = {
@@ -68,17 +71,44 @@ export default async function onMessageReceived(
                 break;
             }
             case NOTIFICATION_TYPE.REMOVE_MEMBER: {
-                console.log(payloadData.target_user_id[0].user_id);
-                const newMembers = Object.keys(currentConversation.members)
-                    .filter(
-                        (key) =>
-                            key !==
-                            payloadData.target_user_id[0].user_id.toString()
-                    )
-                    .reduce((obj, key) => {
-                        obj[key] = currentConversation.members[key];
-                        return obj;
-                    }, {} as { [key: string]: Member });
+                if (payloadData.target_user_id.includes(userId)) {
+                    dispatch(
+                        setCurrentConversation({} as ConversationResponse)
+                    );
+                    dispatch(setShowChatModal(false));
+                } else {
+                    const newMembers = Object.keys(currentConversation.members)
+                        .filter(
+                            (key) =>
+                                key !==
+                                payloadData.target_user_id[0].user_id.toString()
+                        )
+                        .reduce((obj, key) => {
+                            obj[key] = currentConversation.members[key];
+                            return obj;
+                        }, {} as { [key: string]: Member });
+
+                    const newCurrentConversation = {
+                        ...currentConversation,
+                        members: newMembers,
+                    };
+
+                    dispatch(setCurrentConversation(newCurrentConversation));
+                }
+                break;
+            }
+
+            case NOTIFICATION_TYPE.ADD_MEMBER: {
+                console.log("payloadData", payloadData);
+                const newMembers = payloadData.target_user_id.reduce(
+                    (members: { [key: string]: Member }, user: Member) => {
+                        return {
+                            ...members,
+                            [user.user_id]: user,
+                        };
+                    },
+                    currentConversation.members
+                );
 
                 const newCurrentConversation = {
                     ...currentConversation,
@@ -89,22 +119,61 @@ export default async function onMessageReceived(
                 break;
             }
 
-            case NOTIFICATION_TYPE.ADD_MEMBER: {
-                console.log("payloadData", payloadData);
-                const newMembers = {
-                    ...currentConversation.members,
-                    [payloadData.target_user_id[0].user_id]: {
-                        ...payloadData.target_user_id[0],
-                    },
-                };
-                console.log("newMembers:", newMembers);
-
+            case NOTIFICATION_TYPE.CHANGE_GROUP_OWNER: {
                 const newCurrentConversation = {
                     ...currentConversation,
-                    members: newMembers,
+                    owner_id: payloadData.target_user_id[0].user_id,
                 };
 
                 dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
+            case NOTIFICATION_TYPE.GRANT_DEPUTY: {
+                const newDeputies = [
+                    ...currentConversation?.deputies,
+                    payloadData.target_user_id[0].user_id,
+                ];
+
+                const newCurrentConversation = {
+                    ...currentConversation,
+                    deputies: newDeputies,
+                };
+
+                dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
+            case NOTIFICATION_TYPE.REVOKE_DEPUTY: {
+                const newDeputies = currentConversation.deputies.filter(
+                    (deputy) => deputy !== payloadData.target_user_id[0].user_id
+                );
+
+                const newCurrentConversation = {
+                    ...currentConversation,
+                    deputies: newDeputies,
+                };
+
+                dispatch(setCurrentConversation(newCurrentConversation));
+                break;
+            }
+
+            case NOTIFICATION_TYPE.JOIN_BY_LINK: {
+                if (
+                    payloadData.user_detail.user_id !== userId &&
+                    showChatModal
+                ) {
+                    const newCurrentConversation = {
+                        ...currentConversation,
+                        members: {
+                            ...currentConversation.members,
+                            [payloadData.user_detail.user_id]:
+                                payloadData.user_detail,
+                        },
+                    };
+
+                    dispatch(setCurrentConversation(newCurrentConversation));
+                }
                 break;
             }
 
@@ -116,6 +185,7 @@ export default async function onMessageReceived(
         ...prev,
         [payloadData.message_id]: {
             ...payloadData,
+            read_by: [payloadData.user_detail, currentUserProfile],
         },
     }));
     setTriggerScrollChat(!triggerScrollChat);

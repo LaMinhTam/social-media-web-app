@@ -3,10 +3,11 @@ import { IconButton, Typography } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { UserResponse } from "@/types/userType";
 import { Dispatch } from "@reduxjs/toolkit";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { setSearchResult } from "@/store/actions/searchSlice";
+import { Member } from "@/types/conversationType";
+import { DEFAULT_AVATAR } from "@/constants/global";
 
 const StorageSearchResult = ({
     user,
@@ -15,11 +16,9 @@ const StorageSearchResult = ({
     dispatch,
     router,
 }: {
-    user: UserResponse;
-    storageSearchResult: UserResponse[];
-    setStorageSearchResult: React.Dispatch<
-        React.SetStateAction<UserResponse[]>
-    >;
+    user: Member;
+    storageSearchResult: Member[];
+    setStorageSearchResult: React.Dispatch<React.SetStateAction<Member[]>>;
     dispatch: Dispatch<any>;
     router: AppRouterInstance;
 }) => {
@@ -33,7 +32,7 @@ const StorageSearchResult = ({
                 }}
             >
                 <Image
-                    src={user.image_url ?? "https://source.unsplash.com/random"}
+                    src={user.image_url ?? DEFAULT_AVATAR}
                     width={40}
                     height={40}
                     className="object-cover w-10 h-10 rounded-full"

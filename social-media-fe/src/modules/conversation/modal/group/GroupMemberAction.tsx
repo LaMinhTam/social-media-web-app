@@ -1,43 +1,65 @@
-import { handleKickMember } from "@/services/conversation.service";
+import {
+    handleGrantDeputy,
+    handleKickMember,
+    handleRevokeDeputy,
+    handleTransferOwner,
+} from "@/services/conversation.service";
+import { GroupSettings } from "@/types/conversationType";
 import { Button, Grid } from "@mui/material";
 import { PopupState } from "material-ui-popup-state/hooks";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const GroupMemberAction = ({
+    settings,
     popupState,
     userRole,
     targetUserRole,
     userId,
     conversationId,
 }: {
+    settings: GroupSettings;
     popupState: PopupState;
     userRole: string;
     targetUserRole: string;
     userId: number;
     conversationId: string;
 }) => {
+    const router = useRouter();
     const onRemoveMember = async () => {
         const response = await handleKickMember(conversationId, userId);
-        console.log("onRemoveMember ~ response:", response);
         if (response) {
             console.log("Member removed successfully");
             popupState.close();
         }
     };
-    const onGrantAdmin = () => {
-        console.log("Grant admin");
+    const onGrantAdmin = async () => {
+        const response = await handleTransferOwner(conversationId, userId);
+        if (response) {
+            console.log("Admin granted successfully");
+            popupState.close();
+        }
     };
 
     const onGrantDeputy = async () => {
-        // const response = await handle
+        const response = await handleGrantDeputy(conversationId, userId);
+        if (response) {
+            console.log("Deputy granted successfully");
+            popupState.close();
+        }
     };
 
-    const onRemoveDeputy = () => {
-        console.log("Remove deputy");
+    const onRemoveDeputy = async () => {
+        const response = await handleRevokeDeputy(conversationId, userId);
+        if (response) {
+            console.log("Deputy removed successfully");
+            popupState.close();
+        }
     };
 
     const onViewProfile = () => {
-        console.log("View profile");
+        popupState.close();
+        router.push(`/user/${userId}`);
     };
 
     return (
@@ -124,18 +146,34 @@ const GroupMemberAction = ({
             {userRole === "DEPUTY" && (
                 <>
                     {targetUserRole === "MEMBER" && (
-                        <Grid item className="w-full">
-                            <Button
-                                type="button"
-                                fullWidth
-                                variant="text"
-                                color="inherit"
-                                className="normal-case"
-                                onClick={onRemoveMember}
-                            >
-                                Remove from group
-                            </Button>
-                        </Grid>
+                        <>
+                            <Grid item className="w-full">
+                                <Button
+                                    type="button"
+                                    fullWidth
+                                    variant="text"
+                                    color="inherit"
+                                    className="normal-case"
+                                    onClick={onRemoveMember}
+                                >
+                                    Remove from group
+                                </Button>
+                            </Grid>
+                            {settings.allow_deputy_promote_member && (
+                                <Grid item className="w-full">
+                                    <Button
+                                        type="button"
+                                        fullWidth
+                                        variant="text"
+                                        color="inherit"
+                                        className="normal-case"
+                                        onClick={onGrantDeputy}
+                                    >
+                                        Grant deputy
+                                    </Button>
+                                </Grid>
+                            )}
+                        </>
                     )}
                     <Grid item className="w-full">
                         <Button

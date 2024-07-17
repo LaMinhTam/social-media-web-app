@@ -5,11 +5,11 @@ export async function handleSendFriendRequest(userId: number) {
     try {
         const response = await SOCIAL_MEDIA_API.USER.sendFriendRequest(userId);
         if (response?.status === 200) {
-            toast.success("Đã gửi lời mời kết bạn!");
+            toast.success("Friend request sent!");
         }
     } catch (error) {
         console.error(error);
-        toast.error("Có lỗi xảy ra, vui lòng thử lại sau!");
+        toast.error("There was an error, please try again later!");
     }
 }
 
@@ -29,12 +29,12 @@ export async function handleAcceptFriendRequest(
                     [targetId]
                 );
             if (conversationId) {
-                toast.success("Hai bạn đã trở thành bạn bè!");
+                toast.success("You are now friends!");
             }
         }
     } catch (error) {
         console.error(error);
-        toast.error("Có lỗi xảy ra, vui lòng thử lại sau!");
+        toast.error("There was an error, please try again later!");
     }
 }
 
@@ -48,10 +48,22 @@ export async function handleRevokeFriendRequest(
             friendRequestId
         );
         if (response?.status === 200) {
-            toast.success("Đã hủy lời mời kết bạn!");
+            toast.success("Revoked friend request!");
         }
     } catch (error) {
         console.error(error);
-        toast.error("Có lỗi xảy ra, vui lòng thử lại sau!");
+        toast.error("There was an error, please try again later!");
+    }
+}
+
+export async function handleFollowUser(id: number) {
+    try {
+        const response = await SOCIAL_MEDIA_API.USER.followUser(id);
+        if (response?.status === 200) {
+            toast.success("Followed user!");
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error("There was an error, please try again later!");
     }
 }

@@ -23,7 +23,6 @@ const ChatModal = () => {
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
     );
-
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
@@ -53,10 +52,14 @@ const ChatModal = () => {
         getStatus();
     }, []);
 
-    if (!anotherUser || !currentConversation || !stompClient) return null;
+    if (!currentConversation || !stompClient) {
+        return null;
+    }
     return (
-        <div className="w-[382px] h-[467px] rounded-lg flex flex-col">
+        <div className="w-[382px] h-[467px] rounded-lg flex flex-col bg-lite">
             <ModalChatHeader
+                userId={anotherUser?.user_id}
+                isGroup={currentConversation.type === "GROUP" ? true : false}
                 userStatus={userStatus}
                 username={currentConversation.name}
                 dispatch={dispatch}
@@ -64,6 +67,7 @@ const ChatModal = () => {
                 isAdmin={
                     currentConversation.owner_id === currentUserProfile.user_id
                 }
+                targetUser={anotherUser}
             ></ModalChatHeader>
             <ModalChatContent
                 isGroup={currentConversation.type === "GROUP" ? true : false}
@@ -73,6 +77,9 @@ const ChatModal = () => {
                 setMessages={setMessages}
             ></ModalChatContent>
             <ModalChatFooter
+                isAdmin={
+                    currentConversation.owner_id === currentUserProfile.user_id
+                }
                 isActive={isActive}
                 setIsActive={setIsActive}
                 showFullInput={showFullInput}

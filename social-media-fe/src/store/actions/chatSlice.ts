@@ -1,19 +1,19 @@
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type ChatType = {
-    chatInfo: UserResponse;
+    chatInfo: Member;
 };
 
 const initialState: ChatType = {
-    chatInfo: {} as UserResponse,
+    chatInfo: {} as Member,
 };
 
 const chatSlice = createSlice({
     name: "chat",
     initialState,
     reducers: {
-        setChatInfo(state, action: PayloadAction<UserResponse>) {
+        setChatInfo(state, action: PayloadAction<Member>) {
             state.chatInfo = action.payload;
         },
     },

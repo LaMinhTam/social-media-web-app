@@ -10,13 +10,13 @@ import {
 } from "@/store/actions/commonSlice";
 import { setUserClicked } from "@/store/actions/userSlice";
 import { RootState } from "@/store/configureStore";
-import { UserResponse } from "@/types/userType";
 import { Button, Typography } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Member } from "@/types/conversationType";
 
-const SearchPeopleCard = ({ user }: { user: UserResponse }) => {
+const SearchPeopleCard = ({ user }: { user: Member }) => {
     const dispatch = useDispatch();
     const triggerReFetchingRelationship = useSelector(
         (state: RootState) => state.common.triggerReFetchingRelationship
@@ -45,15 +45,15 @@ const SearchPeopleCard = ({ user }: { user: UserResponse }) => {
 
     const textContent = () => {
         if (isFriend) {
-            return "Nhắn tin";
+            return "Chat";
         } else if (isBlocked) {
-            return "Hủy chặn";
+            return "Revoke block";
         } else if (isReceiveRequest) {
-            return "Chấp nhận";
+            return "Accept friend request";
         } else if (isSendRequest) {
-            return "Hủy yêu cầu";
+            return "Revoke friend request";
         }
-        return "Thêm bạn bè";
+        return "Add friend";
     };
 
     const handleClicked = async () => {
@@ -112,7 +112,7 @@ const SearchPeopleCard = ({ user }: { user: UserResponse }) => {
                                 {user.name}
                             </div>
                             <div className="w-full h-full mt-1 rounded bg-lite">
-                                Sống tại Thành phố Hồ Chí Minh
+                                Live in Ho Chi Minh City
                             </div>
                         </div>
                     </div>

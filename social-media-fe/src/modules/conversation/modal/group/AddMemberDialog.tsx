@@ -56,11 +56,15 @@ const AddMemberDialog = ({
         const selectedUser = Object.keys(checkedValues)
             .filter((key) => checkedValues[key])
             .map((key) => parseInt(key));
-        selectedUser.forEach(async (user_id) => {
-            await handleAddMember(currentConversation.conversation_id, user_id);
-        });
+        const selectedUserString = selectedUser.join(",");
+        const response = await handleAddMember(
+            currentConversation.conversation_id,
+            selectedUserString
+        );
+        if (response) {
+            setOpenAddMemberDialog(false);
+        }
         setLoading(false);
-        handleClose();
     };
     return (
         <BootstrapDialog

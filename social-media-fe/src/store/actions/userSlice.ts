@@ -1,14 +1,15 @@
-import { ListFriendResponse, UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
+import { ListFriendResponse } from "@/types/userType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type FriendType = {
     relationshipUsers: ListFriendResponse;
-    userClicked: UserResponse;
+    userClicked: Member;
 };
 
 const initialState: FriendType = {
     relationshipUsers: {} as ListFriendResponse,
-    userClicked: {} as UserResponse,
+    userClicked: {} as Member,
 };
 
 const userSlice = createSlice({
@@ -21,7 +22,7 @@ const userSlice = createSlice({
         ) => {
             state.relationshipUsers = action.payload;
         },
-        setUserClicked: (state, action: PayloadAction<UserResponse>) => {
+        setUserClicked: (state, action: PayloadAction<Member>) => {
             state.userClicked = action.payload;
         },
     },

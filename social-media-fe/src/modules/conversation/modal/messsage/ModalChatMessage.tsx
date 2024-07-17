@@ -3,6 +3,7 @@ import MessageFeatureDialog from "@/modules/conversation/modal/messsage/MessageF
 import useClickOutSide from "@/hooks/useClickOutSide";
 import useHover from "@/hooks/useHover";
 import {
+    handleDeleteFile,
     handleDeleteMessage,
     handleReactionMessage,
     handleRevokeMessage,
@@ -15,28 +16,25 @@ import { MessageData } from "@/types/conversationType";
 import formatTime from "@/utils/conversation/messages/handleGroupMessage";
 import { Box, Tooltip } from "@mui/material";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import RevokeMessageDialog from "./RevokeMessageDialog";
 import RemoveMessageDialog from "./RemoveMessageDialog";
-import { MESSAGE_TYPE } from "@/constants/global";
+import { DEFAULT_AVATAR, MESSAGE_TYPE } from "@/constants/global";
 import ReactionPicker from "@/components/common/ReactionPicker";
 import { RootState } from "@/store/configureStore";
 import ForwardMessageDialog from "./ForwardMessageDialog";
 import MessageText from "./MessageText";
 import MessageMultimedia from "./MessageMultimedia";
 import { useSocket } from "@/contexts/socket-context";
-import handleFormatMessage from "@/utils/conversation/messages/handleFormatMessage";
 const ModalChatMessage = ({
     type,
     message,
     isGroup,
-    isLastMessage,
 }: {
     type: string;
     message: MessageData;
     isGroup: boolean;
-    isLastMessage: boolean;
 }) => {
     const { messages, setMessages } = useSocket();
     const dispatch = useDispatch();
@@ -85,6 +83,7 @@ const ModalChatMessage = ({
             console.log("Reaction success");
         }
     };
+
     return (
         <>
             <div
@@ -95,8 +94,7 @@ const ModalChatMessage = ({
                     {type === "receive" && (
                         <Image
                             src={
-                                message.user_detail.image_url ??
-                                "https://source.unsplash.com/random"
+                                message.user_detail.image_url ?? DEFAULT_AVATAR
                             }
                             width={32}
                             height={32}
@@ -188,32 +186,9 @@ const ModalChatMessage = ({
                 <ForwardMessageDialog
                     openForwardDialog={openForwardDialog}
                     setOpenForwardDialog={setOpenForwardDialog}
-                    onForwardMessage={() => {}}
+                    messageId={message.message_id}
                 />
             )}
-            {isLastMessage &&
-                type === "send" &&
-                message.read_by &&
-                message.read_by?.length > 0 &&
-                message.read_by?.map((member) => {
-                    if (member.user_id === currentUserProfile.user_id) return;
-                    return (
-                        <Tooltip key={member.user_id} title={member.name}>
-                            <Box className="flex items-center justify-end mt-2 cursor-pointer">
-                                <Image
-                                    src={
-                                        member.image_url ??
-                                        "https://source.unsplash.com/random"
-                                    }
-                                    width={16}
-                                    height={16}
-                                    alt="avatar"
-                                    className="w-4 h-4 rounded-full"
-                                />
-                            </Box>
-                        </Tooltip>
-                    );
-                })}
         </>
     );
 };

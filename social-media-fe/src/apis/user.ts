@@ -1,10 +1,12 @@
-import { ListFriendResponse, UserResponse } from "@/types/userType";
+import { ListFriendResponse } from "@/types/userType";
 import { AxiosResponse } from "axios";
 import apiRoutes from ".";
 import { axiosPrivate } from "./axios";
+import { Member } from "@/types/conversationType";
+import PostResponse from "@/types/postType";
 
 const getMe = async () => {
-    const response: AxiosResponse<UserResponse> = await axiosPrivate.get(
+    const response: AxiosResponse<Member> = await axiosPrivate.get(
         apiRoutes.user.getMe
     );
     return response;
@@ -12,7 +14,7 @@ const getMe = async () => {
 
 const findUserById = async (id: string) => {
     try {
-        const response: AxiosResponse<UserResponse> = await axiosPrivate.get(
+        const response: AxiosResponse<Member> = await axiosPrivate.get(
             apiRoutes.user.findUserById(id)
         );
         return response;
@@ -23,7 +25,7 @@ const findUserById = async (id: string) => {
 
 const findUserByName = async (name: string) => {
     try {
-        const response: AxiosResponse<UserResponse[]> = await axiosPrivate.get(
+        const response: AxiosResponse<Member[]> = await axiosPrivate.get(
             apiRoutes.user.findUserByName(name)
         );
         return response;
@@ -111,6 +113,36 @@ const revokeFriendRequest = async (
     }
 };
 
+const updateProfile = async (data: {
+    name: string;
+    image_url: string;
+    cover: string;
+}) => {
+    try {
+        const response: AxiosResponse<Member> = await axiosPrivate.put(
+            apiRoutes.user.updateProfile,
+            data
+        );
+        return response;
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+const getUserWall = async (userId: number, page: number, size: number) => {
+    const response: AxiosResponse<PostResponse> = await axiosPrivate.get(
+        apiRoutes.user.userWall(userId, size, page)
+    );
+    return response;
+};
+
+const followUser = async (userId: number) => {
+    const response: AxiosResponse<string> = await axiosPrivate.post(
+        apiRoutes.user.followUser(userId)
+    );
+    return response;
+};
+
 export const USER = {
     getMe,
     findUserById,
@@ -120,4 +152,7 @@ export const USER = {
     acceptFriendRequest,
     removeFriend,
     revokeFriendRequest,
+    updateProfile,
+    getUserWall,
+    followUser,
 };

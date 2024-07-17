@@ -1,15 +1,16 @@
 import { NOTIFICATION_TYPE } from "@/constants/global";
-import { MessageData } from "@/types/conversationType";
+import { GroupSettings, MessageData } from "@/types/conversationType";
 
 export default function handleFormatNotificationMessage(
     message: MessageData,
-    userId: number
+    userId: number,
+    settings: GroupSettings
 ) {
     let formattedMessage = "";
     switch (message.notification_type) {
         case NOTIFICATION_TYPE.ADD_MEMBER:
             const addedMembers = (message.target_user_id ?? []).map((member) =>
-                member.name.concat(
+                (member.user_id === userId ? "you" : member.name).concat(
                     (message.target_user_id ?? []).indexOf(member) ===
                         (message.target_user_id ?? []).length - 1
                         ? ""
@@ -39,10 +40,6 @@ export default function handleFormatNotificationMessage(
             } are changing the group name to ${message.content}`;
             break;
 
-        default:
-            formattedMessage = "Unsupported notification type";
-            break;
-
         case NOTIFICATION_TYPE.CHANGE_GROUP_OWNER:
             formattedMessage = `${
                 message.user_detail.user_id === userId
@@ -58,7 +55,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are turning on the confirm new member feature`;
+            } are turning ${
+                message.content === "true" ? "on" : "off"
+            } the confirm new member feature`;
             break;
 
         case NOTIFICATION_TYPE.DEPUTY_CHANGE_GROUP_INFO:
@@ -66,7 +65,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing deputies to change group info`;
+            } are ${
+                message.content === "true" ? "" : "not"
+            } allowing deputies to change group info`;
             break;
 
         case NOTIFICATION_TYPE.DEPUTY_DEMOTE_MEMBER:
@@ -82,7 +83,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing deputies to invite members`;
+            } are ${
+                message.content === "true" ? "" : "not"
+            } allowing deputies to invite members`;
             break;
 
         case NOTIFICATION_TYPE.DEPUTY_PROMOTE_MEMBER:
@@ -90,14 +93,18 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing deputies to promote members`;
+            } are ${
+                message.content === "true" ? "" : "not"
+            } allowing deputies to promote members`;
             break;
         case NOTIFICATION_TYPE.DEPUTY_REMOVE_MEMBER:
             formattedMessage = `${
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing deputies to remove members`;
+            } are  ${
+                message.content === "true" ? "" : "not"
+            } allowing deputies to remove members`;
             break;
 
         case NOTIFICATION_TYPE.DEPUTY_SEND_MESSAGES:
@@ -105,7 +112,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing deputies to send messages`;
+            } are ${
+                message.content === "true" ? "" : "not"
+            } allowing deputies to send messages`;
             break;
 
         case NOTIFICATION_TYPE.GRANT_DEPUTY:
@@ -113,7 +122,12 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are granting ${message.target_user_id?.[0].name} as a deputy`;
+            } are granting ${
+                message.target_user_id &&
+                message.target_user_id[0]?.user_id === userId
+                    ? "you"
+                    : message.target_user_id?.[0]?.name
+            } as a deputy`;
             break;
 
         case NOTIFICATION_TYPE.JOIN_BY_LINK:
@@ -121,7 +135,11 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are turning on the join by link feature`;
+            } are ${
+                message.content === "true"
+                    ? "waiting to join the group"
+                    : "join the group by link"
+            }`;
             break;
 
         case NOTIFICATION_TYPE.LEAVE_GROUP:
@@ -137,7 +155,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing members to change group info`;
+            } are ${
+                message.content === "true" ? "" : "not"
+            } allowing members to change group info`;
             break;
 
         case NOTIFICATION_TYPE.MEMBER_INVITE_MEMBER:
@@ -145,7 +165,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are allowing members to invite members`;
+            } are ${
+                message.content === "true" ? "" : "not"
+            } allowing members to invite members`;
             break;
 
         case NOTIFICATION_TYPE.MEMBER_PIN_MESSAGE:
@@ -153,13 +175,15 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } pinned a message`;
+            } allowing ${
+                message.content === "true" ? "" : "not"
+            } members pinned a message`;
             break;
 
         case NOTIFICATION_TYPE.REMOVE_MEMBER:
             const removedMembers = (message.target_user_id ?? []).map(
                 (member) =>
-                    member.name.concat(
+                    (member.user_id === userId ? "You" : member.name).concat(
                         (message.target_user_id ?? []).indexOf(member) ===
                             (message.target_user_id ?? []).length - 1
                             ? ""
@@ -178,7 +202,9 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are turning on the restricted messaging feature`;
+            } are turning ${
+                message.content === "true" ? "on" : "off"
+            } the restricted messaging feature`;
             break;
 
         case NOTIFICATION_TYPE.REVOKE_DEPUTY:
@@ -186,13 +212,17 @@ export default function handleFormatNotificationMessage(
                 message.user_detail.user_id === userId
                     ? "You"
                     : message.user_detail.name
-            } are revoking ${message.target_user_id?.[0].name} as a deputy`;
+            } are revoking ${
+                message.target_user_id?.[0].user_id === userId
+                    ? "You"
+                    : message.target_user_id?.[0].name
+            } as a deputy`;
             break;
 
         case NOTIFICATION_TYPE.UPDATE_GROUP_SETTINGS:
             formattedMessage = `${
                 message.user_detail.user_id === userId
-                    ? "You"
+                    ? "you"
                     : message.user_detail.name
             } are updating group settings`;
             break;
@@ -200,9 +230,13 @@ export default function handleFormatNotificationMessage(
         case NOTIFICATION_TYPE.UPDATE_LINK_TO_JOIN_GROUP:
             formattedMessage = `${
                 message.user_detail.user_id === userId
-                    ? "You"
+                    ? "you"
                     : message.user_detail.name
             } are updating the link to join group`;
+            break;
+
+        default:
+            formattedMessage = "Unsupported notification type";
             break;
     }
     return formattedMessage;

@@ -5,10 +5,11 @@ export interface Member {
     name: string;
     email: string;
     image_url: string;
+    cover: string;
 }
 
 export interface GroupSettings {
-    link_to_join_group: boolean;
+    link_to_join_group?: string;
     confirm_new_member: boolean;
     join_by_link: boolean;
     allow_deputy_send_messages: boolean;
@@ -23,6 +24,16 @@ export interface GroupSettings {
     allow_deputy_to_invite_member: boolean;
 }
 
+export interface LastMessage {
+    message_id: string;
+    conversation_id: string;
+    user_detail: Member;
+    content: string;
+    type: string;
+    created_at: number;
+    updated_at: number;
+}
+
 export type ConversationResponse = {
     conversation_id: string;
     name: string;
@@ -33,6 +44,8 @@ export type ConversationResponse = {
     type: string;
     owner_id?: number;
     settings: GroupSettings;
+    deputies: number[];
+    last_message: LastMessage;
 };
 
 export type ReactionResponse = {
@@ -78,4 +91,11 @@ export interface GroupedMessage {
     time: Moment;
     formattedTime: string;
     data: MessageData[];
+}
+
+export interface PendingUser {
+    id: string;
+    requester: Member;
+    waiting_member: Member;
+    created_at: number;
 }

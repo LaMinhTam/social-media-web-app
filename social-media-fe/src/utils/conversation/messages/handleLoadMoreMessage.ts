@@ -5,6 +5,6 @@ export default async function handleLoadMoreMessage(
     page: number,
     size: number
 ) {
-    const data = await handleGetListMessage(id, page, size);
+    const data = await handleGetListMessage(id, page);
     return data;
 }

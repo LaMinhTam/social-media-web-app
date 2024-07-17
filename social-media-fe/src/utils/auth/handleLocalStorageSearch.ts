@@ -1,9 +1,9 @@
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import CryptoJS from "crypto-js";
 
 const SECRET_KEY = "NaiKI4TtdZZ2j3YwYLR5AoU1RDbyB3Iv";
 
-export function saveSearchResultToLocalStorage(result: UserResponse[]) {
+export function saveSearchResultToLocalStorage(result: Member[]) {
     if (typeof window !== "undefined") {
         const encryptedData = CryptoJS.AES.encrypt(
             JSON.stringify(result),
@@ -13,7 +13,7 @@ export function saveSearchResultToLocalStorage(result: UserResponse[]) {
     }
 }
 
-export function getSearchResultFromLocalStorage(): UserResponse[] {
+export function getSearchResultFromLocalStorage(): Member[] {
     if (typeof window !== "undefined") {
         const encryptedData = localStorage.getItem("SEARCH_RESULT");
         if (encryptedData) {

@@ -19,15 +19,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import sortedPersonToAlphabet from "@/utils/conversation/messages/sortedPersonToAlphabet";
 import { v4 as uuidv4 } from "uuid";
-import axios from "@/apis/axios";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { handleCreateConversation } from "@/services/conversation.service";
-import {
-    setListConversation,
-    setTriggerFetchingConversation,
-} from "@/store/actions/conversationSlice";
-import { setTriggerReFetchingRelationship } from "@/store/actions/commonSlice";
+import { setTriggerFetchingConversation } from "@/store/actions/conversationSlice";
 import Image from "next/image";
+import { axiosInstance } from "@/apis/axios";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
         padding: theme.spacing(2),
@@ -52,7 +48,6 @@ const CreateGroupDialog = ({
     const [checkedValues, setCheckedValues] = useState<{
         [key: string]: boolean;
     }>({});
-    console.log("checkedValues:", checkedValues);
     const [loading, setLoading] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const handleFileInputClick = () => {
@@ -77,7 +72,7 @@ const CreateGroupDialog = ({
             formData.append("folder", `conversation/common/avatar`);
 
             try {
-                const response = await axios.post(
+                const response = await axiosInstance.post(
                     `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
                     formData
                 );

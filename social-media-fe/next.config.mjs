@@ -5,15 +5,23 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: "https",
-                hostname: "source.unsplash.com",
-                pathname: "/random/**",
-            },
-            {
-                protocol: "https",
                 hostname: "res.cloudinary.com",
-                pathname: "/**",
+                pathname: "/didg9rn2d/**",
             },
         ],
+    },
+    headers: async () => {
+        return [
+            {
+                source: "/(.*)",
+                headers: [
+                    {
+                        key: "Access-Control-Allow-Origin",
+                        value: "http://0.0.0.0:3000",
+                    },
+                ],
+            },
+        ];
     },
     experimental: {
         missingSuspenseWithCSRBailout: false,

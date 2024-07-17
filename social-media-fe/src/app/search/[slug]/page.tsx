@@ -2,7 +2,7 @@
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import SearchPeopleCard from "@/modules/search/SearchPeopleCard";
-import { UserResponse } from "@/types/userType";
+import { Member } from "@/types/conversationType";
 import { Box, Grid } from "@mui/material";
 import { usePathname, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
@@ -11,7 +11,7 @@ const SearchResult = () => {
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const q = searchParams.get("q");
-    const [searchResult, setSearchResult] = React.useState<UserResponse[]>([]);
+    const [searchResult, setSearchResult] = React.useState<Member[]>([]);
     const [loading, setLoading] = React.useState(false);
 
     useEffect(() => {

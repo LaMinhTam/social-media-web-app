@@ -26,7 +26,7 @@ const DashboardSidebar = () => {
                         setTab("/friends");
                     }}
                 >
-                    <Typography className="font-medium">Trang chủ</Typography>
+                    <Typography className="font-medium">Home</Typography>
                 </Button>
                 <Button
                     className="flex items-center justify-start w-full px-4 py-3 normal-case"
@@ -39,7 +39,7 @@ const DashboardSidebar = () => {
                     }}
                 >
                     <Typography className="font-medium">
-                        Lời mời kết bạn
+                        Friend requests
                     </Typography>
                 </Button>
                 <Button
@@ -52,9 +52,7 @@ const DashboardSidebar = () => {
                         setTab("/friends/list");
                     }}
                 >
-                    <Typography className="font-medium">
-                        Tất cả bạn bè
-                    </Typography>
+                    <Typography className="font-medium">All friends</Typography>
                 </Button>
                 <Button
                     className="flex items-center justify-start w-full px-4 py-3 normal-case"
@@ -68,7 +66,7 @@ const DashboardSidebar = () => {
                         setTab("/friends/birthdays");
                     }}
                 >
-                    <Typography className="font-medium">Sinh nhật</Typography>
+                    <Typography className="font-medium">Birthday</Typography>
                 </Button>
                 <Button
                     className="flex items-center justify-start w-full px-4 py-3 normal-case"
@@ -81,7 +79,7 @@ const DashboardSidebar = () => {
                     }}
                 >
                     <Typography className="font-medium">
-                        Danh sách người dùng bị chặn
+                        Blocked friends
                     </Typography>
                 </Button>
             </Box>

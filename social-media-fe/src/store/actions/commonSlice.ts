@@ -1,14 +1,22 @@
-import { UserResponse } from "@/types/userType";
+import { NotificationType } from "@/types/commonType";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type CommonType = {
     triggerReFetchingRelationship: boolean;
     showChatModal: boolean;
+    openCallDialog: boolean;
+    openGroupCallDialog: boolean;
+    progress: number;
+    notifications: NotificationType[];
 };
 
 const initialState: CommonType = {
     triggerReFetchingRelationship: true,
     showChatModal: false,
+    openCallDialog: false,
+    openGroupCallDialog: false,
+    progress: 0,
+    notifications: [],
 };
 
 const commonSlice = createSlice({
@@ -24,9 +32,27 @@ const commonSlice = createSlice({
         setShowChatModal(state, action: PayloadAction<boolean>) {
             state.showChatModal = action.payload;
         },
+        setOpenCallDialog(state, action: PayloadAction<boolean>) {
+            state.openCallDialog = action.payload;
+        },
+        setOpenGroupCallDialog(state, action: PayloadAction<boolean>) {
+            state.openGroupCallDialog = action.payload;
+        },
+        setProgress(state, action: PayloadAction<number>) {
+            state.progress = action.payload;
+        },
+        setNotifications(state, action: PayloadAction<NotificationType[]>) {
+            state.notifications = action.payload;
+        },
     },
 });
 
-export const { setTriggerReFetchingRelationship, setShowChatModal } =
-    commonSlice.actions;
+export const {
+    setTriggerReFetchingRelationship,
+    setShowChatModal,
+    setOpenCallDialog,
+    setOpenGroupCallDialog,
+    setProgress,
+    setNotifications,
+} = commonSlice.actions;
 export default commonSlice.reducer;

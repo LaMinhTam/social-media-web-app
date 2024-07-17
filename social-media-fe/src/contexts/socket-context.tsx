@@ -4,11 +4,16 @@ import SockJS from "sockjs-client";
 import { SOCKET_URL } from "@/constants/global";
 import SocketType from "@/types/socketType";
 import { getAccessToken } from "@/utils/auth";
-import { MessageResponse } from "@/types/conversationType";
+import { Member, MessageResponse } from "@/types/conversationType";
 import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import onMessageReceived from "@/utils/socket/onMessageReceived";
+import {
+    setNotifications,
+    setTriggerReFetchingRelationship,
+} from "@/store/actions/commonSlice";
+import { toast } from "react-toastify";
 
 const SocketContext = React.createContext<SocketType>({} as SocketType);
 
@@ -22,8 +27,14 @@ export function SocketProvider(
     const showChatModal = useSelector(
         (state: RootState) => state.common.showChatModal
     );
+    const triggerReFetchingRelationship = useSelector(
+        (state: RootState) => state.common.triggerReFetchingRelationship
+    );
     const currentConversation = useSelector(
         (state: RootState) => state.conversation.currentConversation
+    );
+    const notifications = useSelector(
+        (state: RootState) => state.common.notifications
     );
     const [triggerScrollChat, setTriggerScrollChat] = useState<boolean>(false);
     const [messageRefs, setMessageRefs] = useState<any>({});
@@ -46,44 +57,56 @@ export function SocketProvider(
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/message`,
                     async function (payload) {
-                        await onMessageReceived(
-                            payload,
-                            showChatModal,
-                            currentConversation,
-                            dispatch,
-                            decryptedData.user_id,
-                            setMessages,
-                            setTriggerScrollChat,
-                            triggerScrollChat
-                        );
+                        const payloadData = JSON.parse(payload.body);
+                        if (
+                            payloadData.conversation_id ===
+                            currentConversation.conversation_id
+                        ) {
+                            await onMessageReceived(
+                                decryptedData as Member,
+                                payload,
+                                showChatModal,
+                                currentConversation,
+                                dispatch,
+                                decryptedData.user_id,
+                                setMessages,
+                                setTriggerScrollChat,
+                                triggerScrollChat
+                            );
+                        }
                     }
                 );
                 client.subscribe(
                     `/user/${decryptedData.user_id || ""}/revoke`,
                     function (payload) {
                         const payloadData = JSON.parse(payload.body);
-                        const newMessages = { ...messages };
-                        newMessages[payloadData.message_id] = payloadData;
-                        setMessages(newMessages);
+                        setMessages((prev: MessageResponse) => ({
+                            ...prev,
+                            [payloadData.message_id]: {
+                                ...payloadData,
+                            },
+                        }));
                     }
                 );
                 client.subscribe(
                     `/user/${decryptedData.user_id}/react`,
                     function (payload) {
                         const payloadData = JSON.parse(payload.body);
-                        const newMessages = { ...messages };
-                        newMessages[payloadData.message_id] = {
-                            ...messages[payloadData.message_id],
-                            reactions: payloadData.reactions,
-                        };
-                        setMessages(newMessages);
+                        setMessages((prev: MessageResponse) => ({
+                            ...prev,
+                            [payloadData.message_id]: {
+                                ...messages[payloadData.message_id],
+                                reactions: payloadData.reactions,
+                            },
+                        }));
                     }
                 );
 
                 client.subscribe(
                     `/user/${decryptedData.user_id}/conversation`,
                     function (payload) {
-                        console.log("conversation", JSON.parse(payload.body));
+                        const payloadData = JSON.parse(payload.body);
+                        console.log("conversation", payloadData);
                     }
                 );
 
@@ -103,6 +126,96 @@ export function SocketProvider(
                         };
                         setMessages(newMessages);
                         setTriggerScrollChat(!triggerScrollChat);
+                    },
+                    { Authorization: accessToken }
+                );
+                client.subscribe(
+                    `/user/${decryptedData.user_id}/friend-status`,
+                    function (payload) {
+                        console.log("read", JSON.parse(payload.body));
+                    }
+                );
+                client.subscribe(
+                    `/user/${decryptedData.user_id}/friend-request`,
+                    function (payload) {
+                        console.log("read", JSON.parse(payload.body));
+                        const payloadData = JSON.parse(payload.body);
+                        dispatch(
+                            setTriggerReFetchingRelationship(
+                                !triggerReFetchingRelationship
+                            )
+                        );
+                        switch (payloadData.type) {
+                            case "ACCEPT":
+                                const notification = {
+                                    user: {
+                                        friend_request_id:
+                                            payloadData.friend_request_id,
+                                        user_id: payloadData.user_id,
+                                        name: payloadData.name,
+                                        email: payloadData.email,
+                                        image_url: payloadData.image_url,
+                                    },
+                                    message: "accepted your friend request",
+                                };
+                                dispatch(
+                                    setNotifications([
+                                        ...notifications,
+                                        notification,
+                                    ])
+                                );
+                                toast.info(
+                                    `${payloadData.name} accepted your friend request!`
+                                );
+                                break;
+                            case "SEND":
+                                const notificationSend = {
+                                    user: {
+                                        friend_request_id:
+                                            payloadData.friend_request_id,
+                                        user_id: payloadData.user_id,
+                                        name: payloadData.name,
+                                        email: payloadData.email,
+                                        image_url: payloadData.image_url,
+                                    },
+                                    message: "sent you a friend request",
+                                };
+                                dispatch(
+                                    setNotifications([
+                                        ...notifications,
+                                        notificationSend,
+                                    ])
+                                );
+                                toast.info(
+                                    `${payloadData.name} sent you a friend request`
+                                );
+                                break;
+                            case "REVOKE":
+                                const notificationRevoke = {
+                                    user: {
+                                        friend_request_id:
+                                            payloadData.friend_request_id,
+                                        user_id: payloadData.user_id,
+                                        name: payloadData.name,
+                                        email: payloadData.email,
+                                        image_url: payloadData.image_url,
+                                    },
+                                    message: "revoked friend request",
+                                };
+                                dispatch(
+                                    setNotifications([
+                                        ...notifications,
+                                        notificationRevoke,
+                                    ])
+                                );
+                                toast.info(
+                                    `${payloadData.name} revoked friend request`
+                                );
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                 );
             },
@@ -116,7 +229,11 @@ export function SocketProvider(
         // Clean up
         return () => {
             if (client && client.connected) {
-                client.disconnect(() => {});
+                client.disconnect(() => {
+                    console.log(
+                        "Disconnected from the socket due to unmounting"
+                    );
+                });
             }
         };
     }, [currentConversation, triggerScrollChat]);

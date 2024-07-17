@@ -1,10 +1,18 @@
-import axios from "@/apis/axios";
+import { axiosInstance } from "@/apis/axios";
 import { SOCIAL_MEDIA_API } from "@/apis/constants";
+import { DEFAULT_AVATAR } from "@/constants/global";
+import { setProgress } from "@/store/actions/commonSlice";
+import {
+    generateSHA1,
+    generateSignature,
+} from "@/utils/conversation/file/generateSignature";
+import { Dispatch } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 export const handleCreateConversation = async (
     type: string,
     members: number[],
     name = "default",
-    image = "https://source.unsplash.com/random"
+    image = DEFAULT_AVATAR
 ) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.createConversation(
@@ -51,6 +59,7 @@ export const handleGetListMessage = async (id: string, size: number) => {
             id,
             size
         );
+        console.log("handleGetListMessage ~ response:", response);
         if (response?.status === 200) {
             return response.data;
         }
@@ -171,7 +180,7 @@ export const handleChangeGroupAvatar = async (id: string, imageUrl: string) => {
     }
 };
 
-export const handleAddMember = async (id: string, userId: number) => {
+export const handleAddMember = async (id: string, userId: string) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.addMember(
             id,
@@ -191,7 +200,6 @@ export const handleKickMember = async (id: string, userId: number) => {
             id,
             userId
         );
-        console.log("handleKickMember ~ response:", response);
         if (response?.status === 200) {
             return response.data;
         }
@@ -214,7 +222,6 @@ export const handleDisbandGroup = async (id: string) => {
 export const handleLeaveGroup = async (id: string) => {
     try {
         const response = await SOCIAL_MEDIA_API.CONVERSATION.leaveGroup(id);
-        console.log("handleLeaveGroup ~ response:", response);
         if (response?.status === 200) {
             return response.data;
         }
@@ -223,11 +230,165 @@ export const handleLeaveGroup = async (id: string) => {
     }
 };
 
-export const handleUploadFile = async (formData: FormData) => {
+export const handleGrantDeputy = async (id: string, userId: number) => {
     try {
-        const response = await axios.post(
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.grantDeputy(
+            id,
+            userId
+        );
+        console.log("handleGrantDeputy ~ response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleRevokeDeputy = async (id: string, userId: number) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.revokeDeputy(
+            id,
+            userId
+        );
+        console.log("handleRevokeDeputy ~ response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleFindGroupByLink = async (link: string) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.findConversationByLink(link);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleUpdateGroupSettings = async (id: string, settings: any) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.updateGroupSetting(
+            id,
+            settings
+        );
+        console.log("response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleJoinGroupByLink = async (groupId: string) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.joinConversationByLink(groupId);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleTransferOwner = async (id: string, userId: number) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.changeGroupOwner(
+            id,
+            userId
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleGetListPendingMembers = async (id: string) => {
+    try {
+        const response = await SOCIAL_MEDIA_API.CONVERSATION.listPendingMembers(
+            id
+        );
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleApproveJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.approveJoinGroupRequest(
+                conversation_id,
+                request_id,
+                userId
+            );
+        console.log("response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleRejectJoinGroupRequest = async (
+    conversation_id: string,
+    request_id: number,
+    userId: number
+) => {
+    try {
+        const response =
+            await SOCIAL_MEDIA_API.CONVERSATION.rejectJoinGroupRequest(
+                conversation_id,
+                request_id,
+                userId
+            );
+        console.log("response:", response);
+        if (response?.status === 200) {
+            return response.data;
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const handleUploadFile = async (
+    formData: FormData,
+    dispatch: Dispatch<any>
+) => {
+    try {
+        const response = await axiosInstance.post(
             `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
-            formData
+            formData,
+            {
+                onUploadProgress: (progressEvent) => {
+                    if (typeof progressEvent.total === "number") {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
+                        dispatch(setProgress(percentCompleted));
+                    } else {
+                        toast.warn("Total size is undefined.");
+                        dispatch(setProgress(0));
+                    }
+                },
+            }
         );
         const imageUrl = response.data.secure_url;
         if (imageUrl) {
@@ -235,5 +396,42 @@ export const handleUploadFile = async (formData: FormData) => {
         }
     } catch (error) {
         console.error("Error uploading file:", error);
+    }
+};
+
+export const handleDeleteFile = async (fileUrl: string) => {
+    try {
+        const urlParts = fileUrl.split("/");
+        const fileName = urlParts[urlParts.length - 1];
+        const [publicId] = fileName.split(".");
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const timestamp = new Date().getTime();
+        const signature = generateSHA1(
+            generateSignature(
+                publicId,
+                process.env.NEXT_PUBLIC_CLOUDINARY_API_SECRET as string,
+                timestamp
+            )
+        );
+
+        const response = await axiosInstance.post(
+            `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
+            {
+                public_id: publicId,
+                timestamp,
+                api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+                signature,
+            }
+        );
+        console.log("handleDeleteFile ~ response:", response);
+
+        // Check the response
+        if (response.data.result === "ok") {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error("Error deleting file:", error);
     }
 };

@@ -4,7 +4,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import React from "react";
 const LayoutSidebar = ({
     type = "friends",
-    title = "Bạn bè",
+    title = "Friends",
     children,
 }: {
     type?: string;
