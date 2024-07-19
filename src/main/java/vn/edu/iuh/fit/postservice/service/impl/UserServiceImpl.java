@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
             try {
                 userNodeRepository.save(new UserNode(userId));
                 return; // Successfully saved, exit the method
-            } catch (TransactionSystemException | DataAccessResourceFailureException e) {
+            } catch (Exception e) {
                 attempt++;
                 if (attempt >= maxAttempts) {
                     throw e; // Rethrow exception if max attempts reached
