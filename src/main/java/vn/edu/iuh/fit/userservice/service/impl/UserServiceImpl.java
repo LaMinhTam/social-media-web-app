@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
         while (attempt < maxAttempts) {
             try {
                 return userRepository.save(new User(id, name, email, imageUrl, cover));
-            } catch (TransactionSystemException | DataAccessResourceFailureException e) {
+            } catch (Exception e) {
                 attempt++;
                 if (attempt >= maxAttempts) {
                     throw e; // Rethrow exception if max attempts reached
