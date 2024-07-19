@@ -133,9 +133,6 @@ public class FriendServiceImpl implements FriendService {
 
         FriendRelationship friendRequest = friendRepository.findBySenderAndFriendRequest(senderId, friendRequestId, "FRIEND")
                 .orElseThrow(() -> new AppException(404, "Friend request not found"));
-        if (!friendRequest.getTargetUser().equals(receiver.getUserId())) {
-            throw new AppException(404, "Friend request not found");
-        }
 
         friendRepository.deleteById(friendRequest.getId());
 
