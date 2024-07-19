@@ -44,7 +44,6 @@ export default function Home() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         const response = await handleGetNewFeed(page, 5);
-        console.log("fetchData ~ response:", response);
         if (response) {
             const newPosts = {
                 ...posts,

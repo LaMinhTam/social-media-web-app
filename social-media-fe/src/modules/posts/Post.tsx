@@ -22,6 +22,7 @@ import handleRenderAuthor from "@/utils/posts/handleRenderAuthor";
 const Post = ({
     data,
     setStoredPostReaction,
+    type = "post",
 }: {
     data: PostData;
     setStoredPostReaction?: React.Dispatch<
@@ -29,6 +30,7 @@ const Post = ({
             [key: string]: number;
         }>
     >;
+    type?: string;
 }) => {
     let authors = handleRenderAuthor(data.authors);
     let shareAuthors = handleRenderAuthor(data.share_post?.authors ?? []);
@@ -97,7 +99,6 @@ const Post = ({
 
     useEffect(() => {
         async function fetchPostReactions() {
-            console.log("Run fetchPostReactions");
             const response = await handleGetPostReactionDetail(data.post_id);
             if (response) {
                 const reaction = Object.keys(response).find((key) => {
@@ -186,6 +187,7 @@ const Post = ({
                 ></Information>
                 <hr />
                 <Action
+                    type={type}
                     postId={data.post_id}
                     hoverRef={hoverRef}
                     isHovered={isHovered}

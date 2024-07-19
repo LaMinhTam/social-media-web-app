@@ -1,23 +1,40 @@
-import { Button, IconButton, Typography } from "@mui/material";
+import {
+    Button,
+    IconButton,
+    MenuItem,
+    Select,
+    SelectChangeEvent,
+    Typography,
+} from "@mui/material";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
+import React, { useMemo } from "react";
 import { Member } from "@/types/conversationType";
 import UpdateCoverDialog from "./UpdateCoverDialog";
 import EditProfileDialog from "./EditProfileDialog";
-import { handleFollowUser } from "@/services/friend.service";
+import {
+    handleAcceptFriendRequest,
+    handleFollowUser,
+    handleRemoveFriend,
+    handleRevokeFriendRequest,
+    handleSendFriendRequest,
+} from "@/services/friend.service";
 import LoadingSpinner from "@/components/loading/LoadingSpinner";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import { useRouter } from "next/navigation";
 import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/constants/global";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import { FriendRequestData } from "@/types/userType";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import { setTriggerReFetchingRelationship } from "@/store/actions/commonSlice";
 const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
+    const isMobile = useSelector((state: RootState) => state.common.isMobile);
+    const dispatch = useDispatch();
     const router = useRouter();
     const relationshipUsers = useSelector(
         (state: RootState) => state.user.relationshipUsers
@@ -26,6 +43,10 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
     if (Object.values(relationshipUsers.friends ?? {}).length > 0) {
         count = Object.values(relationshipUsers.friends).length;
     }
+    const triggerReFetchingRelationship = useSelector(
+        (state: RootState) => state.common.triggerReFetchingRelationship
+    );
+    const [actionLoading, setActionLoading] = React.useState(false);
     const [textContent, setTextContent] = React.useState("Follow");
     const [currentTab, setCurrentTab] = React.useState(1);
     const [openUpdateCoverDialog, setOpenUpdateCoverDialog] =
@@ -37,11 +58,81 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
     const [loading, setLoading] = React.useState(false);
     const handleFollow = async () => {
         setLoading(true);
-        const response = await handleFollowUser(data.user_id);
+        await handleFollowUser(data.user_id);
         setTextContent("Following");
         setLoading(false);
     };
 
+    const handleAddFriend = async () => {
+        setActionLoading(true);
+        await handleSendFriendRequest(data.user_id);
+        dispatch(
+            setTriggerReFetchingRelationship(!triggerReFetchingRelationship)
+        );
+        setActionLoading(false);
+    };
+
+    const handleAccept = async () => {
+        setActionLoading(true);
+        const user = relationshipUsers.receive_request[data.user_id];
+        await handleAcceptFriendRequest(user.user_id, user.friend_request_id);
+        dispatch(
+            setTriggerReFetchingRelationship(!triggerReFetchingRelationship)
+        );
+        setActionLoading(false);
+    };
+
+    const handleReject = async () => {
+        setActionLoading(true);
+        const user = relationshipUsers.receive_request[data.user_id];
+        await handleRevokeFriendRequest(user.user_id, user.friend_request_id);
+        dispatch(
+            setTriggerReFetchingRelationship(!triggerReFetchingRelationship)
+        );
+        setActionLoading(false);
+    };
+
+    const handleUnfriend = async () => {
+        setActionLoading(true);
+        const user = relationshipUsers.friends[data.user_id];
+        await handleRemoveFriend(user.user_id, user.friend_request_id);
+        dispatch(
+            setTriggerReFetchingRelationship(!triggerReFetchingRelationship)
+        );
+        setActionLoading(false);
+    };
+
+    const handleRevokeRequest = async () => {
+        setActionLoading(true);
+        const user = relationshipUsers.send_request[data.user_id];
+        await handleRevokeFriendRequest(user.user_id, user.friend_request_id);
+        dispatch(
+            setTriggerReFetchingRelationship(!triggerReFetchingRelationship)
+        );
+        setActionLoading(false);
+    };
+
+    const relationship = useMemo(() => {
+        const isInFriend =
+            Object.keys(relationshipUsers.friends ?? {}).length > 0 &&
+            Object.keys(relationshipUsers.friends).includes(
+                data.user_id.toString()
+            );
+        const isSentRequest =
+            Object.keys(relationshipUsers.send_request ?? {}).length > 0 &&
+            Object.keys(relationshipUsers.send_request).includes(
+                data.user_id.toString()
+            );
+        const isReceiveRequest =
+            Object.keys(relationshipUsers.receive_request ?? {}).length > 0 &&
+            Object.keys(relationshipUsers.receive_request).includes(
+                data.user_id.toString()
+            );
+        if (isInFriend) return "IN_FRIEND";
+        else if (isSentRequest) return "WAIT_USER_ACCEPT";
+        else if (isReceiveRequest) return "WAIT_ACCEPT";
+        else return "GUEST";
+    }, [relationshipUsers.friends, data.user_id]);
     return (
         <>
             <div className="w-full h-full shadow-md bg-lite">
@@ -53,8 +144,8 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                     <Image
                                         src={data.cover || DEFAULT_COVER}
                                         width={1095}
-                                        height={500}
-                                        className="max-w-[1095px] h-[500px] rounded-lg object-cover"
+                                        height={isMobile ? 375 : 500}
+                                        className="max-w-[1095px] w-full md:h-[500px] h-[375px] rounded-lg object-cover cursor-pointer"
                                         alt="profile"
                                     ></Image>
                                 </PhotoView>
@@ -83,7 +174,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                         src={data.image_url}
                                         width={168}
                                         height={168}
-                                        className="w-[168px] h-[168px] object-cover rounded-full absolute bottom-[-140px] left-8"
+                                        className="cursor-pointer w-[142px] h-[142px] md:w-[168px] md:h-[168px] object-cover rounded-full absolute md:bottom-[-140px] bottom-[-80px] left-8"
                                         alt="profile"
                                     ></Image>
                                 </PhotoView>
@@ -92,7 +183,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                 <IconButton
                                     color="info"
                                     size="medium"
-                                    className="absolute bottom-[-140px] left-[140px] bg-grayf3 hover:bg-lite"
+                                    className="absolute md:bottom-[-140px] bottom-[-80px] left-[140px] bg-grayf3 hover:bg-lite"
                                     onClick={() =>
                                         seOpenUpdateAvatarDialog(true)
                                     }
@@ -102,7 +193,11 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                             )}
                         </div>
                     </div>
-                    <div className="ml-[220px] mt-3 mb-4 flex items-center justify-between">
+                    <div
+                        className={`md:ml-[220px] ml-4 md:mt-3 mt-20 mb-4 md:flex items-center justify-between ${
+                            isMobile ? "flex-col" : ""
+                        }`}
+                    >
                         <div>
                             <Typography variant="h4" className="font-bold">
                                 {data.name}
@@ -114,7 +209,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                         : `${count} friends`}
                                 </span>
                             </Link>
-                            <div className="flex items-center justify-start mt-3 ">
+                            <div className="flex items-center justify-start mt-3">
                                 {type === "user" &&
                                     Array.from({ length: 5 }).map(
                                         (_, index) => (
@@ -153,7 +248,7 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                     ))}
                             </div>
                         </div>
-                        <div className="flex items-center justify-center gap-x-2">
+                        <div className="flex items-center md:justify-center gap-x-2">
                             {type === "me" && (
                                 <>
                                     <Button
@@ -184,23 +279,102 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                 </>
                             )}
                             {type === "user" && (
-                                <Button
-                                    type="button"
-                                    variant="contained"
-                                    color="info"
-                                    className="normal-case"
-                                    onClick={handleFollow}
-                                    disabled={loading}
-                                >
-                                    <AddIcon></AddIcon>
-                                    <Typography className="text-sm font-semibold">
-                                        {loading ? (
-                                            <LoadingSpinner></LoadingSpinner>
-                                        ) : (
-                                            textContent
-                                        )}
-                                    </Typography>
-                                </Button>
+                                <>
+                                    {relationship === "WAIT_ACCEPT" && (
+                                        <>
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                color={"info"}
+                                                className="mt-2 normal-case"
+                                                onClick={handleAccept}
+                                                startIcon={<AddIcon />}
+                                                disabled={actionLoading}
+                                            >
+                                                <Typography>Accept</Typography>
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                color={"warning"}
+                                                className="mt-2 normal-case"
+                                                onClick={handleReject}
+                                                startIcon={<PersonRemoveIcon />}
+                                                disabled={actionLoading}
+                                            >
+                                                <Typography>Reject</Typography>
+                                            </Button>
+                                        </>
+                                    )}
+                                    {relationship === "IN_FRIEND" && (
+                                        <>
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                color={"warning"}
+                                                className="mt-2 normal-case"
+                                                onClick={handleUnfriend}
+                                                startIcon={<PersonRemoveIcon />}
+                                                disabled={actionLoading}
+                                            >
+                                                <Typography>
+                                                    Unfriend
+                                                </Typography>
+                                            </Button>
+                                        </>
+                                    )}
+                                    {relationship === "GUEST" && (
+                                        <>
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                color={"info"}
+                                                className="mt-2 normal-case"
+                                                onClick={handleAddFriend}
+                                                startIcon={<AddIcon />}
+                                                disabled={actionLoading}
+                                            >
+                                                <Typography>
+                                                    Add friend
+                                                </Typography>
+                                            </Button>
+                                        </>
+                                    )}
+                                    {relationship === "WAIT_USER_ACCEPT" && (
+                                        <>
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                color={"warning"}
+                                                className="mt-2 normal-case"
+                                                onClick={handleRevokeRequest}
+                                                startIcon={<PersonRemoveIcon />}
+                                                disabled={actionLoading}
+                                            >
+                                                <Typography>
+                                                    Revoke friend request
+                                                </Typography>
+                                            </Button>
+                                        </>
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="contained"
+                                        color="info"
+                                        className="mt-2 normal-case"
+                                        onClick={handleFollow}
+                                        disabled={loading}
+                                    >
+                                        <AddIcon></AddIcon>
+                                        <Typography className="text-sm font-semibold">
+                                            {loading ? (
+                                                <LoadingSpinner></LoadingSpinner>
+                                            ) : (
+                                                textContent
+                                            )}
+                                        </Typography>
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -231,54 +405,60 @@ const Header = ({ data, type = "me" }: { data: Member; type?: string }) => {
                                     Friends
                                 </Typography>
                             </button>
-                            <button
-                                className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
+                            {isMobile ? (
+                                <div></div>
+                            ) : (
+                                <>
+                                    <button
+                                        className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
                     flex-shrink-0 ${
                         currentTab === 3
                             ? "border-b-4 border-secondary text-secondary"
                             : "hover:bg-text8 hover:bg-opacity-20 hover:rounded-md text-text8"
                     }`}
-                            >
-                                <Typography className="font-semibold">
-                                    Photos
-                                </Typography>
-                            </button>
-                            <button
-                                className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
+                                    >
+                                        <Typography className="font-semibold">
+                                            Photos
+                                        </Typography>
+                                    </button>
+                                    <button
+                                        className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
                     flex-shrink-0 ${
                         currentTab === 4
                             ? "border-b-4 border-secondary text-secondary"
                             : "hover:bg-text8 hover:bg-opacity-20 hover:rounded-md text-text8"
                     }`}
-                            >
-                                <Typography className="font-semibold">
-                                    Videos
-                                </Typography>
-                            </button>
-                            <button
-                                className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
+                                    >
+                                        <Typography className="font-semibold">
+                                            Videos
+                                        </Typography>
+                                    </button>
+                                    <button
+                                        className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
                     flex-shrink-0 ${
                         currentTab === 5
                             ? "border-b-4 border-secondary text-secondary"
                             : "hover:bg-text8 hover:bg-opacity-20 hover:rounded-md text-text8"
                     }`}
-                            >
-                                <Typography className="font-semibold">
-                                    Check-ins
-                                </Typography>
-                            </button>
-                            <button
-                                className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
+                                    >
+                                        <Typography className="font-semibold">
+                                            Check-ins
+                                        </Typography>
+                                    </button>
+                                    <button
+                                        className={`flex items-center justify-center w-full max-w-[100px] h-[60px] 
                     flex-shrink-0 ${
                         currentTab === 6
                             ? "border-b-4 border-secondary text-secondary"
                             : "hover:bg-text8 hover:bg-opacity-20 hover:rounded-md text-text8"
                     }`}
-                            >
-                                <Typography className="font-semibold">
-                                    More
-                                </Typography>
-                            </button>
+                                    >
+                                        <Typography className="font-semibold">
+                                            More
+                                        </Typography>
+                                    </button>
+                                </>
+                            )}
                         </div>
                         <Button
                             type="button"

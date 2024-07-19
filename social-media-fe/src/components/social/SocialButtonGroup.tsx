@@ -13,7 +13,6 @@ const SocialButtonGroup = () => {
                 justifyContent: "space-around",
                 alignItems: "center",
                 gap: 2,
-                width: "100%",
             }}
         >
             <Grid item className="w-full max-w-[250px]">
@@ -34,7 +33,6 @@ const SocialButtonGroup = () => {
                             color: "white",
                         },
                     }}
-                    fullWidth
                 >
                     <GoogleIcon />
                     <span>Google</span>

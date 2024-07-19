@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
-import LoadingSpinner from "@/components/loading/LoadingSpinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
     setOpenCreatePostDialog,
@@ -25,7 +24,6 @@ import { FriendRequestData } from "@/types/userType";
 import { RootState } from "@/store/configureStore";
 import { handleUploadFile } from "@/services/conversation.service";
 import { handleCreatePost } from "@/services/post.service";
-import { toast } from "react-toastify";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -150,7 +148,16 @@ const CreatePostDialog = ({
                         <CloseIcon />
                     </IconButton>
                 )}
-                <DialogContent dividers className="w-[548px] h-full">
+                <DialogContent
+                    dividers
+                    sx={{
+                        width: {
+                            xs: "300px",
+                            md: "548px",
+                        },
+                        height: "100%",
+                    }}
+                >
                     {loading && (
                         <Backdrop
                             sx={{

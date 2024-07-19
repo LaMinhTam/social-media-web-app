@@ -4,13 +4,15 @@ import React from "react";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import AssistantPhotoIcon from "@mui/icons-material/AssistantPhoto";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setOpenCreatePostDialog } from "@/store/actions/postSlice";
 import { DEFAULT_AVATAR } from "@/constants/global";
+import { RootState } from "@/store/configureStore";
 const PostHeader = () => {
+    const isMobile = useSelector((state: RootState) => state.common.isMobile);
     const dispatch = useDispatch();
     return (
-        <Box className="p-4 rounded-lg shadow-md bg-lite">
+        <Box className="p-4 shadow-md md:rounded-lg bg-lite">
             <div className="flex items-center justify-center gap-x-2">
                 <Image
                     src={DEFAULT_AVATAR}
@@ -36,7 +38,7 @@ const PostHeader = () => {
                 >
                     <VideoCameraFrontIcon></VideoCameraFrontIcon>
                     <Typography className="font-semibold">
-                        Live video
+                        {isMobile ? "" : "Live video"}
                     </Typography>
                 </Button>
                 <Button
@@ -47,7 +49,7 @@ const PostHeader = () => {
                 >
                     <InsertPhotoIcon></InsertPhotoIcon>
                     <Typography className="font-semibold">
-                        Photo/video
+                        {isMobile ? "" : "Photo/video"}
                     </Typography>
                 </Button>
                 <Button
@@ -58,7 +60,7 @@ const PostHeader = () => {
                 >
                     <AssistantPhotoIcon></AssistantPhotoIcon>
                     <Typography className="font-semibold">
-                        Live event
+                        {isMobile ? "" : "Live event"}
                     </Typography>
                 </Button>
             </div>

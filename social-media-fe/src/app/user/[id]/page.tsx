@@ -1,7 +1,13 @@
 "use client";
 import React, { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname } from "next/navigation"; // Import the necessary hooks
-import { Backdrop, Box, CircularProgress, Grid } from "@mui/material";
+import {
+    Backdrop,
+    Box,
+    CircularProgress,
+    Grid,
+    Typography,
+} from "@mui/material";
 import ProfileInfo from "@/modules/profile/ProfileInfo";
 import ListImage from "@/modules/profile/ListImage";
 import ListFriend from "@/modules/profile/ListFriend";
@@ -18,6 +24,7 @@ import { RootState } from "@/store/configureStore";
 import SharePostDialog from "@/modules/posts/share/SharePostDialog";
 
 const UserProfilePage = () => {
+    const isMobile = useSelector((state: RootState) => state.common.isMobile);
     const pathname = usePathname();
     const openSharePostDialog = useSelector(
         (state: RootState) => state.post.openSharePostDialog
@@ -97,7 +104,7 @@ const UserProfilePage = () => {
     }, [id]);
 
     return (
-        <div className="w-full h-full overflow-y-auto bg-strock custom-scrollbar">
+        <div className="w-full h-full overflow-x-hidden overflow-y-auto bg-strock custom-scrollbar">
             {loading ? (
                 <Backdrop
                     sx={{
@@ -111,17 +118,25 @@ const UserProfilePage = () => {
             ) : (
                 <>
                     <Header data={userProfile} type="user"></Header>
-                    <div className="w-full max-w-[1048px] h-full px-4 mx-auto mt-4 flex">
-                        <Grid container spacing={3}>
+                    <div className="w-full max-w-[1048px] h-full md:px-4 mx-auto md:mt-4">
+                        <Grid
+                            container
+                            direction={isMobile ? "column" : "row"}
+                            spacing={isMobile ? 0 : 3}
+                        >
                             <Grid item md={5} xs={12}>
-                                <ProfileInfo type="user"></ProfileInfo>
-                                <ListImage></ListImage>
+                                {!isMobile && (
+                                    <>
+                                        <ProfileInfo></ProfileInfo>
+                                        <ListImage></ListImage>
+                                    </>
+                                )}
                                 <ListFriend type="user"></ListFriend>
                             </Grid>
                             <Grid item md={7} xs={12} className="flex flex-col">
-                                <div className="overflow-x-hidden overflow-y-auto basis-0 grow">
+                                <div className="flex-1 overflow-x-hidden overflow-y-auto md:basis-0 grow">
                                     <Grid container columnGap={20}>
-                                        {userPosts &&
+                                        {!postLoading &&
                                             Object.keys(userPosts).length > 0 &&
                                             Object.values(userPosts).map(
                                                 (post: PostData) => (
@@ -135,6 +150,33 @@ const UserProfilePage = () => {
                                                         ></Post>
                                                     </Grid>
                                                 )
+                                            )}
+                                        {!postLoading &&
+                                            Object.keys(userPosts).length ===
+                                                0 && (
+                                                <Grid
+                                                    item
+                                                    className="w-full h-full"
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "center",
+                                                            alignItems:
+                                                                "center",
+                                                            height: "100%",
+                                                            mt: 2,
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            variant="h5"
+                                                            className="font-semibold"
+                                                        >
+                                                            No post
+                                                        </Typography>
+                                                    </Box>
+                                                </Grid>
                                             )}
                                     </Grid>
                                     {postLoading && (
@@ -163,7 +205,6 @@ const UserProfilePage = () => {
                                             openPostDialog={openPostDialog}
                                         ></PostDialog>
                                     )}
-
                                     {openSharePostDialog && (
                                         <SharePostDialog
                                             openSharePostDialog={

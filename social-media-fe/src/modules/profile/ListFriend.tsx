@@ -11,7 +11,7 @@ const ListFriend = ({ type = "me" }: { type?: string }) => {
     );
     const router = useRouter();
     return (
-        <Box className="p-4 mt-4 rounded-lg shadow-md bg-lite">
+        <Box className="p-4 shadow-md md:rounded-lg md:mt-4 bg-lite">
             <Grid container justifyContent={"space-between"}>
                 <Typography variant="h6" className="font-bold">
                     Friends

@@ -8,6 +8,8 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { setSearchResult } from "@/store/actions/searchSlice";
 import { Member } from "@/types/conversationType";
 import { DEFAULT_AVATAR } from "@/constants/global";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 
 const StorageSearchResult = ({
     user,
@@ -22,12 +24,19 @@ const StorageSearchResult = ({
     dispatch: Dispatch<any>;
     router: AppRouterInstance;
 }) => {
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
+    );
     return (
         <div className="flex items-center justify-between p-2 rounded hover:bg-strock">
             <div
                 className="flex items-center justify-center cursor-pointer gap-x-1"
                 onClick={() => {
                     dispatch(setSearchResult([]));
+                    if (user.user_id === currentUserProfile.user_id) {
+                        router.push("/me");
+                        return;
+                    }
                     router.push(`/search/top?q=${user.name}`);
                 }}
             >

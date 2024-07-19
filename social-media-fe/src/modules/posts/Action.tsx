@@ -10,6 +10,7 @@ import {
     setPostShareId,
 } from "@/store/actions/postSlice";
 const Action = ({
+    type = "post",
     postId,
     hoverRef,
     isHovered,
@@ -18,6 +19,7 @@ const Action = ({
     currentReaction,
     onCommentClick,
 }: {
+    type?: string;
     postId: string;
     hoverRef: React.RefObject<HTMLDivElement>;
     isHovered: boolean;
@@ -64,14 +66,24 @@ const Action = ({
                     {currentReaction ? (
                         <>
                             <Typography>{currentReaction.emoji}</Typography>
-                            <Typography className="normal-case">
-                                {currentReaction.name}
-                            </Typography>
+                            {type === "responsive" ? (
+                                ""
+                            ) : (
+                                <Typography className="normal-case">
+                                    {currentReaction.name}
+                                </Typography>
+                            )}
                         </>
                     ) : (
                         <>
                             <ThumbUpOffAltIcon></ThumbUpOffAltIcon>
-                            <Typography>Like</Typography>
+                            {type === "responsive" ? (
+                                ""
+                            ) : (
+                                <Typography className="normal-case">
+                                    Like
+                                </Typography>
+                            )}
                         </>
                     )}
                 </Button>
@@ -85,7 +97,11 @@ const Action = ({
                 onClick={onCommentClick}
             >
                 <ChatBubbleOutlineOutlinedIcon></ChatBubbleOutlineOutlinedIcon>
-                <Typography>Comment</Typography>
+                {type === "responsive" ? (
+                    ""
+                ) : (
+                    <Typography className="normal-case">Comment</Typography>
+                )}
             </Button>
             <Button
                 type="button"
@@ -99,7 +115,11 @@ const Action = ({
                 }}
             >
                 <ShareSharpIcon></ShareSharpIcon>
-                <Typography>Share</Typography>
+                {type === "responsive" ? (
+                    ""
+                ) : (
+                    <Typography className="normal-case">Share</Typography>
+                )}
             </Button>
         </Box>
     );

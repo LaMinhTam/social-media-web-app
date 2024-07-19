@@ -67,3 +67,21 @@ export async function handleFollowUser(id: number) {
         toast.error("There was an error, please try again later!");
     }
 }
+
+export async function handleRemoveFriend(
+    targetId: number,
+    friendRequestId: number
+) {
+    try {
+        const response = await SOCIAL_MEDIA_API.USER.removeFriend(
+            targetId,
+            friendRequestId
+        );
+        if (response?.status === 200) {
+            toast.success("Removed friend!");
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error("There was an error, please try again later!");
+    }
+}

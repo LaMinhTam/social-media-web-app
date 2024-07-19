@@ -109,3 +109,10 @@
     animation-duration: 0.5s;
     animation-fill-mode: both;
 }
+
+.custom-emoji-picker {
+    max-width: 100%;
+    width: 300px;
+    max-height: 300px;
+    overflow: auto;
+}

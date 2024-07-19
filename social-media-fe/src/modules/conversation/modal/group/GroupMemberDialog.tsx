@@ -84,7 +84,16 @@ const GroupMemberDialog = ({
             >
                 <CloseIcon />
             </IconButton>
-            <DialogContent dividers className="w-[548px] h-full">
+            <DialogContent
+                dividers
+                sx={{
+                    width: {
+                        xs: "300px",
+                        md: "548px",
+                    },
+                    height: "100%",
+                }}
+            >
                 <Box sx={{ width: "100%" }}>
                     <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                         <Tabs

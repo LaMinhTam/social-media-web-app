@@ -4,8 +4,12 @@ import TuneSharpIcon from "@mui/icons-material/TuneSharp";
 import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GridViewIcon from "@mui/icons-material/GridView";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/configureStore";
 
 const PostFilter = () => {
+    const isMobile = useSelector((state: RootState) => state.common.isMobile);
+
     const [currentTab, setCurrentTab] = React.useState(1);
     return (
         <Box className="p-4 mt-4 rounded-lg shadow-md bg-lite">

@@ -119,7 +119,16 @@ const ResetPasswordDialog = ({
             >
                 <CloseIcon />
             </IconButton>
-            <DialogContent dividers className="w-[548px] h-full">
+            <DialogContent
+                dividers
+                sx={{
+                    width: {
+                        xs: "300px",
+                        md: "548px",
+                    },
+                    height: "100%",
+                }}
+            >
                 <form onSubmit={handleSubmit(handleSave)}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>

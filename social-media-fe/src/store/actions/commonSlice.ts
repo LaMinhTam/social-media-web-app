@@ -8,6 +8,7 @@ type CommonType = {
     openGroupCallDialog: boolean;
     progress: number;
     notifications: NotificationType[];
+    isMobile: boolean;
 };
 
 const initialState: CommonType = {
@@ -17,6 +18,7 @@ const initialState: CommonType = {
     openGroupCallDialog: false,
     progress: 0,
     notifications: [],
+    isMobile: false,
 };
 
 const commonSlice = createSlice({
@@ -44,6 +46,9 @@ const commonSlice = createSlice({
         setNotifications(state, action: PayloadAction<NotificationType[]>) {
             state.notifications = action.payload;
         },
+        setIsMobile(state, action: PayloadAction<boolean>) {
+            state.isMobile = action.payload;
+        },
     },
 });
 
@@ -54,5 +59,6 @@ export const {
     setOpenGroupCallDialog,
     setProgress,
     setNotifications,
+    setIsMobile,
 } = commonSlice.actions;
 export default commonSlice.reducer;

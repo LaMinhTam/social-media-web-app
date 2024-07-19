@@ -73,31 +73,9 @@ export default function SignUpPage() {
                 data.email,
                 data.password
             );
-            console.log("handleSignUp ~ response:", response);
             if (response.status === 201) {
-                const loginResponse = await SOCIAL_MEDIA_API.AUTH.login(
-                    data.email,
-                    data.password
-                );
-                if (loginResponse.status === 200) {
-                    const meResponse: AxiosResponse<Member> =
-                        await axiosInstance.get(apiRoutes.user.getMe, {
-                            headers: {
-                                Authorization: `Bearer ${loginResponse.data.accessToken}`,
-                            },
-                        });
-                    console.log("handleSignUp ~ meResponse:", meResponse);
-                    if (meResponse.status === 200) {
-                        saveAccessToken(loginResponse.data.accessToken);
-                        saveRefreshToken(loginResponse.data.refreshToken);
-                        saveUserInfoToCookie(
-                            meResponse.data,
-                            loginResponse.data.accessToken
-                        );
-                        route.push("/");
-                        toast.success("Sign up successfully");
-                    }
-                }
+                toast.success("Sign up successfully");
+                route.push("/signin");
             } else {
                 console.error("Failed to sign up", response.data.message);
             }

@@ -38,9 +38,6 @@ const ModalChatMessage = ({
 }) => {
     const { messages, setMessages } = useSocket();
     const dispatch = useDispatch();
-    const currentUserProfile = useSelector(
-        (state: RootState) => state.profile.currentUserProfile
-    );
     const [hoverRef, isHovered] = useHover();
     const {
         show: showFeature,
@@ -63,7 +60,7 @@ const ModalChatMessage = ({
         }
     };
     const onRemoveMessage = async () => {
-        const response = await handleDeleteMessage(message.message_id);
+        await handleDeleteMessage(message.message_id);
         const newMessages = { ...messages };
         delete newMessages[message.message_id];
         setMessages(newMessages);

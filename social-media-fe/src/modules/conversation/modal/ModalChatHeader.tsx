@@ -3,25 +3,25 @@ import {
     setOpenGroupCallDialog,
     setShowChatModal,
 } from "@/store/actions/commonSlice";
-import { IconButton, Popover, Typography } from "@mui/material";
+import { Button, IconButton, Popover, Typography } from "@mui/material";
 import { Dispatch } from "@reduxjs/toolkit";
 import CallIcon from "@mui/icons-material/Call";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CloseIcon from "@mui/icons-material/Close";
-import React, { useEffect } from "react";
+import React from "react";
 import { OnlineStatus } from "@/types/commonType";
 import Image from "next/image";
 import { setCurrentConversation } from "@/store/actions/conversationSlice";
 import { ConversationResponse, Member } from "@/types/conversationType";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import GroupSetting from "./group/GroupSetting";
-import VideoCallDialog from "./call/VideoCallDialog";
 import { formatOnlineTime } from "@/utils/conversation/messages/handleGroupMessage";
 import { useCall } from "@/contexts/call-context";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/store/configureStore";
 import GroupCallDialog from "./call/GroupCallDialog";
+import { useRouter } from "next/navigation";
 
 const ModalChatHeader = ({
     userId,
@@ -42,6 +42,7 @@ const ModalChatHeader = ({
     isGroup: boolean;
     targetUser: Member;
 }) => {
+    const router = useRouter();
     const { setTargetUserId, setTargetUser } = useCall();
     const openGroupCallDialog = useSelector(
         (state: RootState) => state.common.openGroupCallDialog
@@ -109,11 +110,25 @@ const ModalChatHeader = ({
                                         horizontal: "right",
                                     }}
                                 >
-                                    {isGroup && (
+                                    {isGroup ? (
                                         <GroupSetting
                                             isAdmin={isAdmin}
                                             popupState={popupState}
                                         ></GroupSetting>
+                                    ) : (
+                                        <Button
+                                            variant="text"
+                                            size="medium"
+                                            className="px-4 py-2 normal-case"
+                                            onClick={() => {
+                                                dispatch(
+                                                    setShowChatModal(false)
+                                                );
+                                                router.push(`/user/${userId}`);
+                                            }}
+                                        >
+                                            View profile
+                                        </Button>
                                     )}
                                 </Popover>
                             </div>

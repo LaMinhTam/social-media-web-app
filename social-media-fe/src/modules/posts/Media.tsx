@@ -12,7 +12,7 @@ const Media = ({ media }: { media: string[] }) => {
                         <Grid
                             item
                             key={index}
-                            xs={6}
+                            xs={media.length === 1 ? 12 : 6}
                             className="w-full h-[250px] relative cursor-pointer"
                         >
                             <PhotoView src={item}>

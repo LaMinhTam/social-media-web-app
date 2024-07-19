@@ -34,7 +34,7 @@ const SearchResult = () => {
     }, [q]);
 
     return (
-        <Box className="p-8">
+        <Box className="md:p-8 mt-[80px]">
             <Box className="flex items-center justify-center">
                 <Grid
                     container

@@ -1,7 +1,7 @@
 "use client";
 import LayoutDashboard from "@/layout/LayoutDashboard";
 import RequiredAuthLayout from "@/layout/RequiredAuthLayout";
-import { Box, CircularProgress, Grid } from "@mui/material";
+import { Box, CircularProgress, Grid, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import Header from "@/modules/profile/Header";
 import PostHeader from "@/modules/posts/PostHeader";
@@ -19,6 +19,7 @@ import Post from "@/modules/posts/Post";
 import SharePostDialog from "@/modules/posts/share/SharePostDialog";
 
 const Profile = () => {
+    const isMobile = useSelector((state: RootState) => state.common.isMobile);
     const currentUserProfile = useSelector(
         (state: RootState) => state.profile.currentUserProfile
     );
@@ -38,6 +39,7 @@ const Profile = () => {
         (state: RootState) => state.post.currentPostData
     );
     const [postLoading, setPostLoading] = React.useState(false);
+    console.log("Profile ~ postLoading:", postLoading);
     const [page, setPage] = React.useState<number>(1);
     const [isEndedList, setIsEndedList] = React.useState<boolean>(false);
     const observer = useRef<IntersectionObserver | null>(null);
@@ -90,21 +92,29 @@ const Profile = () => {
     return (
         <RequiredAuthLayout>
             <LayoutDashboard>
-                <div className="w-full h-full overflow-y-auto bg-strock custom-scrollbar">
+                <div className="w-full h-full overflow-x-hidden overflow-y-auto bg-strock custom-scrollbar">
                     <Header data={currentUserProfile}></Header>
-                    <div className="w-full max-w-[1048px] h-full px-4 mx-auto mt-4 flex">
-                        <Grid container spacing={3}>
+                    <div className="w-full max-w-[1048px] h-full md:px-4 mx-auto md:mt-4">
+                        <Grid
+                            container
+                            direction={isMobile ? "column" : "row"}
+                            spacing={isMobile ? 0 : 3}
+                        >
                             <Grid item md={5} xs={12}>
-                                <ProfileInfo></ProfileInfo>
-                                <ListImage></ListImage>
+                                {!isMobile && (
+                                    <>
+                                        <ProfileInfo></ProfileInfo>
+                                        <ListImage></ListImage>
+                                    </>
+                                )}
                                 <ListFriend></ListFriend>
                             </Grid>
                             <Grid item md={7} xs={12} className="flex flex-col">
-                                <div className="overflow-x-hidden overflow-y-auto basis-0 grow">
+                                <div className="flex-1 overflow-x-hidden overflow-y-auto md:basis-0 grow">
                                     <PostHeader></PostHeader>
-                                    <PostFilter></PostFilter>
+                                    {!isMobile && <PostFilter></PostFilter>}
                                     <Grid container columnGap={20}>
-                                        {userPosts &&
+                                        {!postLoading &&
                                             Object.keys(userPosts).length > 0 &&
                                             Object.values(userPosts).map(
                                                 (post: PostData) => (
@@ -118,6 +128,33 @@ const Profile = () => {
                                                         ></Post>
                                                     </Grid>
                                                 )
+                                            )}
+                                        {!postLoading &&
+                                            Object.keys(userPosts).length ===
+                                                0 && (
+                                                <Grid
+                                                    item
+                                                    className="w-full h-full"
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "center",
+                                                            alignItems:
+                                                                "center",
+                                                            height: "100%",
+                                                            mt: 2,
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            variant="h5"
+                                                            className="font-semibold"
+                                                        >
+                                                            No post
+                                                        </Typography>
+                                                    </Box>
+                                                </Grid>
                                             )}
                                     </Grid>
                                     {postLoading && (

@@ -148,7 +148,16 @@ const UpdateCoverDialog = ({
             >
                 <CloseIcon />
             </IconButton>
-            <DialogContent dividers className="w-[548px] h-full">
+            <DialogContent
+                dividers
+                sx={{
+                    width: {
+                        xs: "300px",
+                        md: "548px",
+                    },
+                    height: "100%",
+                }}
+            >
                 <Grid container spacing={2}>
                     <Grid item xs={12}>
                         <Typography variant="body1" fontWeight={600}>

@@ -15,37 +15,46 @@ import Image from "next/image";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Member } from "@/types/conversationType";
+import { useRouter } from "next/navigation";
 
 const SearchPeopleCard = ({ user }: { user: Member }) => {
+    const router = useRouter();
     const dispatch = useDispatch();
     const triggerReFetchingRelationship = useSelector(
         (state: RootState) => state.common.triggerReFetchingRelationship
+    );
+    const currentUserProfile = useSelector(
+        (state: RootState) => state.profile.currentUserProfile
     );
     const [loading, setLoading] = React.useState(false);
     const relationshipUsers = useSelector(
         (state: RootState) => state.user.relationshipUsers
     );
 
-    const isFriend = relationshipUsers.friends[user.user_id.toString()]
-        ? true
-        : false;
-    const isBlocked = relationshipUsers.blocked[user.user_id.toString()]
-        ? true
-        : false;
-    const isReceiveRequest = relationshipUsers.receive_request[
+    const isFriend = Object.keys(relationshipUsers.friends ?? {}).includes(
         user.user_id.toString()
-    ]
+    )
         ? true
         : false;
-    const isSendRequest = relationshipUsers.send_request[
+    const isBlocked = Object.keys(relationshipUsers.blocked ?? {}).includes(
         user.user_id.toString()
-    ]
+    )
+        ? true
+        : false;
+    const isReceiveRequest = Object.keys(
+        relationshipUsers.receive_request ?? {}
+    ).includes(user.user_id.toString())
+        ? true
+        : false;
+    const isSendRequest = Object.keys(
+        relationshipUsers.send_request ?? {}
+    ).includes(user.user_id.toString())
         ? true
         : false;
 
     const textContent = () => {
         if (isFriend) {
-            return "Chat";
+            return "View profile";
         } else if (isBlocked) {
             return "Revoke block";
         } else if (isReceiveRequest) {
@@ -59,8 +68,7 @@ const SearchPeopleCard = ({ user }: { user: Member }) => {
     const handleClicked = async () => {
         setLoading(true);
         if (isFriend) {
-            // dispatch(setShowChatModal(true));
-            // dispatch(setUserClicked(user));
+            router.push(`/user/${user.user_id}`);
             setLoading(false);
         } else if (isBlocked) {
             // handle unblock
@@ -101,18 +109,34 @@ const SearchPeopleCard = ({ user }: { user: Member }) => {
                         src={user.image_url}
                         width={60}
                         height={60}
-                        className="object-cover w-full h-full rounded-full"
+                        className="object-cover w-full h-full rounded-full cursor-pointer"
                         alt="avatar"
+                        onClick={() => {
+                            if (currentUserProfile.user_id === user.user_id) {
+                                router.push("/me");
+                            } else {
+                                router.push(`/user/${user.user_id}`);
+                            }
+                        }}
                     ></Image>
                 </div>
                 <div className="flex items-center justify-center flex-1">
                     <div className="flex items-center justify-start flex-1">
                         <div className="flex flex-col items-center justify-center">
-                            <div className="w-full h-full rounded bg-lite">
+                            <div
+                                className="w-full h-full rounded cursor-pointer bg-lite"
+                                onClick={() => {
+                                    if (
+                                        currentUserProfile.user_id ===
+                                        user.user_id
+                                    ) {
+                                        router.push("/me");
+                                    } else {
+                                        router.push(`/user/${user.user_id}`);
+                                    }
+                                }}
+                            >
                                 {user.name}
-                            </div>
-                            <div className="w-full h-full mt-1 rounded bg-lite">
-                                Live in Ho Chi Minh City
                             </div>
                         </div>
                     </div>
@@ -122,13 +146,23 @@ const SearchPeopleCard = ({ user }: { user: Member }) => {
                         sx={{
                             textTransform: "none",
                         }}
-                        onClick={handleClicked}
+                        onClick={() => {
+                            if (user.user_id === currentUserProfile.user_id) {
+                                router.push("/me");
+                            } else {
+                                handleClicked();
+                            }
+                        }}
                         disabled={loading}
                     >
                         {loading ? (
                             <LoadingSpinner />
                         ) : (
-                            <Typography>{textContent()}</Typography>
+                            <Typography>
+                                {currentUserProfile.user_id === user.user_id
+                                    ? "View profile"
+                                    : textContent()}
+                            </Typography>
                         )}
                     </Button>
                 </div>

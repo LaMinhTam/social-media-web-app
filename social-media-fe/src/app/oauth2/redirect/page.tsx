@@ -5,9 +5,10 @@ import { SOCIAL_MEDIA_API } from "@/apis/constants";
 import { Member } from "@/types/conversationType";
 import { saveAccessToken, saveRefreshToken } from "@/utils/auth";
 import saveUserInfoToCookie from "@/utils/auth/saveUserInfoToCookie";
+import { Backdrop, CircularProgress } from "@mui/material";
 import { AxiosResponse } from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useEffect } from "react";
+import React, { useEffect } from "react";
 import { toast } from "react-toastify";
 
 const OAuth2RedirectHandler = () => {
@@ -57,7 +58,19 @@ const OAuth2RedirectHandler = () => {
         handleOAuth2();
     }, [token, error]);
 
-    return <Suspense></Suspense>;
+    return (
+        <>
+            <Backdrop
+                sx={{
+                    color: "#fff",
+                    zIndex: 50,
+                }}
+                open={true}
+            >
+                <CircularProgress color="info" />
+            </Backdrop>
+        </>
+    );
 };
 
 export default OAuth2RedirectHandler;

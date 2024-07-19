@@ -96,7 +96,16 @@ const AddMemberDialog = ({
             >
                 <CloseIcon />
             </IconButton>
-            <DialogContent dividers className="w-[548px] h-full">
+            <DialogContent
+                dividers
+                sx={{
+                    width: {
+                        xs: "300px",
+                        md: "548px",
+                    },
+                    height: "100%",
+                }}
+            >
                 <Box className="w-full h-full px-4 my-4">
                     <SearchInput
                         placeholder="Search..."

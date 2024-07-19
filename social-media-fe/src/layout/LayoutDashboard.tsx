@@ -15,6 +15,7 @@ import CallType from "@/types/callType";
 import VideoCallDialog from "@/modules/conversation/modal/call/VideoCallDialog";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { setIsMobile } from "@/store/actions/commonSlice";
 
 const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
@@ -53,13 +54,19 @@ const LayoutDashboard = ({ children }: { children: React.ReactNode }) => {
         }
     }, []);
 
+    useEffect(() => {
+        // check if the user is using a mobile device
+        const isMobile = window.innerWidth < 600;
+        dispatch(setIsMobile(isMobile));
+    }, []);
+
     return (
         <SocketProvider value={{} as SocketType}>
             <CallProvider value={{} as CallType}>
-                <div className="relative w-full h-full min-h-screen overflow-auto bg-strock">
+                <div className="relative w-full h-full min-h-screen overflow-x-hidden overflow-y-auto bg-strock">
                     <DashboardTopBar></DashboardTopBar>
                     {showChatModal && (
-                        <div className="fixed bottom-0 z-50 rounded-lg shadow-md right-14 bg-lite">
+                        <div className="fixed bottom-0 right-0 z-50 rounded-lg shadow-md md:right-14 bg-lite">
                             <ChatModal></ChatModal>
                         </div>
                     )}

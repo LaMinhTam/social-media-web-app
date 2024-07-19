@@ -1,4 +1,4 @@
-import { DEFAULT_AVATAR } from "@/constants/global";
+import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/constants/global";
 import {
     Box,
     Button,
@@ -38,12 +38,12 @@ const ListImage = () => {
                     <PhotoProvider>
                         {Array.from({ length: 9 }).map((_, index) => (
                             <ImageListItem key={index}>
-                                <PhotoView src={DEFAULT_AVATAR}>
+                                <PhotoView src={DEFAULT_COVER}>
                                     <Image
-                                        src={DEFAULT_AVATAR}
+                                        src={DEFAULT_COVER}
                                         width={128}
                                         height={128}
-                                        className="object-cover w-[128px] h-[128px] rounded"
+                                        className="object-cover w-[128px] h-[128px] rounded cursor-pointer"
                                         alt="profile"
                                     ></Image>
                                 </PhotoView>

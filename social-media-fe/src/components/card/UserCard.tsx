@@ -65,7 +65,7 @@ export default function UserCard({
         setBtnTopLoading(true);
         switch (type) {
             case "friend":
-                router.push(`/profile/${user.user_id}`);
+                router.push(`/user/${user.user_id}`);
                 setBtnTopLoading(false);
                 return;
             case "receive":
@@ -81,11 +81,11 @@ export default function UserCard({
                 );
                 return;
             case "request":
-                router.push(`/profile/${user.user_id}`);
+                router.push(`/user/${user.user_id}`);
                 setBtnTopLoading(false);
                 return;
             default:
-                router.push(`/profile/${user.user_id}`);
+                router.push(`/user/${user.user_id}`);
                 return;
         }
     };

@@ -8,6 +8,7 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
+    Popover,
     styled,
     TextareaAutosize,
     Tooltip,
@@ -27,6 +28,7 @@ import {
     setTriggerFetchingPost,
 } from "@/store/actions/postSlice";
 import { handleSharePost } from "@/services/post.service";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     "& .MuiDialogContent-root": {
@@ -52,15 +54,9 @@ const SharePostDialog = ({
     const dispatch = useDispatch();
     const [content, setContent] = React.useState("");
     const [loading, setLoading] = React.useState<boolean>(false);
-    const {
-        show: showEmojiPicker,
-        setShow: setShowEmojiPicker,
-        nodeRef: emojiPickerRef,
-    } = useClickOutSide();
 
     const handleChooseEmoji = (emoji: any) => {
         setContent((prev) => prev + emoji.native);
-        setShowEmojiPicker(false);
     };
     const handleClose = () => {
         dispatch(setOpenSharePostDialog(false));
@@ -112,7 +108,16 @@ const SharePostDialog = ({
                 >
                     <CloseIcon />
                 </IconButton>
-                <DialogContent dividers className="w-[548px] h-full">
+                <DialogContent
+                    dividers
+                    sx={{
+                        width: {
+                            xs: "300px",
+                            md: "548px",
+                        },
+                        height: "100%",
+                    }}
+                >
                     {loading && (
                         <Backdrop
                             sx={{
@@ -140,30 +145,45 @@ const SharePostDialog = ({
                                 onChange={(e) => setContent(e.target.value)}
                                 className="w-full p-2 pr-8 border-none outline-none resize-none"
                             />
-                            <Tooltip title="Emoji">
-                                <IconButton
-                                    size="small"
-                                    color={"inherit"}
-                                    className="absolute right-0 transform -translate-y-1/2 top-1/2 btn-chat-action w-7 h-7"
-                                    onClick={() =>
-                                        setShowEmojiPicker(!showEmojiPicker)
-                                    }
-                                >
-                                    <SentimentVerySatisfiedIcon />
-                                </IconButton>
-                            </Tooltip>
-
-                            {showEmojiPicker && (
-                                <div
-                                    className="absolute top-0 right-0 z-50"
-                                    ref={emojiPickerRef}
-                                >
-                                    <Picker
-                                        data={data}
-                                        onEmojiSelect={handleChooseEmoji}
-                                    />
-                                </div>
-                            )}
+                            <PopupState
+                                variant="popover"
+                                popupId="emoji-popup-popover-mobile"
+                            >
+                                {(popupState) => (
+                                    <>
+                                        <Tooltip
+                                            title="Emoji"
+                                            {...bindTrigger(popupState)}
+                                        >
+                                            <IconButton
+                                                size="small"
+                                                color={"inherit"}
+                                                className="absolute right-0 transform -translate-y-1/2 top-1/2 btn-chat-action w-7 h-7"
+                                            >
+                                                <SentimentVerySatisfiedIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Popover
+                                            {...bindPopover(popupState)}
+                                            anchorOrigin={{
+                                                vertical: "bottom",
+                                                horizontal: "left",
+                                            }}
+                                            transformOrigin={{
+                                                vertical: "top",
+                                                horizontal: "left",
+                                            }}
+                                        >
+                                            <Picker
+                                                data={data}
+                                                onEmojiSelect={
+                                                    handleChooseEmoji
+                                                }
+                                            />
+                                        </Popover>
+                                    </>
+                                )}
+                            </PopupState>
                         </Box>
                     )}
                 </DialogContent>

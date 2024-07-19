@@ -6,7 +6,7 @@ import ModalChatHeader from "@/modules/conversation/modal/ModalChatHeader";
 import ModalChatFooter from "@/modules/conversation/modal/ModalChatFooter";
 import ModalChatContent from "@/modules/conversation/modal/ModalChatContent";
 import { handleGetUserStatus } from "@/services/conversation.service";
-import { OnlineResponse, OnlineStatus } from "@/types/commonType";
+import { OnlineStatus } from "@/types/commonType";
 import { useSocket } from "@/contexts/socket-context";
 
 const ChatModal = () => {

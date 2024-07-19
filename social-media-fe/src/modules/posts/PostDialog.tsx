@@ -19,7 +19,6 @@ import {
     setOpenPostDialog,
     setPosts,
     setReplyComment,
-    setTriggerFetchingPost,
 } from "@/store/actions/postSlice";
 import { RootState } from "@/store/configureStore";
 import useClickOutSide from "@/hooks/useClickOutSide";
@@ -61,7 +60,7 @@ const PostDialog = ({
     const [storedPostReaction, setStoredPostReaction] = useState<{
         [key: string]: number;
     }>({});
-    console.log("storedPostReaction:", storedPostReaction);
+    const isMobile = useSelector((state: RootState) => state.common.isMobile);
     const [openTagPeopleDialog, setOpenTagPeopleDialog] = React.useState(false);
     const replyComment = useSelector(
         (state: RootState) => state.post.replyComment
@@ -101,12 +100,6 @@ const PostDialog = ({
         authors = post.authors[0].name;
     }
 
-    const {
-        show: showEmojiPicker,
-        setShow: setShowEmojiPicker,
-        nodeRef: emojiPickerRef,
-    } = useClickOutSide();
-
     const handleClose = () => {
         dispatch(setOpenPostDialog(false));
         const newPosts = {
@@ -121,7 +114,6 @@ const PostDialog = ({
 
     const handleChooseEmoji = (emoji: any) => {
         setContent((prev) => prev + emoji.native);
-        setShowEmojiPicker(false);
     };
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -276,7 +268,6 @@ const PostDialog = ({
     useEffect(() => {
         fetchComments();
     }, [fetchComments]);
-
     const handleSortChange = (event: SelectChangeEvent<string>) => {
         setSortStrategy(event.target.value);
         setPage(1);
@@ -362,10 +353,21 @@ const PostDialog = ({
                     setSelectedPersons={setTaggedPersons}
                 ></TagPeopleDialogContent>
             ) : (
-                <DialogContent dividers className="w-[700px] h-full p-4">
+                <DialogContent
+                    dividers
+                    sx={{
+                        width: {
+                            xs: "324px",
+                            md: "700px",
+                        },
+                        height: "100%",
+                        padding: 4,
+                    }}
+                >
                     <Post
                         data={post}
                         setStoredPostReaction={setStoredPostReaction}
+                        type={isMobile ? "responsive" : "post"}
                     ></Post>
                     <CommentSort
                         sortStrategy={sortStrategy}
@@ -425,12 +427,9 @@ const PostDialog = ({
                     setContent={setContent}
                     currentUserProfile={currentUserProfile}
                     onCreateComment={onCreateComment}
-                    showEmojiPicker={showEmojiPicker}
-                    setShowEmojiPicker={setShowEmojiPicker}
                     handleChooseEmoji={handleChooseEmoji}
                     handleFileInputClick={handleFileInputClick}
                     fileInputRef={fileInputRef}
-                    emojiPickerRef={emojiPickerRef}
                     loading={loading}
                     setOpenTagPeopleDialog={setOpenTagPeopleDialog}
                 ></PostDialogAction>

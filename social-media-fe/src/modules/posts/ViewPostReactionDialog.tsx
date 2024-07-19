@@ -57,7 +57,17 @@ const ViewPostReactionDialog = ({
             onBackdropClick={handleClose}
         >
             {/* Existing DialogTitle and IconButton code remains unchanged */}
-            <DialogContent dividers className="w-[548px] h-full p-4">
+            <DialogContent
+                dividers
+                sx={{
+                    width: {
+                        xs: "300px",
+                        md: "548px",
+                    },
+                    height: "100%",
+                    padding: 4,
+                }}
+            >
                 <Box sx={{ width: "100%" }}>
                     <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                         <Tabs

@@ -1,8 +1,11 @@
 import { Box, CssBaseline, Grid, Paper, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import SocialButtonGroup from "@/components/social/SocialButtonGroup";
 import Avatar from "@mui/material/Avatar";
+import { getAccessToken, getRefreshToken } from "@/utils/auth";
+import getUserInfoFromCookie from "@/utils/auth/getUserInfoFromCookie";
+import { useRouter } from "next/navigation";
 
 const LayoutAuthentication = ({
     children,
@@ -13,6 +16,16 @@ const LayoutAuthentication = ({
     header: string;
     title: string;
 }) => {
+    const router = useRouter();
+    useEffect(() => {
+        const accessToken = getAccessToken();
+        const refreshToken = getRefreshToken();
+        const user = getUserInfoFromCookie();
+        if (accessToken && refreshToken && user) {
+            router.push("/");
+        }
+    }, []);
+
     return (
         <Grid container component="main" sx={{ height: "100vh" }}>
             <CssBaseline />
@@ -63,7 +76,6 @@ const LayoutAuthentication = ({
                             flexDirection: "column",
                             alignItems: "center",
                             gap: 2,
-                            width: "100%",
                         }}
                     >
                         <SocialButtonGroup />
