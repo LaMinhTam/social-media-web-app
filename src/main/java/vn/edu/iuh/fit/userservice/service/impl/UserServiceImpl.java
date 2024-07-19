@@ -23,14 +23,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Retryable(
-            value = { TransactionSystemException.class, DataAccessResourceFailureException.class },
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 5000)
-    )
     public User createUser(Long id, String name, String email, String imageUrl, String cover) {
-        return userRepository.save(new User(id, name, email, imageUrl, cover));
+        int maxAttempts = 3;
+        int attempt = 0;
+        long backoffDelay = 5000; // milliseconds
+
+        while (attempt < maxAttempts) {
+            try {
+                return userRepository.save(new User(id, name, email, imageUrl, cover));
+            } catch (TransactionSystemException | DataAccessResourceFailureException e) {
+                attempt++;
+                if (attempt >= maxAttempts) {
+                    throw e; // Rethrow exception if max attempts reached
+                }
+                try {
+                    Thread.sleep(backoffDelay); // Wait before retrying
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt(); // Restore interrupted status
+                    throw new RuntimeException("Thread was interrupted during backoff", ie);
+                }
+            }
+        }
+
+        throw new RuntimeException("Should never reach here");
     }
+
 
     @Override
     @Retryable(
