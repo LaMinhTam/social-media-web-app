@@ -132,12 +132,14 @@ public class MessageServiceImpl implements MessageService {
             conversations.add(conversation);
             if (!conversation.getMembers().contains(existMessage.getSenderId())) {
                 throw new AppException(HttpStatus.FORBIDDEN.value(), "You are not a member of this conversation");
-            } else if (conversation.getType().equals(ConversationType.GROUP) && conversation.getStatus().equals(ConversationStatus.DISBAND)) {
-                throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
-            } else if (conversation.getSettings().isRestrictedMessaging() &&
-                    !(conversation.getSettings().isAllowDeputySendMessages() &&
-                            Optional.ofNullable(conversation.getDeputies()).orElse(Collections.emptyList()).contains(senderId))) {
-                throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
+            } else if (conversation.getType().equals(ConversationType.GROUP)) {
+                if (conversation.getStatus().equals(ConversationStatus.DISBAND)) {
+                    throw new AppException(HttpStatus.GONE.value(), "Conversation is disbanded");
+                } else if (conversation.getSettings().isRestrictedMessaging() &&
+                        !(conversation.getSettings().isAllowDeputySendMessages() &&
+                                Optional.ofNullable(conversation.getDeputies()).orElse(Collections.emptyList()).contains(senderId))) {
+                    throw new AppException(HttpStatus.METHOD_NOT_ALLOWED.value(), "Messaging is restricted in this conversation");
+                }
             }
             Message.MessageBuilder messageBuilder = Message.builder();
             messageBuilder.senderId(senderId);
