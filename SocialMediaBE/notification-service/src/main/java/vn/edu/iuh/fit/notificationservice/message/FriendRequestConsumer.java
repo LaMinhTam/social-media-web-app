@@ -25,8 +25,25 @@ public class FriendRequestConsumer {
     @RabbitListener(queues = "friend-request-queue")
     public void notifyFriendRequest(FriendRequestDTO request) {
         FriendRequestNotification friendRequestNotification = new FriendRequestNotification(request.id(), request.type());
-        String recipient = determineRecipient(request);
-        UserDetail userDetail = getUserDetail(recipient);
+
+        String recipient;
+        UserDetail userDetail;
+
+        switch (request.type()) {
+            case "SEND":
+            case "REVOKE":
+                recipient = request.target().toString();
+                userDetail = getUserDetail(request.source().toString()); // Get details of the source user
+                break;
+            case "ACCEPT":
+                recipient = request.source().toString();
+                userDetail = getUserDetail(request.target().toString()); // Get details of the target user
+                break;
+            default:
+                recipient = request.target().toString();
+                userDetail = getUserDetail(request.source().toString()); // Default to source user's details
+                break;
+        }
 
         friendRequestNotification.setUserId(userDetail.user_id());
         friendRequestNotification.setEmail(userDetail.email());
@@ -40,15 +57,6 @@ public class FriendRequestConsumer {
         );
     }
 
-    private String determineRecipient(FriendRequestDTO request) {
-        return switch (request.type()) {
-            case "SEND", "REVOKE" -> request.target().toString();
-            case "ACCEPT" -> request.source().toString();
-            default ->
-                // Handle any other cases or default behavior
-                    request.target().toString();
-        };
-    }
 
     private UserDetail getUserDetail(String recipient) {
         Long userId = Long.parseLong(recipient);

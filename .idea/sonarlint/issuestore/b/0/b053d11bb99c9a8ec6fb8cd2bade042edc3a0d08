@@ -1,0 +1,11 @@
+
+g	java:S112+"FDefine and throw a dedicated exception instead of using a generic one.(×Ñ×þûÿÿÿÿ8ÁþÛÑŒ2
+b	java:S1120"FDefine and throw a dedicated exception instead of using a generic one.(Êö¥¨8ÁþÛÑŒ2
+n
+java:S18746"-Remove this use of "value"; it is deprecated.(§Œ·àþÿÿÿÿJ$d603c157-cd74-4da2-9eab-48696b478edd
+n
+java:S1874A"-Remove this use of "value"; it is deprecated.(§Œ·àþÿÿÿÿJ$ced452df-94a5-4695-85cf-4d4b46ceffa3
+n
+java:S1874L"-Remove this use of "value"; it is deprecated.(§Œ·àþÿÿÿÿJ$812285a5-8c8d-4c27-8411-bcc2dd9fbe81
+n
+java:S1874W"-Remove this use of "value"; it is deprecated.(§Œ·àþÿÿÿÿJ$a5bbe198-b5c0-4da5-ac12-829d8d56a1c2
