@@ -17,7 +17,7 @@ public class WebClientConfig {
     @Bean
     public WebClient userWallWebClient() {
         return WebClient.builder()
-                .baseUrl("https://post-service-cqfq.onrender.com")
+                .baseUrl("https://post-service-f98v.onrender.com")
                 .build();
     }
 }
