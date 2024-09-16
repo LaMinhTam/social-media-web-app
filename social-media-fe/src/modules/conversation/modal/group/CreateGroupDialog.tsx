@@ -94,8 +94,9 @@ const CreateGroupDialog = ({
         (state: RootState) => state.user.relationshipUsers
     );
 
+    console.log("relationshipUsers:", relationshipUsers);
     const sortedUsers = sortedPersonToAlphabet(
-        Object.values(relationshipUsers.friends)
+        Object.values(relationshipUsers.friends ?? {})
     );
 
     const handleCreateGroup = async () => {
